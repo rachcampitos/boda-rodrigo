@@ -833,11 +833,13 @@ h1, h2, h3 {
 
 /* Tap pulse on dealt cards */
 @keyframes oracleTap {
-  0%, 100% { transform: translate(0,0) rotate(0deg) scale(1); box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
-  50% { transform: translate(0,0) rotate(0deg) scale(0.96); box-shadow: 0 0 24px rgba(212,168,83,0.5); }
+  0% { transform: translate(0,0) rotate(0deg) scale(1); box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
+  40% { transform: translate(0,0) rotate(0deg) scale(0.9); box-shadow: 0 0 40px rgba(212,168,83,0.7), 0 0 80px rgba(139,123,184,0.2); }
+  100% { transform: translate(0,0) rotate(0deg) scale(1); box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
 }
 .oracle-card.oracle-tap {
-  animation: oracleTap 0.4s ease-out;
+  animation: oracleTap 0.55s ease-out;
+  z-index: 5;
 }
 
 /* Hover/tap glow on dealt cards */
