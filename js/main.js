@@ -284,15 +284,24 @@
       const px = Math.random() * stack.offsetWidth;
       const size = 1 + Math.random() * 2;
       const drift = (Math.random() - 0.5) * 50;
-      const rise = 30 + Math.random() * 50;
+      const rise = -(30 + Math.random() * 50);
       const dur = 500 + Math.random() * 500;
 
       p.style.cssText =
         `left:${px}px;top:${edgeY}px;width:${size}px;height:${size}px;` +
-        `--drift:${drift}px;--rise:${-rise}px;animation-duration:${dur}ms;`;
+        `-webkit-transition:transform ${dur}ms ease-out,opacity ${dur}ms ease-out;` +
+        `transition:transform ${dur}ms ease-out,opacity ${dur}ms ease-out;`;
 
       stack.appendChild(p);
-      setTimeout(() => p.remove(), dur);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          p.style.transform = `translate(${drift}px, ${rise}px) scale(0)`;
+          p.style.opacity = '0';
+        });
+      });
+
+      setTimeout(() => p.remove(), dur + 50);
     }
 
     // ---- Vanish: bottom → top dissolve + dust particles ----
@@ -308,12 +317,11 @@
 
         // Dissolve edge moves from bottom (100%) to top (0%)
         const edge = (1 - t) * 100;
-        const soft = 10;
-        const mask = `linear-gradient(to bottom, black ${Math.max(0, edge - soft)}%, transparent ${Math.min(100, edge + 2)}%)`;
 
-        // Mask on the FRONT FACE only — preserves 3D context on inner
-        front.style.maskImage = mask;
-        front.style.webkitMaskImage = mask;
+        // clip-path is more compatible with 3D transforms in Safari
+        const clip = `inset(0 0 ${100 - edge}% 0)`;
+        front.style.clipPath = clip;
+        front.style.webkitClipPath = clip;
 
         // Fade glow out gradually on the parent card
         const g1 = (0.4 * (1 - t)).toFixed(2);
@@ -330,8 +338,8 @@
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          front.style.maskImage = '';
-          front.style.webkitMaskImage = '';
+          front.style.clipPath = '';
+          front.style.webkitClipPath = '';
           card.style.filter = '';
           onDone();
         }
@@ -347,8 +355,8 @@
       // Hide immediately so nothing flashes
       card.style.opacity = '0';
       card.style.filter = '';
-      front.style.maskImage = '';
-      front.style.webkitMaskImage = '';
+      front.style.clipPath = '';
+      front.style.webkitClipPath = '';
 
       // Reset flip instantly
       inner.style.transition = 'none';
