@@ -317,11 +317,11 @@
 
         // Dissolve edge moves from bottom (100%) to top (0%)
         const edge = (1 - t) * 100;
+        const soft = 10;
+        const mask = `linear-gradient(to bottom, black ${Math.max(0, edge - soft)}%, transparent ${Math.min(100, edge + 2)}%)`;
 
-        // clip-path is more compatible with 3D transforms in Safari
-        const clip = `inset(0 0 ${100 - edge}% 0)`;
-        front.style.clipPath = clip;
-        front.style.webkitClipPath = clip;
+        front.style.maskImage = mask;
+        front.style.webkitMaskImage = mask;
 
         // Fade glow out gradually on the parent card
         const g1 = (0.4 * (1 - t)).toFixed(2);
@@ -338,8 +338,8 @@
         if (t < 1) {
           requestAnimationFrame(frame);
         } else {
-          front.style.clipPath = '';
-          front.style.webkitClipPath = '';
+          front.style.maskImage = '';
+          front.style.webkitMaskImage = '';
           card.style.filter = '';
           onDone();
         }
@@ -355,8 +355,8 @@
       // Hide immediately so nothing flashes
       card.style.opacity = '0';
       card.style.filter = '';
-      front.style.clipPath = '';
-      front.style.webkitClipPath = '';
+      front.style.maskImage = '';
+      front.style.webkitMaskImage = '';
 
       // Reset flip instantly
       inner.style.transition = 'none';
