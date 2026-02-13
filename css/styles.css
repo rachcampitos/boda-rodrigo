@@ -787,7 +787,7 @@ h1, h2, h3 {
   text-align: center;
   font-family: var(--ff-heading);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: 1.15rem;
   color: var(--gold);
   opacity: 0;
   letter-spacing: 0.05em;
