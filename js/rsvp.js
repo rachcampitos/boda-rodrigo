@@ -8,7 +8,7 @@ const RSVP = (() => {
   // API URL — change this to your Railway backend URL in production
   const API_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:3001/api/rsvp'
-    : '/api/rsvp'; // Update this with your Railway URL
+    : 'https://boda-rodrigo-production.up.railway.app/api/rsvp';
 
   const submitBtn = document.getElementById('rsvp-submit');
   const submitText = form.querySelector('.rsvp-submit-text');
