@@ -700,6 +700,17 @@ h1, h2, h3 {
   border: 1px solid rgba(212, 168, 83, 0.15);
   position: relative;
   transition: border-color 0.4s, box-shadow 0.4s;
+  overflow: hidden;
+}
+/* Cursor trail stars inside party cards */
+.party-trail-star {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: #d4a853;
+  box-shadow: 0 0 3px rgba(212, 168, 83, 0.6);
+  will-change: transform, opacity;
+  z-index: 0;
 }
 /* Inner ornamental border */
 .party-member::before {
@@ -749,6 +760,8 @@ h1, h2, h3 {
   font-size: clamp(1.1rem, 2.5vw, 1.4rem);
   margin-bottom: 6px;
   color: var(--lavender-lt);
+  position: relative;
+  z-index: 1;
 }
 .party-role {
   font-size: 0.8rem;
@@ -757,12 +770,16 @@ h1, h2, h3 {
   text-transform: uppercase;
   margin-bottom: 4px;
   font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 .party-relation {
   font-size: 0.78rem;
   color: var(--copper);
   font-style: italic;
   opacity: 0.8;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---------- ORACLE CARD GALLERY — Deck Deal Effect ---------- */
