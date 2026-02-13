@@ -1,0 +1,1415 @@
+/* ======================================================
+   FRANKIE & RODRIGO — Wedding Website
+   Base Styles: Layout, Typography, Colors, Responsive
+   ====================================================== */
+
+/* ---------- CSS Custom Properties ---------- */
+:root {
+  --bg:          #050505;
+  --bg-alt:      #0a0a0f;
+  --lavender:    #8B7BB8;
+  --lavender-lt: #a99ad4;
+  --copper:      #C4956A;
+  --copper-lt:   #d4ad85;
+  --gold:        #D4A853;
+  --gold-glow:   rgba(212, 168, 83, 0.4);
+  --silver:      #b8b8c0;
+  --silver-muted:#9a9aa5;
+  --btn-bg:      #5b5189;
+  --btn-hover:   #6e63a3;
+
+  --ff-heading:  'Cormorant Garamond', Georgia, serif;
+  --ff-script:   'Pinyon Script', cursive;
+  --ff-body:     'Raleway', 'Helvetica Neue', sans-serif;
+
+  --nav-height:  64px;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--nav-height); }
+body {
+  font-family: var(--ff-body);
+  font-weight: 400;
+  color: var(--silver);
+  background: var(--bg);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+ul { list-style: none; }
+
+/* ---------- Typography ---------- */
+.script {
+  font-family: var(--ff-script);
+  color: var(--copper);
+}
+h1, h2, h3 {
+  font-family: var(--ff-heading);
+  font-weight: 500;
+  color: var(--lavender);
+  line-height: 1.2;
+}
+
+/* ---------- Skip Link (a11y) ---------- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 200;
+  padding: 8px 16px;
+  background: var(--btn-bg);
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* ---------- Starfield Canvas (BG) ---------- */
+#starfield {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- Particles Container ---------- */
+#particles {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---------- Navigation ---------- */
+#main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: background 0.4s, box-shadow 0.4s;
+  height: var(--nav-height);
+}
+#main-nav.scrolled {
+  background: rgba(5, 5, 5, 0.85);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(139, 123, 184, 0.1);
+}
+.nav-inner {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--ff-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--lavender);
+  letter-spacing: 0.05em;
+}
+.nav-logo .script { font-size: 1.8rem; }
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+.nav-links a {
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--silver-muted);
+  transition: color 0.3s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--copper);
+  transition: width 0.3s;
+}
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--lavender-lt);
+}
+.nav-links a.active::after {
+  width: 100%;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  width: 28px;
+  padding: 4px 0;
+}
+.hamburger span {
+  display: block;
+  height: 1.5px;
+  background: var(--silver);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* ---------- Sections (General) ---------- */
+.section {
+  position: relative;
+  z-index: 2;
+  padding: 100px 24px;
+}
+.section--alt { background: var(--bg-alt); }
+.section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.section-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  margin-bottom: 12px;
+}
+.section-subtitle {
+  text-align: center;
+  color: var(--copper);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 60px;
+}
+
+/* ---------- Moon Container ---------- */
+#moon-container {
+  width: 200px;
+  height: 200px;
+  margin: 32px auto 0;
+  position: relative;
+}
+.moon-tooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  bottom: -32px;
+  padding: 5px 16px;
+  background: rgba(14, 8, 30, 0.92);
+  border: 1px solid rgba(212, 168, 83, 0.25);
+  border-radius: 20px;
+  font-family: var(--ff-heading);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--gold);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, font-size 0.3s ease;
+}
+.moon-tooltip.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.15);
+}
+
+
+/* ---------- HERO ---------- */
+.hero {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 80px;
+  text-align: center;
+  overflow: hidden;
+}
+/* ---------- Hero Card Deck — Stacked Flip ---------- */
+.card-deck {
+  margin: 0 auto 40px;
+  width: 300px;
+  height: 420px;
+  perspective: 1000px;
+}
+.card-deck-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Each card in the deck --- */
+.deck-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  perspective: 800px;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.7s ease,
+              opacity 0.7s ease,
+              filter 0.5s ease;
+  will-change: transform;
+}
+.deck-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.deck-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* --- Back face: decorative tarot-style --- */
+.deck-back {
+  background: linear-gradient(145deg, #201538, #110a20);
+  border: 2px solid rgba(212, 168, 83, 0.25);
+  box-shadow:
+    0 0 12px rgba(212, 168, 83, 0.04),
+    0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.deck-back-border {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(196, 149, 106, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.deck-back-content { text-align: center; }
+.deck-back-star {
+  font-size: 2.8rem;
+  color: var(--gold);
+  text-shadow: 0 0 16px var(--gold-glow);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.deck-back-symbol {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--copper);
+}
+
+/* --- Front face: photo --- */
+.deck-front {
+  transform: rotateY(180deg);
+  border: 2px solid rgba(212, 168, 83, 0.5);
+  box-shadow:
+    0 0 30px rgba(212, 168, 83, 0.1),
+    0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.deck-front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Stack position by order (0 = back, 3 = front) --- */
+/* Deck cards are small; revealed card grows to full size */
+.deck-card[data-order="0"] {
+  transform: translateY(8px) scale(0.78);
+  z-index: 1; opacity: 0.35;
+}
+.deck-card[data-order="1"] {
+  transform: translateY(4px) scale(0.82);
+  z-index: 2; opacity: 0.5;
+}
+.deck-card[data-order="2"] {
+  transform: translateY(2px) scale(0.85);
+  z-index: 3; opacity: 0.7;
+}
+.deck-card[data-order="3"] {
+  transform: translateY(0) scale(0.88);
+  z-index: 4; opacity: 1;
+}
+
+/* --- Revealed: card flips + scales up --- */
+.deck-card.revealed {
+  transform: translateY(-8px) scale(1.08) !important;
+  z-index: 10 !important;
+  filter: drop-shadow(0 0 18px rgba(212, 168, 83, 0.4))
+          drop-shadow(0 0 36px rgba(212, 168, 83, 0.15));
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 1.8s ease,
+              opacity 0.7s ease;
+}
+.deck-card.revealed .deck-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Gold glow burst during the flip — fades gradually into revealed glow */
+.deck-card.revealing {
+  filter: drop-shadow(0 0 24px rgba(212, 168, 83, 0.6))
+          drop-shadow(0 0 48px rgba(212, 168, 83, 0.25)) !important;
+}
+
+/* --- Vanishing: JS controls filter, disable CSS transition --- */
+.deck-card.vanishing {
+  z-index: 10 !important;
+  transition: none !important;
+}
+
+/* Golden dust particles (live in .card-deck-stack, above the mask) */
+.vanish-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(circle, #f5e6a0, #d4a853);
+  box-shadow: 0 0 6px rgba(212, 168, 83, 0.8);
+  animation: vanishDust ease-out forwards;
+}
+
+/* Hover: subtle lift on top card */
+.deck-card[data-order="3"]:not(.revealed):not(.drawing):hover {
+  transform: translateY(-3px) scale(0.90);
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0d0d15, #151520);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--silver-muted);
+  font-size: 2rem;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  margin-bottom: 12px;
+}
+.title-amp {
+  font-size: 1.3em;
+  display: inline-block;
+  margin: 0 8px;
+  vertical-align: baseline;
+}
+.hero-tagline {
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--copper);
+  margin-bottom: 16px;
+  letter-spacing: 0.03em;
+}
+.hero-subtitle {
+  font-size: 0.95rem;
+  color: var(--silver-muted);
+  max-width: 480px;
+  margin: 0 auto 24px;
+}
+.hero-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--silver-muted);
+  margin-bottom: 40px;
+}
+.hero-divider { color: var(--copper); }
+
+/* ---------- Countdown ---------- */
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+.countdown-unit { text-align: center; }
+.countdown-number {
+  display: block;
+  font-family: var(--ff-heading);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 600;
+  color: var(--copper);
+  line-height: 1;
+}
+.countdown-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--silver-muted);
+}
+
+/* ---------- Scroll Hint ---------- */
+.scroll-hint {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.scroll-hint-text {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--silver-muted);
+}
+.scroll-hint-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--copper), transparent);
+}
+
+/* ---------- TAROT CARDS ---------- */
+.tarot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  perspective: 1200px;
+}
+.tarot-card {
+  aspect-ratio: 2 / 3;
+  cursor: pointer;
+  max-width: 300px;
+  margin: 0 auto;
+  width: 100%;
+}
+.tarot-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tarot-card.flipped .tarot-card-inner {
+  transform: rotateY(180deg);
+}
+.tarot-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Tarot Back */
+.tarot-back {
+  background: linear-gradient(145deg, #201538, #110a20);
+  border: 1px solid rgba(139, 123, 184, 0.3);
+}
+.tarot-back-border {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(196, 149, 106, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tarot-back-content {
+  text-align: center;
+}
+.tarot-star {
+  font-size: 3rem;
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-glow);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.tarot-numeral {
+  font-family: var(--ff-heading);
+  font-size: 1.5rem;
+  color: var(--copper);
+  letter-spacing: 0.1em;
+}
+
+/* Tarot Front */
+.tarot-front {
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, #16102a, #0e081e);
+  border: 1px solid rgba(139, 123, 184, 0.25);
+}
+.tarot-front-content {
+  padding: 24px 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}
+.tarot-card-numeral {
+  font-family: var(--ff-heading);
+  font-size: 0.9rem;
+  color: var(--silver-muted);
+  letter-spacing: 0.15em;
+}
+.tarot-card-title {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+}
+.tarot-time {
+  font-size: 0.95rem;
+  color: var(--copper);
+  font-weight: 400;
+}
+.tarot-venue {
+  font-family: var(--ff-heading);
+  font-size: 1rem;
+  color: var(--lavender-lt);
+}
+.tarot-address {
+  font-size: 0.75rem;
+  color: var(--silver-muted);
+}
+.tarot-quote {
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--silver-muted);
+  line-height: 1.5;
+  margin: 4px 0;
+}
+.tarot-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.tarot-actions .btn {
+  display: flex;
+  flex: 1;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 28px;
+  background: var(--btn-bg);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.3s, transform 0.2s;
+}
+.btn:hover {
+  background: var(--btn-hover);
+  transform: translateY(-1px);
+}
+.btn--small {
+  padding: 8px 20px 9px;
+  font-size: 0.75rem;
+  min-height: 36px;
+}
+.btn--outline {
+  background: transparent;
+  border: 1px solid var(--lavender);
+}
+.btn--outline:hover {
+  background: var(--btn-bg);
+  border-color: var(--btn-bg);
+}
+
+/* ---------- TRAVEL ---------- */
+.travel-card {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.travel-icon {
+  color: var(--copper);
+  margin-bottom: 16px;
+}
+.travel-label {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin-bottom: 8px;
+}
+.travel-hotel-name {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  margin-bottom: 12px;
+}
+.travel-address a {
+  color: var(--copper);
+  border-bottom: 1px solid rgba(196, 149, 106, 0.3);
+  transition: border-color 0.3s;
+}
+.travel-address a:hover {
+  border-color: var(--copper);
+}
+.travel-phone {
+  color: var(--copper);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+.travel-details {
+  margin-bottom: 32px;
+  line-height: 1.8;
+}
+.travel-details p { margin-bottom: 12px; }
+.travel-details strong { color: var(--copper-lt); font-weight: 500; }
+.travel-closing {
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--lavender-lt);
+}
+.travel-card .btn { margin: 0 6px; }
+
+/* ---------- WEDDING PARTY ---------- */
+.party-member {
+  text-align: center;
+  padding: 32px 20px 28px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #110a20, #161032, #110a20);
+  border: 1px solid rgba(212, 168, 83, 0.15);
+  position: relative;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+/* Inner ornamental border */
+.party-member::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(212, 168, 83, 0.1);
+  border-radius: 7px;
+  pointer-events: none;
+}
+/* Top decorative star */
+.party-member::after {
+  content: '✦';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--gold);
+  opacity: 0.5;
+  background: var(--bg);
+  padding: 0 8px;
+  transition: opacity 0.4s;
+}
+.party-member:hover {
+  border-color: rgba(212, 168, 83, 0.35);
+  box-shadow: 0 0 25px rgba(212, 168, 83, 0.08);
+}
+.party-member:hover::after {
+  opacity: 0.9;
+}
+/* Corner dots */
+.party-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px 50px;
+  max-width: 700px;
+  margin: 60px auto 0;
+}
+/* Center orphan last item when odd count */
+.party-member:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: 325px;
+  justify-self: center;
+}
+.party-name {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  margin-bottom: 6px;
+  color: var(--lavender-lt);
+}
+.party-role {
+  font-size: 0.8rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.party-relation {
+  font-size: 0.78rem;
+  color: var(--copper);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* ---------- ORACLE CARD GALLERY — Deck Deal Effect ---------- */
+.oracle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  max-width: 920px;
+  margin: 60px auto 0;
+  position: relative;
+}
+
+/* --- Card container --- */
+.oracle-card {
+  perspective: 1200px;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+  /* Before dealing: stacked at center via JS custom properties */
+  transform: translate(var(--to-center-x, 0px), var(--to-center-y, 0px))
+             rotate(var(--stack-r, 0deg))
+             scale(0.52);
+  z-index: var(--stack-z, 0);
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s;
+  box-shadow: 2px 3px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* After dealing: card flies to its grid position */
+.oracle-card.dealt {
+  transform: translate(0, 0) rotate(0deg) scale(1);
+  z-index: 1;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Hover lift on dealt cards */
+.oracle-card.dealt:hover {
+  box-shadow: 0 8px 30px rgba(212, 168, 83, 0.15);
+}
+
+/* --- 3D flip inner container --- */
+.oracle-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* Flip happens after card starts moving */
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+}
+
+.oracle-card.dealt .oracle-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* --- Card faces --- */
+.oracle-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Back face (ornate card back, visible in deck) */
+.oracle-back {
+  background: linear-gradient(145deg, #110a20, #1a1438, #110a20);
+  border: 1px solid rgba(139, 123, 184, 0.25);
+}
+
+.oracle-back-design {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oracle-back-border {
+  width: 82%;
+  height: 88%;
+  border: 1px solid rgba(212, 168, 83, 0.25);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+}
+
+.oracle-back-border::before,
+.oracle-back-border::after {
+  content: '✦';
+  position: absolute;
+  font-size: 8px;
+  color: rgba(212, 168, 83, 0.35);
+}
+.oracle-back-border::before { top: 10px; left: 10px; }
+.oracle-back-border::after { bottom: 10px; right: 10px; }
+
+.oracle-wing {
+  width: 55px;
+  height: 38px;
+  opacity: 0.8;
+}
+
+.oracle-back-star {
+  font-size: 32px;
+  color: var(--gold);
+  opacity: 0.55;
+}
+
+.oracle-back-num {
+  font-family: var(--ff-heading);
+  font-size: 1rem;
+  color: rgba(212, 168, 83, 0.45);
+  letter-spacing: 3px;
+  font-weight: 500;
+}
+
+/* Front face (photo, revealed on flip) */
+.oracle-front {
+  transform: rotateY(180deg);
+  background: #08070e;
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.oracle-front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: filter 0.3s;
+}
+
+/* Hover glow on dealt cards */
+.oracle-card.dealt:hover .oracle-front {
+  border-color: rgba(212, 168, 83, 0.4);
+}
+.oracle-card.dealt:hover .oracle-front img {
+  filter: brightness(1.08);
+}
+
+/* ---- Lightbox ---- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 2.5rem;
+  color: var(--silver);
+  transition: color 0.3s;
+  z-index: 210;
+}
+.lightbox-close:hover { color: #fff; }
+.lightbox-prev,
+.lightbox-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 3rem;
+  color: var(--silver);
+  transition: color 0.3s;
+  padding: 20px;
+  z-index: 210;
+}
+.lightbox-prev { left: 10px; }
+.lightbox-next { right: 10px; }
+.lightbox-prev:hover,
+.lightbox-next:hover { color: #fff; }
+.lightbox-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.lightbox-content {
+  position: relative;
+}
+.lightbox-image {
+  max-width: 85vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 0 60px rgba(212, 168, 83, 0.1);
+}
+.lightbox-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 24px 18px;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0) 0%, rgba(5, 5, 5, 0.8) 100%);
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  color: var(--gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  border-radius: 0 0 4px 4px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.lightbox-caption.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- FAQs ---------- */
+.faq-list {
+  max-width: 700px;
+  margin: 60px auto 0;
+}
+.faq-item {
+  margin-bottom: 48px;
+}
+.faq-question { text-align: center; }
+.faq-answer { text-align: left; }
+.faq-question {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: 12px;
+}
+.faq-answer {
+  font-size: 0.95rem;
+  color: var(--copper);
+  line-height: 1.6;
+}
+.faq-answer a {
+  color: var(--lavender-lt);
+  border-bottom: 1px solid rgba(169, 154, 212, 0.3);
+  transition: border-color 0.3s;
+}
+.faq-answer a:hover { border-color: var(--lavender-lt); }
+.faq-action {
+  margin-top: 12px;
+  text-align: center;
+}
+.faq-contacts {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.faq-contact {
+  color: var(--copper);
+  font-size: 0.9rem;
+}
+.faq-contact a {
+  color: var(--lavender-lt);
+  border-bottom: 1px solid rgba(169, 154, 212, 0.3);
+  transition: border-color 0.3s;
+}
+.faq-contact a:hover { border-color: var(--lavender-lt); }
+
+/* ---------- RSVP ---------- */
+.rsvp-card {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.rsvp-card-inner {
+  background: linear-gradient(160deg, rgba(22, 16, 42, 0.92), rgba(14, 8, 30, 0.95));
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  border-radius: 16px;
+  padding: 40px 36px;
+  position: relative;
+  box-shadow:
+    0 0 40px rgba(212, 168, 83, 0.05),
+    0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.rsvp-ornament {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.rsvp-ornament--bottom {
+  margin-bottom: 0;
+  margin-top: 24px;
+}
+.rsvp-field {
+  margin-bottom: 24px;
+}
+.rsvp-label {
+  display: block;
+  font-family: var(--ff-heading);
+  font-size: 1rem;
+  color: var(--lavender);
+  margin-bottom: 8px;
+}
+.rsvp-optional {
+  font-family: var(--ff-body);
+  font-size: 0.7rem;
+  color: var(--silver-muted);
+}
+/* Text inputs */
+#rsvp-form input[type="text"],
+#rsvp-form input[type="email"],
+#rsvp-form textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(139, 123, 184, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: var(--ff-body);
+  font-size: 0.9rem;
+  color: var(--silver);
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+#rsvp-form input[type="text"]:focus,
+#rsvp-form input[type="email"]:focus,
+#rsvp-form textarea:focus {
+  border-color: rgba(212, 168, 83, 0.5);
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.1);
+}
+#rsvp-form input::placeholder,
+#rsvp-form textarea::placeholder {
+  color: var(--silver-muted);
+  opacity: 0.5;
+}
+#rsvp-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+/* Attendance radio cards */
+.rsvp-attendance {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.rsvp-choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.rsvp-choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 1px solid rgba(139, 123, 184, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, transform 0.3s;
+  text-align: center;
+}
+.rsvp-choice-card:hover {
+  border-color: rgba(139, 123, 184, 0.4);
+  transform: translateY(-2px);
+}
+.rsvp-choice-icon {
+  font-size: 1.8rem;
+  color: var(--silver-muted);
+  transition: color 0.4s, text-shadow 0.4s;
+}
+.rsvp-choice-text {
+  font-family: var(--ff-heading);
+  font-size: 1rem;
+  color: var(--silver-muted);
+  transition: color 0.4s;
+}
+/* Accept selected */
+.rsvp-choice--accept input:checked ~ .rsvp-choice-card {
+  border-color: rgba(212, 168, 83, 0.6);
+  background: rgba(212, 168, 83, 0.08);
+  box-shadow: 0 0 24px rgba(212, 168, 83, 0.12);
+}
+.rsvp-choice--accept input:checked ~ .rsvp-choice-card .rsvp-choice-icon {
+  color: var(--gold);
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+.rsvp-choice--accept input:checked ~ .rsvp-choice-card .rsvp-choice-text {
+  color: var(--copper-lt);
+}
+/* Decline selected */
+.rsvp-choice--decline input:checked ~ .rsvp-choice-card {
+  border-color: rgba(139, 123, 184, 0.5);
+  background: rgba(139, 123, 184, 0.06);
+}
+.rsvp-choice--decline input:checked ~ .rsvp-choice-card .rsvp-choice-icon {
+  color: var(--lavender);
+}
+.rsvp-choice--decline input:checked ~ .rsvp-choice-card .rsvp-choice-text {
+  color: var(--lavender-lt);
+}
+/* Submit button */
+.rsvp-submit {
+  width: 100%;
+  padding: 16px;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.rsvp-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(212, 168, 83, 0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+.rsvp-submit:hover::before {
+  transform: translateX(100%);
+}
+.rsvp-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* Field validation error */
+.rsvp-field-error input,
+.rsvp-field-error textarea {
+  border-color: rgba(200, 80, 80, 0.6) !important;
+}
+.rsvp-error-msg {
+  color: #c85050;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+/* Success state */
+.rsvp-success {
+  text-align: center;
+  padding: 40px 0;
+}
+.rsvp-success-icon {
+  font-size: 4rem;
+  color: var(--gold);
+  text-shadow: 0 0 30px var(--gold-glow);
+  animation: glowPulse 2s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+.rsvp-success-title {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+}
+.rsvp-success-msg {
+  color: var(--copper);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.rsvp-success-sub {
+  color: var(--silver-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  font-family: var(--ff-heading);
+}
+/* Celebration particles */
+.rsvp-celebration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+  overflow: hidden;
+}
+.celebration-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ---------- FOOTER ---------- */
+.footer {
+  position: relative;
+  z-index: 2;
+  padding: 60px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(139, 123, 184, 0.08);
+}
+.footer-names {
+  font-family: var(--ff-heading);
+  font-size: 1.8rem;
+  color: var(--lavender);
+  margin-bottom: 4px;
+}
+.footer-names .script { font-size: 2.2rem; }
+.footer-date {
+  font-size: 0.85rem;
+  color: var(--copper);
+  letter-spacing: 0.2em;
+  margin-bottom: 16px;
+}
+.footer-credit {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--silver-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.footer-magic {
+  display: inline-flex;
+  position: relative;
+}
+.magic-icon {
+  filter: drop-shadow(0 0 4px var(--gold-glow));
+}
+.magic-sparkle {
+  fill: var(--gold);
+  transform-origin: center;
+}
+.magic-sparkle--1 {
+  animation: sparkleRotate 3s ease-in-out infinite;
+}
+.magic-sparkle--2 {
+  animation: sparklePulse 2s ease-in-out 0.5s infinite;
+}
+.magic-sparkle--3 {
+  animation: sparklePulse 2.5s ease-in-out 1s infinite;
+}
+.footer-brand {
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--lavender-lt), var(--copper-lt), var(--gold), var(--lavender-lt));
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brandShimmer 4s ease-in-out infinite;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+/* Mobile: < 768px */
+@media (max-width: 767px) {
+  #moon-container {
+    width: 140px;
+    height: 140px;
+    margin-top: 24px;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: rgba(5, 5, 5, 0.95);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+  }
+  .nav-links.open {
+    max-height: 400px;
+    padding: 16px 0;
+  }
+  .nav-links li { width: 100%; text-align: center; }
+  .nav-links a {
+    display: block;
+    padding: 14px 0;
+    font-size: 0.85rem;
+  }
+  .hamburger { display: flex; }
+
+  .card-deck { width: 260px; height: 360px; }
+
+
+  .tarot-grid { grid-template-columns: 1fr; max-width: 280px; margin: 0 auto; }
+  .tarot-card { max-width: 280px; }
+
+  .party-grid { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+  .party-member { padding: 22px 12px 20px; }
+  .party-member::after { font-size: 11px; top: -6px; }
+
+  .oracle-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  .countdown { gap: 16px; }
+
+  .hero { padding-bottom: 100px; }
+  .scroll-hint { bottom: 12px; }
+}
+
+/* Tablet: 768px+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #moon-container {
+    width: 180px;
+    height: 180px;
+  }
+  .tarot-grid { gap: 20px; }
+  .tarot-card { max-width: 240px; }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+  #moon-container {
+    width: 220px;
+    height: 220px;
+  }
+  .section { padding: 120px 48px; }
+  .card-deck { width: 380px; height: 520px; }
+}
+
+/* Landscape mobile: prevent hero overflow */
+@media (max-height: 500px) and (orientation: landscape) {
+  #moon-container {
+    width: 100px;
+    height: 100px;
+    margin-top: 16px;
+  }
+  .hero { min-height: auto; padding: 80px 24px 60px; }
+  .card-deck { width: 180px; height: 250px; margin-bottom: 20px; }
+  .countdown { gap: 12px; }
+  .countdown-number { font-size: 1.5rem; }
+}
+
+/* Large Desktop: 1440px+ */
+@media (min-width: 1440px) {
+  .section-inner { max-width: 1100px; }
+  .oracle-grid { max-width: 1000px; gap: 24px; }
+}
