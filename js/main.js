@@ -403,55 +403,62 @@
   //   }
   // }
 
-  // ---------- Wedding Party — Cursor Star Trail ----------
+  // ---------- Wedding Party — Cursor/Touch Star Trail ----------
   function initPartyTrail() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // No trail on touch devices (no hover)
-    if ('ontouchstart' in window) return;
 
     const members = document.querySelectorAll('.party-member');
     if (!members.length) return;
 
     let lastSpawn = 0;
 
+    function spawnTrail(member, cx, cy) {
+      const now = Date.now();
+      if (now - lastSpawn < 50) return;
+      lastSpawn = now;
+
+      const rect = member.getBoundingClientRect();
+      const x = cx - rect.left;
+      const y = cy - rect.top;
+
+      const count = 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'party-trail-star';
+
+        const size = 1.5 + Math.random() * 2;
+        const dur = 500 + Math.random() * 400;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 8 + Math.random() * 14;
+
+        star.style.cssText = `
+          left:${x}px; top:${y}px;
+          width:${size}px; height:${size}px;
+          -webkit-transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
+          transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
+        `;
+        member.appendChild(star);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            star.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
+            star.style.opacity = '0';
+          });
+        });
+
+        setTimeout(() => star.remove(), dur + 50);
+      }
+    }
+
     members.forEach(member => {
       member.addEventListener('mousemove', (e) => {
-        const now = Date.now();
-        if (now - lastSpawn < 50) return; // throttle
-        lastSpawn = now;
-
-        const rect = member.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const count = 1 + Math.floor(Math.random() * 2);
-        for (let i = 0; i < count; i++) {
-          const star = document.createElement('div');
-          star.className = 'party-trail-star';
-
-          const size = 1.5 + Math.random() * 2;
-          const dur = 500 + Math.random() * 400;
-          const angle = Math.random() * Math.PI * 2;
-          const dist = 8 + Math.random() * 14;
-
-          star.style.cssText = `
-            left:${x}px; top:${y}px;
-            width:${size}px; height:${size}px;
-            -webkit-transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
-            transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
-          `;
-          member.appendChild(star);
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              star.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
-              star.style.opacity = '0';
-            });
-          });
-
-          setTimeout(() => star.remove(), dur + 50);
-        }
+        spawnTrail(member, e.clientX, e.clientY);
       });
+
+      member.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        spawnTrail(member, touch.clientX, touch.clientY);
+      }, { passive: true });
     });
   }
 
