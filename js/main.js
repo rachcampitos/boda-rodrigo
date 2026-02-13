@@ -155,10 +155,12 @@
       card.setAttribute('aria-label', `Photo ${parseInt(card.dataset.index, 10) + 1}: click to view`);
     });
 
-    // Click dealt card → open lightbox
+    // Click dealt card → pulse + open lightbox
     cards.forEach(card => {
       card.addEventListener('click', () => {
         if (!card.classList.contains('dealt')) return;
+        card.classList.add('oracle-tap');
+        card.addEventListener('animationend', () => card.classList.remove('oracle-tap'), { once: true });
         const idx = parseInt(card.dataset.index, 10);
         openLightbox(idx);
       });
