@@ -1336,12 +1336,6 @@ h1, h2, h3 {
   z-index: 10;
 }
 .luna-memorial-close:hover { color: #fff; }
-.luna-memorial-stars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
 .luna-memorial-photo {
   width: 140px;
   height: 140px;
@@ -1416,33 +1410,15 @@ h1, h2, h3 {
   position: relative;
   z-index: 2;
 }
-/* Stars floating inside the memorial card */
-.luna-star {
+/* Portal stars: spawn from card border, drift inward */
+.luna-portal-star {
   position: absolute;
-  width: 3px;
-  height: 3px;
-  background: var(--gold);
   border-radius: 50%;
   pointer-events: none;
-  animation: lunaStarFloat linear infinite;
-  box-shadow: 0 0 4px rgba(212, 168, 83, 0.6);
-}
-@keyframes lunaStarFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(0);
-  }
-  10% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1);
-  }
-  90% {
-    opacity: 0.8;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-120px) scale(0.3);
-  }
+  z-index: 1;
+  background: radial-gradient(circle, #f5e6a0, #d4a853);
+  box-shadow: 0 0 3px rgba(212, 168, 83, 0.7);
+  opacity: 0.9;
 }
 
 /* ---------- FOOTER ---------- */
