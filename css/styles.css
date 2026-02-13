@@ -834,7 +834,7 @@ h1, h2, h3 {
 /* Tap pulse on dealt cards */
 /* Tap pulse on dealt cards — inline styles driven by JS */
 .oracle-card.oracle-tap {
-  transform: translate(0,0) rotate(0deg) scale(0.9) !important;
+  transform: translate(0,0) rotate(0deg) scale(0.96) !important;
   box-shadow: 0 0 40px rgba(212,168,83,0.7), 0 0 80px rgba(139,123,184,0.2) !important;
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out !important;
   z-index: 5;
