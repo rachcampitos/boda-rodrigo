@@ -44,13 +44,18 @@ const RSVP = (() => {
     let lastSparkle = 0;
 
     inputs.forEach(input => {
+      // Ensure parent is positioned so absolute particles work
+      const wrapper = input.closest('.rsvp-field') || input.parentElement;
+      if (getComputedStyle(wrapper).position === 'static') {
+        wrapper.style.position = 'relative';
+      }
+
       input.addEventListener('input', () => {
         const now = Date.now();
         if (now - lastSparkle < 80) return; // throttle
         lastSparkle = now;
 
-        // Estimate cursor position using a hidden measurer
-        const rect = input.getBoundingClientRect();
+        // Estimate cursor X relative to the input
         const style = window.getComputedStyle(input);
         const measurer = document.createElement('span');
         measurer.style.cssText = `
@@ -60,11 +65,14 @@ const RSVP = (() => {
         `;
         measurer.textContent = input.value.substring(0, input.selectionEnd || input.value.length);
         document.body.appendChild(measurer);
-        const textWidth = Math.min(measurer.offsetWidth, rect.width - 20);
+        const textWidth = Math.min(measurer.offsetWidth, input.offsetWidth - 20);
         measurer.remove();
 
-        const cx = rect.left + textWidth + 2;
-        const cy = rect.top + rect.height / 2;
+        // Position relative to the wrapper, not the viewport (fixes iOS keyboard issues)
+        const inputRect = input.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const cx = (inputRect.left - wrapperRect.left) + textWidth + 2;
+        const cy = (inputRect.top - wrapperRect.top) + input.offsetHeight / 2;
 
         // Spawn 2-3 tiny sparkles
         const count = 2 + Math.floor(Math.random() * 2);
@@ -76,13 +84,13 @@ const RSVP = (() => {
           const dur = 400 + Math.random() * 300;
 
           s.style.cssText = `
-            position:fixed; left:${cx}px; top:${cy}px;
+            position:absolute; left:${cx}px; top:${cy}px;
             width:${size}px; height:${size}px;
             background:radial-gradient(circle, rgba(212,168,83,0.9), transparent);
             border-radius:50%; pointer-events:none; z-index:200;
             transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
           `;
-          document.body.appendChild(s);
+          wrapper.appendChild(s);
 
           requestAnimationFrame(() => {
             s.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;

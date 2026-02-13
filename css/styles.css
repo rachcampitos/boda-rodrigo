@@ -255,6 +255,8 @@ h1, h2, h3 {
   position: relative;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* --- Each card in the deck --- */
@@ -1147,6 +1149,7 @@ h1, h2, h3 {
   font-size: 1rem;
   color: var(--silver-muted);
   transition: color 0.4s;
+  white-space: nowrap;
 }
 /* Accept selected */
 .rsvp-choice--accept input:checked ~ .rsvp-choice-card {
@@ -1215,6 +1218,32 @@ h1, h2, h3 {
   font-size: 0.75rem;
   margin-top: 4px;
 }
+/* Invite-only locked state */
+.rsvp-locked {
+  text-align: center;
+  padding: 40px 0;
+}
+.rsvp-locked-icon {
+  font-size: 3rem;
+  color: var(--lavender);
+  text-shadow: 0 0 20px rgba(139, 123, 184, 0.3);
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+.rsvp-locked-title {
+  font-family: var(--ff-heading);
+  font-size: 1.5rem;
+  color: var(--lavender);
+  margin-bottom: 12px;
+}
+.rsvp-locked-msg {
+  color: var(--silver-muted);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  font-style: italic;
+  font-family: var(--ff-heading);
+}
+
 /* Success state */
 .rsvp-success {
   text-align: center;
@@ -1368,6 +1397,9 @@ h1, h2, h3 {
   .party-member::after { font-size: 11px; top: -6px; }
 
   .oracle-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  .rsvp-choice-card { padding: 16px 8px; }
+  .rsvp-choice-text { font-size: 0.85rem; }
 
   .countdown { gap: 16px; }
 
