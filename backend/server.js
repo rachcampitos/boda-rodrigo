@@ -24,7 +24,7 @@ const app = express();
 
 app.use(cors({
   origin: ALLOWED_ORIGINS,
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'DELETE'],
 }));
 app.use(express.json());
 
@@ -85,6 +85,23 @@ app.get('/api/rsvps', async (req, res) => {
   } catch (err) {
     console.error('Fetch RSVPs error:', err);
     res.status(500).json({ message: 'Failed to fetch RSVPs' });
+  }
+});
+
+// Delete an RSVP (admin — requires key)
+app.delete('/api/rsvps/:id', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const result = await Rsvp.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ message: 'RSVP not found' });
+    res.json({ message: 'RSVP deleted', id: req.params.id });
+  } catch (err) {
+    console.error('Delete RSVP error:', err);
+    res.status(500).json({ message: 'Failed to delete RSVP' });
   }
 });
 
