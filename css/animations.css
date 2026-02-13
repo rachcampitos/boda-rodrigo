@@ -1,0 +1,226 @@
+/* ======================================================
+   FRANKIE & RODRIGO — Wedding Website
+   Animations: Keyframes, Transitions, Reduced Motion
+   ====================================================== */
+
+/* ---------- Reveal on Scroll ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered reveal for children */
+.reveal-stagger > .reveal:nth-child(1) { transition-delay: 0.1s; }
+.reveal-stagger > .reveal:nth-child(2) { transition-delay: 0.25s; }
+.reveal-stagger > .reveal:nth-child(3) { transition-delay: 0.4s; }
+.reveal-stagger > .reveal:nth-child(4) { transition-delay: 0.55s; }
+
+/* ---------- Tarot Card Flip ---------- */
+.tarot-card .tarot-card-inner {
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* ---------- Countdown Pulse ---------- */
+@keyframes countPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.countdown-number.tick {
+  animation: countPulse 0.4s ease;
+}
+
+/* ---------- Gold Glow Pulse ---------- */
+@keyframes glowPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(212, 168, 83, 0.6)); }
+}
+
+/* ---------- Moon Glow ---------- */
+@keyframes moonGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+}
+
+/* ---------- Planet Orbit ---------- */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+}
+
+/* ---------- Sun Rays Rotate ---------- */
+@keyframes rayRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ---------- Floating Particle ---------- */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 0.8; }
+  100% {
+    transform: translateY(-100vh) translateX(var(--drift, 20px)) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* ---------- Scroll Hint — gentle drift + fade ---------- */
+@keyframes scrollDrift {
+  0%   { transform: translateX(-50%) translateY(0);   opacity: 0; }
+  15%  { transform: translateX(-50%) translateY(0);   opacity: 1; }
+  70%  { transform: translateX(-50%) translateY(10px); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(16px); opacity: 0; }
+}
+.scroll-hint {
+  animation: scrollDrift 3s ease-in-out infinite;
+}
+
+@keyframes lineGrow {
+  0%   { height: 0;    opacity: 0; }
+  15%  { height: 0;    opacity: 0.8; }
+  70%  { height: 32px; opacity: 0.8; }
+  100% { height: 40px; opacity: 0; }
+}
+.scroll-hint-line {
+  animation: lineGrow 3s ease-in-out infinite;
+}
+
+/* ---------- Shooting Star ---------- */
+@keyframes shootingStar {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  70% { opacity: 1; }
+  100% {
+    transform: translateX(var(--shoot-x, 300px)) translateY(var(--shoot-y, 200px));
+    opacity: 0;
+  }
+}
+
+/* ---------- Star Twinkle ---------- */
+@keyframes twinkle {
+  0%, 100% { opacity: var(--base-opacity, 0.3); }
+  50% { opacity: var(--peak-opacity, 1); }
+}
+
+/* ---------- Sparkle Burst (for bright stars) ---------- */
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+/* ---------- Footer Credit Animations ---------- */
+@keyframes sparkleRotate {
+  0%, 100% { transform: rotate(0deg) scale(1); opacity: 0.8; }
+  25% { transform: rotate(15deg) scale(1.2); opacity: 1; }
+  50% { transform: rotate(0deg) scale(0.9); opacity: 0.6; }
+  75% { transform: rotate(-15deg) scale(1.15); opacity: 1; }
+}
+@keyframes sparklePulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+@keyframes brandShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ---------- Nav Link Underline ---------- */
+.nav-links a::after {
+  transition: width 0.3s ease;
+}
+
+/* ---------- Hero Title Entrance ---------- */
+@keyframes heroEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Vanish Dust Particle ---------- */
+@keyframes vanishDust {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift, 0px), var(--rise, -40px)) scale(0);
+  }
+}
+
+/* ---------- Oracle Card Deal Glow ---------- */
+@keyframes dealGlow {
+  0% { box-shadow: 0 0 0 rgba(212, 168, 83, 0); }
+  40% { box-shadow: 0 0 25px rgba(212, 168, 83, 0.25), 0 0 50px rgba(139, 123, 184, 0.1); }
+  100% { box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3); }
+}
+.oracle-card.dealt {
+  animation: dealGlow 1.2s ease-out;
+}
+
+/* ---------- Lightbox Fade ---------- */
+.lightbox {
+  transition: opacity 0.3s ease;
+}
+
+/* ======================================================
+   REDUCED MOTION
+   Respects user's OS-level motion preferences
+   ====================================================== */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all animations */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Canvas will be hidden by JS, but also hide via CSS */
+  #starfield { opacity: 0.3; }
+  #particles { display: none; }
+
+  /* Reveals appear instantly */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Tarot cards start flipped */
+  .tarot-card .tarot-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  /* Oracle cards start dealt and flipped */
+  .oracle-card {
+    transform: none !important;
+  }
+  .oracle-card .oracle-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  /* Hero deck: show photos stacked, no flip */
+  .deck-card-inner { transform-style: flat; }
+  .deck-back { display: none; }
+  .deck-front { transform: none; backface-visibility: visible; }
+
+  /* Scroll hint static */
+  .scroll-hint { animation: none; }
+  .scroll-hint-line { animation: none; height: 40px; opacity: 0.5; }
+}

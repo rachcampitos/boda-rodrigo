@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frankie & Rodrigo — 10.15.26</title>
+  <meta name="description" content="Join Frankie & Rodrigo as they celebrate their wedding on October 15, 2026 at Westbury Manor, NY. It Was In The Cards.">
+
+  <!-- Google Fonts (non-blocking) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&family=Raleway:wght@300;400;500;600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <a href="#schedule" class="skip-link">Skip to content</a>
+
+  <!-- ============ STARFIELD CANVAS ============ -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <!-- ============ PARTICLES CONTAINER ============ -->
+  <div id="particles" aria-hidden="true"></div>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav id="main-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#home" class="nav-logo">F <span class="script">&</span> R</a>
+      <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#schedule">Schedule</a></li>
+        <li><a href="#travel">Travel</a></li>
+        <li><a href="#wedding-party">Wedding Party</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#faqs">FAQs</a></li>
+        <li><a href="#rsvp">RSVP</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============ HERO / HOME ============ -->
+  <section id="home" class="hero">
+    <div class="card-deck" data-parallax="0.15" aria-label="Engagement photos">
+      <div class="card-deck-stack">
+
+        <div class="deck-card" data-deck="0">
+          <div class="deck-card-inner">
+            <div class="deck-face deck-back">
+              <div class="deck-back-border">
+                <div class="deck-back-content">
+                  <div class="deck-back-star">&#10022;</div>
+                  <span class="deck-back-symbol script">&amp;</span>
+                </div>
+              </div>
+            </div>
+            <div class="deck-face deck-front">
+              <img src="assets/images/hero-rings.jpg" alt="Frankie and Rodrigo's engagement rings" loading="eager" width="380" height="520">
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" data-deck="1">
+          <div class="deck-card-inner">
+            <div class="deck-face deck-back">
+              <div class="deck-back-border">
+                <div class="deck-back-content">
+                  <div class="deck-back-star">&#10022;</div>
+                  <span class="deck-back-symbol script">&amp;</span>
+                </div>
+              </div>
+            </div>
+            <div class="deck-face deck-front">
+              <img src="assets/images/hero-bw-reeds.jpg" alt="Frankie and Rodrigo embracing in black and white" loading="eager" width="380" height="520">
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" data-deck="2">
+          <div class="deck-card-inner">
+            <div class="deck-face deck-back">
+              <div class="deck-back-border">
+                <div class="deck-back-content">
+                  <div class="deck-back-star">&#10022;</div>
+                  <span class="deck-back-symbol script">&amp;</span>
+                </div>
+              </div>
+            </div>
+            <div class="deck-face deck-front">
+              <img src="assets/images/hero-bridge.jpg" alt="Frankie and Rodrigo on a bridge surrounded by autumn foliage" loading="eager" width="380" height="520">
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" data-deck="3">
+          <div class="deck-card-inner">
+            <div class="deck-face deck-back">
+              <div class="deck-back-border">
+                <div class="deck-back-content">
+                  <div class="deck-back-star">&#10022;</div>
+                  <span class="deck-back-symbol script">&amp;</span>
+                </div>
+              </div>
+            </div>
+            <div class="deck-face deck-front">
+              <img src="assets/images/hero-bw-lake.jpg" alt="Frankie and Rodrigo sitting by a lake with swans" loading="eager" width="380" height="520">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hero-content" data-parallax="0.05">
+      <h1 class="hero-title reveal">
+        <span class="title-name">Frankie</span>
+        <span class="title-amp script">&</span>
+        <span class="title-name">Rodrigo</span>
+      </h1>
+      <p class="hero-tagline reveal">"It Was In The Cards"</p>
+      <p class="hero-subtitle reveal">Some love stories are written in the stars &mdash; ours was pulled from the deck.</p>
+
+      <div class="hero-details reveal">
+        <span class="hero-location">Westbury, NY</span>
+        <span class="hero-divider">|</span>
+        <span class="hero-date">October 15, 2026</span>
+      </div>
+
+      <!-- Countdown -->
+      <div id="countdown" class="countdown reveal" aria-label="Countdown to wedding day">
+        <div class="countdown-unit">
+          <span class="countdown-number" id="cd-days">---</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-number" id="cd-hours">--</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-number" id="cd-minutes">--</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <div class="countdown-unit">
+          <span class="countdown-number" id="cd-seconds">--</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="moon-container" class="reveal" aria-hidden="true"></div>
+
+    <div class="scroll-hint reveal" aria-hidden="true">
+      <span class="scroll-hint-text">Scroll</span>
+      <div class="scroll-hint-line"></div>
+    </div>
+  </section>
+
+  <!-- ============ SCHEDULE ============ -->
+  <section id="schedule" class="section">
+    <div class="section-inner">
+      <h2 class="section-title reveal">The Schedule</h2>
+      <p class="section-subtitle reveal">October 15, 2026 &bull; Westbury Manor</p>
+
+      <div class="tarot-grid">
+        <!-- Card I: Ceremony -->
+        <div class="tarot-card reveal" data-card="1">
+          <div class="tarot-card-inner">
+            <div class="tarot-face tarot-back">
+              <div class="tarot-back-border">
+                <div class="tarot-back-content">
+                  <div class="tarot-star">&#10022;</div>
+                  <span class="tarot-numeral">I</span>
+                </div>
+              </div>
+            </div>
+            <div class="tarot-face tarot-front">
+              <div class="tarot-front-content">
+                <span class="tarot-card-numeral">I</span>
+                <h3 class="tarot-card-title">The Ceremony</h3>
+                <p class="tarot-time">5:00 PM &ndash; 6:00 PM</p>
+                <p class="tarot-venue">Westbury Manor</p>
+                <p class="tarot-address">1100 Jericho Tpke, Westbury, NY 11590</p>
+                <p class="tarot-quote">&ldquo;Some love stories are written in the stars &mdash; ours was pulled from the deck. Please join us as we choose each other till&rsquo; death do us part.&rdquo;</p>
+                <div class="tarot-actions">
+                  <a href="https://maps.google.com/?q=Westbury+Manor+1100+Jericho+Tpke+Westbury+NY+11590" target="_blank" rel="noopener" class="btn btn--small">Map</a>
+                  <a href="#" class="btn btn--small btn-ics" data-event="ceremony">Add to Calendar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card II: Cocktail Hour -->
+        <div class="tarot-card reveal" data-card="2">
+          <div class="tarot-card-inner">
+            <div class="tarot-face tarot-back">
+              <div class="tarot-back-border">
+                <div class="tarot-back-content">
+                  <div class="tarot-star">&#10022;</div>
+                  <span class="tarot-numeral">II</span>
+                </div>
+              </div>
+            </div>
+            <div class="tarot-face tarot-front">
+              <div class="tarot-front-content">
+                <span class="tarot-card-numeral">II</span>
+                <h3 class="tarot-card-title">The Cocktail Hour</h3>
+                <p class="tarot-time">6:00 PM &ndash; 7:00 PM</p>
+                <p class="tarot-venue">Westbury Manor</p>
+                <p class="tarot-address">1100 Jericho Tpke, Westbury, NY 11590</p>
+                <p class="tarot-quote">&ldquo;Before the night&rsquo;s magic unfolds, join us for drinks and hors d&rsquo;oeuvres.&rdquo;</p>
+                <div class="tarot-actions">
+                  <a href="https://maps.google.com/?q=Westbury+Manor+1100+Jericho+Tpke+Westbury+NY+11590" target="_blank" rel="noopener" class="btn btn--small">Map</a>
+                  <a href="#" class="btn btn--small btn-ics" data-event="cocktail">Add to Calendar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card III: Reception -->
+        <div class="tarot-card reveal" data-card="3">
+          <div class="tarot-card-inner">
+            <div class="tarot-face tarot-back">
+              <div class="tarot-back-border">
+                <div class="tarot-back-content">
+                  <div class="tarot-star">&#10022;</div>
+                  <span class="tarot-numeral">III</span>
+                </div>
+              </div>
+            </div>
+            <div class="tarot-face tarot-front">
+              <div class="tarot-front-content">
+                <span class="tarot-card-numeral">III</span>
+                <h3 class="tarot-card-title">The Reception</h3>
+                <p class="tarot-time">7:00 PM &ndash; 11:00 PM</p>
+                <p class="tarot-venue">Westbury Manor</p>
+                <p class="tarot-address">1100 Jericho Tpke, Westbury, NY 11590</p>
+                <p class="tarot-quote">&ldquo;Dancing, dinner, (and more drinks) are in your future. It&rsquo;s sure to be a bewitching good night.&rdquo;</p>
+                <div class="tarot-actions">
+                  <a href="https://maps.google.com/?q=Westbury+Manor+1100+Jericho+Tpke+Westbury+NY+11590" target="_blank" rel="noopener" class="btn btn--small">Map</a>
+                  <a href="#" class="btn btn--small btn-ics" data-event="reception">Add to Calendar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRAVEL / HOTEL ============ -->
+  <section id="travel" class="section section--alt">
+    <div class="section-inner">
+      <h2 class="section-title reveal">Travel</h2>
+
+      <div class="travel-card reveal">
+        <div class="travel-icon" aria-hidden="true">
+          <!-- Globe SVG -->
+          <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="24" cy="24" r="20"/>
+            <ellipse cx="24" cy="24" rx="10" ry="20"/>
+            <path d="M4 24h40"/>
+            <path d="M8 12h32"/>
+            <path d="M8 36h32"/>
+          </svg>
+        </div>
+        <span class="travel-label">Hotel</span>
+        <h3 class="travel-hotel-name">Hilton Long Island / Huntington</h3>
+        <p class="travel-address">
+          <a href="https://maps.google.com/?q=Hilton+Long+Island+Huntington+598+Broadhollow+Road+Melville+NY+11747" target="_blank" rel="noopener">
+            598 Broadhollow Road, Melville, NY 11747
+          </a>
+        </p>
+        <p class="travel-phone">(631) 845-1000</p>
+
+        <div class="travel-details">
+          <p>Staying the night? We&rsquo;ve got you covered!</p>
+          <p>We blocked rooms at Hilton Long Island/Huntington so everyone can celebrate stress-free (and safely get back to bed after the party).</p>
+          <p>Use code <strong>919</strong> or the &ldquo;View&rdquo; button to grab our discounted rate before midnight on <strong>September 14th</strong>.</p>
+          <p>It&rsquo;s only about 20 minutes from the venue. Book early &mdash; once the block fills, it&rsquo;s gone!</p>
+          <p class="travel-closing">Can&rsquo;t wait for a magical night with our favorite people!</p>
+        </div>
+
+        <a href="https://www.hilton.com/en/book/reservation/deeplink/?ctyhocn=ISPHHHF&groupCode=919&arrivaldate=2026-10-14&departuredate=2026-10-16&cid=OM,WW,HILTONLINK,EN,DirectLink&fromId=HILTONLINKDIRECT" target="_blank" rel="noopener" class="btn" id="hilton-link">Book Room</a>
+        <a href="https://maps.google.com/?q=Hilton+Long+Island+Huntington+598+Broadhollow+Road+Melville+NY+11747" target="_blank" rel="noopener" class="btn btn--outline">Map</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WEDDING PARTY ============ -->
+  <section id="wedding-party" class="section">
+    <div class="section-inner">
+      <h2 class="section-title reveal">Wedding Party</h2>
+
+      <div class="party-grid">
+        <div class="party-member reveal">
+          <h3 class="party-name">Frankie England</h3>
+          <p class="party-role">Groom</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Rodrigo Campos Huambachano</h3>
+          <p class="party-role">Groom</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Cameron England</h3>
+          <p class="party-role">Maid of Honor</p>
+          <p class="party-relation">Frankie&rsquo;s Little Sister</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Fabi Montoya</h3>
+          <p class="party-role">Bridesmaid</p>
+          <p class="party-relation">Rodrigo&rsquo;s Cousin</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Juliana Close</h3>
+          <p class="party-role">Bridesmaid</p>
+          <p class="party-relation">Frankie&rsquo;s Cousin</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Madelyn Close</h3>
+          <p class="party-role">Bridesmaid</p>
+          <p class="party-relation">Frankie&rsquo;s Cousin</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Nicola Hopley</h3>
+          <p class="party-role">Bridesmaid</p>
+          <p class="party-relation">Frankie&rsquo;s Best Friend</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Emma Hopley</h3>
+          <p class="party-role">Bridesmaid</p>
+          <p class="party-relation">Frankie&rsquo;s Best Friend</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Tigger-Roo</h3>
+          <p class="party-role">Best Boy</p>
+          <p class="party-relation">Frankie + Rigo&rsquo;s Doodle</p>
+        </div>
+
+        <div class="party-member reveal">
+          <h3 class="party-name">Eric Mininni</h3>
+          <p class="party-role">Groomsman</p>
+          <p class="party-relation">Frankie&rsquo;s Friend</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GALLERY ============ -->
+  <section id="gallery" class="section section--alt">
+    <div class="section-inner">
+      <h2 class="section-title reveal">Gallery</h2>
+
+      <div class="oracle-grid">
+
+        <div class="oracle-card" data-index="0">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">I</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-embrace.jpg" alt="Frankie and Rodrigo embracing in the woods" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="1">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">II</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-rings.jpg" alt="Close-up of hands with engagement rings" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="2">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">III</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-englands.jpg" alt="Kiss in front of The Englands neon sign" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="3">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">IV</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-selfie.jpg" alt="Fun laughing selfie" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="4">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">V</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-autumn-kiss.jpg" alt="Kiss on an autumn path" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="5">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">VI</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-tigger.jpg" alt="Tigger-Roo the doodle on the bed" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="6">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">VII</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-turtle.jpg" alt="Pet turtle eating greens" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="7">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">VIII</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-baby-frankie.jpg" alt="Baby Frankie childhood photo" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <div class="oracle-card" data-index="8">
+          <div class="oracle-card-inner">
+            <div class="oracle-face oracle-back">
+              <div class="oracle-back-design">
+                <div class="oracle-back-border">
+                  <svg class="oracle-wing" viewBox="0 0 60 40" aria-hidden="true">
+                    <path d="M30 38 Q10 30 5 10 Q15 20 30 15 Q45 20 55 10 Q50 30 30 38Z" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="0.8"/>
+                    <path d="M30 32 Q15 26 12 14 Q20 22 30 18 Q40 22 48 14 Q45 26 30 32Z" fill="none" stroke="rgba(212,168,83,0.25)" stroke-width="0.5"/>
+                  </svg>
+                  <div class="oracle-back-star">&#10022;</div>
+                  <span class="oracle-back-num">IX</span>
+                </div>
+              </div>
+            </div>
+            <div class="oracle-face oracle-front">
+              <img src="assets/images/gallery-baby-rodrigo.jpg" alt="Baby Rodrigo childhood photo" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-label="Photo viewer" aria-hidden="true">
+      <button class="lightbox-close" aria-label="Close photo viewer">&times;</button>
+      <button class="lightbox-prev" aria-label="Previous photo">&#8249;</button>
+      <button class="lightbox-next" aria-label="Next photo">&#8250;</button>
+      <div class="lightbox-content">
+        <img id="lightbox-img" src="" alt="" class="lightbox-image">
+        <div id="lightbox-caption" class="lightbox-caption"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQs ============ -->
+  <section id="faqs" class="section">
+    <div class="section-inner">
+      <h2 class="section-title reveal">FAQs</h2>
+
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <h3 class="faq-question">When? Where? What Time?</h3>
+          <p class="faq-answer">October 15th 2026 / Westbury Manor / Please arrive by 5:00 PM</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">What&rsquo;s the schedule for the day?</h3>
+          <p class="faq-answer">The full schedule, including detailed times, is available on the <a href="#schedule">Schedule</a> section of our wedding website.</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">What is the RSVP deadline?</h3>
+          <p class="faq-answer">September 1st, 2026</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">How can I RSVP?</h3>
+          <p class="faq-answer">You can RSVP right here on this page &mdash; just scroll down to the <a href="#rsvp">RSVP section</a> below! You can also scan the QR code on your wedding invitation, which will bring you to this same page.</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">Can I bring a plus one?</h3>
+          <p class="faq-answer">Unless otherwise stated on your invitation, we kindly request that you do not bring a guest.</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">Are kids allowed?</h3>
+          <p class="faq-answer">We kindly request that children not attend the wedding unless they are specifically mentioned on the invitation.</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">Where are you registered for wedding gifts?</h3>
+          <p class="faq-answer">We kindly request monetary gifts to help us start our new life together. While traditional registries can be wonderful, we&rsquo;ve chosen to prioritize building our future over accumulating household items.</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">What is the dress code?</h3>
+          <p class="faq-answer">Formal Attire</p>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">Where is the after party?</h3>
+          <p class="faq-answer">
+            The Borderline Tavern<br>
+            224-18 Jericho Tpke<br>
+            Bellerose, NY 11001
+          </p>
+          <div class="faq-action">
+            <a href="https://maps.google.com/?q=The+Borderline+Tavern+224-18+Jericho+Tpke+Bellerose+NY+11001" target="_blank" rel="noopener" class="btn btn--small">Map</a>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <h3 class="faq-question">Any other questions?</h3>
+          <p class="faq-answer">We&rsquo;re happy to help! Feel free to contact us directly:</p>
+          <p class="faq-contacts">
+            <span class="faq-contact">Frankie: <a href="tel:6312297044">(631) 229-7044</a></span>
+            <span class="faq-contact">Rodrigo: <a href="tel:5163367871">(516) 336-7871</a></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RSVP ============ -->
+  <section id="rsvp" class="section section--alt">
+    <div class="section-inner">
+      <h2 class="section-title reveal">RSVP</h2>
+      <p class="section-subtitle reveal">The cards await your answer &bull; Please RSVP by September 1, 2026</p>
+
+      <div class="rsvp-card reveal">
+        <div class="rsvp-card-inner">
+          <!-- Decorative top -->
+          <div class="rsvp-ornament" aria-hidden="true">
+            <svg viewBox="0 0 120 40" width="120" height="40">
+              <path d="M10 20 Q30 0 60 20 Q90 40 110 20" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="1"/>
+              <circle cx="60" cy="20" r="3" fill="rgba(212,168,83,0.6)"/>
+              <circle cx="30" cy="10" r="1.5" fill="rgba(212,168,83,0.3)"/>
+              <circle cx="90" cy="30" r="1.5" fill="rgba(212,168,83,0.3)"/>
+            </svg>
+          </div>
+
+          <!-- Form -->
+          <form id="rsvp-form" novalidate>
+            <div class="rsvp-field">
+              <label for="rsvp-name" class="rsvp-label">Your Name</label>
+              <input type="text" id="rsvp-name" name="name" required autocomplete="name" placeholder="First and Last Name">
+            </div>
+
+            <div class="rsvp-field">
+              <label class="rsvp-label">Will you be joining us?</label>
+              <div class="rsvp-attendance">
+                <label class="rsvp-choice rsvp-choice--accept">
+                  <input type="radio" name="attendance" value="accept" required>
+                  <span class="rsvp-choice-card">
+                    <span class="rsvp-choice-icon">&#10022;</span>
+                    <span class="rsvp-choice-text">Joyfully Accept</span>
+                  </span>
+                </label>
+                <label class="rsvp-choice rsvp-choice--decline">
+                  <input type="radio" name="attendance" value="decline">
+                  <span class="rsvp-choice-card">
+                    <span class="rsvp-choice-icon">&#9790;</span>
+                    <span class="rsvp-choice-text">Regretfully Decline</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn rsvp-submit" id="rsvp-submit">
+              <span class="rsvp-submit-text">Cast Your Card</span>
+              <span class="rsvp-submit-loading" style="display:none;">
+                <span class="rsvp-spinner"></span> Sending...
+              </span>
+            </button>
+          </form>
+
+          <!-- Success state -->
+          <div id="rsvp-success" class="rsvp-success" style="display:none;" role="status" aria-live="polite">
+            <div class="rsvp-success-icon" aria-hidden="true">&#10022;</div>
+            <h3 class="rsvp-success-title">The Stars Have Spoken</h3>
+            <p class="rsvp-success-msg" id="rsvp-success-msg"></p>
+            <p class="rsvp-success-sub">We can&rsquo;t wait to celebrate with you!</p>
+          </div>
+
+          <!-- Decorative bottom -->
+          <div class="rsvp-ornament rsvp-ornament--bottom" aria-hidden="true">
+            <svg viewBox="0 0 120 40" width="120" height="40">
+              <path d="M10 20 Q30 40 60 20 Q90 0 110 20" fill="none" stroke="rgba(212,168,83,0.4)" stroke-width="1"/>
+              <circle cx="60" cy="20" r="3" fill="rgba(212,168,83,0.6)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration particles container -->
+    <div id="rsvp-celebration" class="rsvp-celebration" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p class="footer-names">Frankie <span class="script">&</span> Rodrigo</p>
+      <p class="footer-date">10.15.26</p>
+      <p class="footer-credit">
+        Made with
+        <span class="footer-magic" aria-label="magic">
+          <svg class="magic-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path class="magic-sparkle magic-sparkle--1" d="M12 2 L13.5 8.5 L20 10 L13.5 11.5 L12 18 L10.5 11.5 L4 10 L10.5 8.5 Z"/>
+            <path class="magic-sparkle magic-sparkle--2" d="M19 1 L19.75 4.25 L23 5 L19.75 5.75 L19 9 L18.25 5.75 L15 5 L18.25 4.25 Z"/>
+            <path class="magic-sparkle magic-sparkle--3" d="M5 17 L5.5 19 L7.5 19.5 L5.5 20 L5 22 L4.5 20 L2.5 19.5 L4.5 19 Z"/>
+          </svg>
+        </span>
+        by <a href="https://codemediaperu.com" target="_blank" rel="noopener" class="footer-brand">Code Media</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/starfield.js"></script>
+  <script src="js/moon.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/tarot.js"></script>
+  <script src="js/scroll.js"></script>
+  <script src="js/countdown.js"></script>
+  <script src="js/rsvp.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

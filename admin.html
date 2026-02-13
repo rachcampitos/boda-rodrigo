@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSVP Admin — Frankie & Rodrigo</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050505;
+      --bg-card: #110a20;
+      --lavender: #8B7BB8;
+      --lavender-lt: #a99ad4;
+      --copper: #C4956A;
+      --gold: #D4A853;
+      --gold-glow: rgba(212, 168, 83, 0.4);
+      --silver: #b8b8c0;
+      --silver-muted: #9a9aa5;
+      --btn-bg: #5b5189;
+      --btn-hover: #6e63a3;
+      --accept: #4a9e6e;
+      --decline: #c85050;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 400;
+      color: var(--silver);
+      background: var(--bg);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      color: var(--lavender);
+    }
+
+    /* ---------- Login ---------- */
+    .login-card, .dashboard {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .login-card {
+      max-width: 420px;
+      margin-top: 15vh;
+      background: linear-gradient(160deg, rgba(22, 16, 42, 0.92), rgba(14, 8, 30, 0.95));
+      border: 1px solid rgba(212, 168, 83, 0.2);
+      border-radius: 16px;
+      padding: 48px 36px;
+      text-align: center;
+    }
+
+    .login-title {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .login-sub {
+      color: var(--copper);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+
+    .login-field {
+      margin-bottom: 20px;
+    }
+
+    .login-field input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(139, 123, 184, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--silver);
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.1em;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .login-field input:focus {
+      border-color: rgba(212, 168, 83, 0.5);
+      box-shadow: 0 0 16px rgba(212, 168, 83, 0.1);
+    }
+
+    .login-field input::placeholder {
+      color: var(--silver-muted);
+      opacity: 0.5;
+    }
+
+    .login-error {
+      color: var(--decline);
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+      min-height: 1.2em;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 32px;
+      background: var(--btn-bg);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      line-height: 1;
+      transition: background 0.3s, transform 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover);
+      transform: translateY(-1px);
+    }
+
+    /* ---------- Dashboard ---------- */
+    .dashboard { display: none; }
+    .dashboard.visible { display: block; }
+
+    .dash-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .dash-title {
+      font-size: 2.2rem;
+      margin-bottom: 4px;
+    }
+
+    .dash-sub {
+      color: var(--copper);
+      font-size: 0.9rem;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: linear-gradient(160deg, rgba(22, 16, 42, 0.92), rgba(14, 8, 30, 0.95));
+      border: 1px solid rgba(139, 123, 184, 0.15);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-number.total { color: var(--lavender); }
+    .stat-number.accepted { color: var(--accept); }
+    .stat-number.declined { color: var(--decline); }
+
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-muted);
+    }
+
+    /* Table */
+    .table-card {
+      background: linear-gradient(160deg, rgba(22, 16, 42, 0.92), rgba(14, 8, 30, 0.95));
+      border: 1px solid rgba(139, 123, 184, 0.15);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(139, 123, 184, 0.1);
+    }
+
+    .table-title {
+      font-size: 1.2rem;
+    }
+
+    .table-refresh {
+      background: none;
+      border: 1px solid rgba(139, 123, 184, 0.2);
+      color: var(--silver-muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s;
+    }
+
+    .table-refresh:hover {
+      border-color: var(--lavender);
+      color: var(--lavender-lt);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--silver-muted);
+      text-align: left;
+      padding: 14px 24px;
+      border-bottom: 1px solid rgba(139, 123, 184, 0.1);
+    }
+
+    tbody td {
+      padding: 14px 24px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(139, 123, 184, 0.05);
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover {
+      background: rgba(139, 123, 184, 0.04);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .badge.accept {
+      background: rgba(74, 158, 110, 0.15);
+      color: var(--accept);
+      border: 1px solid rgba(74, 158, 110, 0.3);
+    }
+
+    .badge.decline {
+      background: rgba(200, 80, 80, 0.12);
+      color: var(--decline);
+      border: 1px solid rgba(200, 80, 80, 0.25);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--silver-muted);
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--silver-muted);
+    }
+
+    /* ---------- Footer ---------- */
+    .admin-footer {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .admin-footer a {
+      color: var(--lavender);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.3s;
+    }
+
+    .admin-footer a:hover { color: var(--lavender-lt); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .stat-card { padding: 16px 10px; }
+      .stat-number { font-size: 2rem; }
+      thead th, tbody td { padding: 10px 14px; font-size: 0.8rem; }
+      .login-card { padding: 36px 24px; margin-top: 10vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login -->
+  <div class="login-card" id="login">
+    <h1 class="login-title">RSVP Dashboard</h1>
+    <p class="login-sub">Frankie & Rodrigo</p>
+    <div class="login-field">
+      <input type="password" id="admin-key" placeholder="Enter admin key" autocomplete="off">
+    </div>
+    <p class="login-error" id="login-error"></p>
+    <button class="btn" id="login-btn">Enter</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard" id="dashboard">
+    <div class="dash-header">
+      <h1 class="dash-title">RSVP Responses</h1>
+      <p class="dash-sub">Frankie & Rodrigo &bull; October 15, 2026</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-number total" id="stat-total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number accepted" id="stat-accepted">0</div>
+        <div class="stat-label">Accepted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number declined" id="stat-declined">0</div>
+        <div class="stat-label">Declined</div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <h3 class="table-title">Guest List</h3>
+        <button class="table-refresh" id="refresh-btn">Refresh</button>
+      </div>
+      <div id="table-body">
+        <p class="loading">Loading...</p>
+      </div>
+    </div>
+
+    <div class="admin-footer">
+      <a href="index.html">&larr; Back to wedding site</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = window.location.hostname === 'localhost'
+        ? 'http://localhost:3001/api'
+        : '/api'; // Update with Railway URL in production
+
+      const loginCard = document.getElementById('login');
+      const dashboard = document.getElementById('dashboard');
+      const keyInput = document.getElementById('admin-key');
+      const loginBtn = document.getElementById('login-btn');
+      const loginError = document.getElementById('login-error');
+      const refreshBtn = document.getElementById('refresh-btn');
+
+      let adminKey = '';
+
+      // Login
+      loginBtn.addEventListener('click', tryLogin);
+      keyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') tryLogin();
+      });
+
+      async function tryLogin() {
+        adminKey = keyInput.value.trim();
+        if (!adminKey) {
+          loginError.textContent = 'Please enter the admin key';
+          return;
+        }
+
+        loginError.textContent = '';
+        loginBtn.textContent = 'Checking...';
+        loginBtn.disabled = true;
+
+        try {
+          const res = await fetch(`${API_BASE}/rsvps`, {
+            headers: { 'x-admin-key': adminKey },
+          });
+
+          if (res.status === 401) {
+            loginError.textContent = 'Invalid key. Try again.';
+            loginBtn.textContent = 'Enter';
+            loginBtn.disabled = false;
+            return;
+          }
+
+          if (!res.ok) throw new Error('Server error');
+
+          const data = await res.json();
+          loginCard.style.display = 'none';
+          dashboard.classList.add('visible');
+          renderDashboard(data);
+        } catch (err) {
+          loginError.textContent = 'Could not connect to server.';
+          loginBtn.textContent = 'Enter';
+          loginBtn.disabled = false;
+        }
+      }
+
+      // Refresh
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.textContent = 'Loading...';
+        try {
+          const res = await fetch(`${API_BASE}/rsvps`, {
+            headers: { 'x-admin-key': adminKey },
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          renderDashboard(data);
+        } catch {
+          // silent fail
+        }
+        refreshBtn.textContent = 'Refresh';
+      });
+
+      function renderDashboard(data) {
+        const { stats, rsvps } = data;
+
+        document.getElementById('stat-total').textContent = stats.total;
+        document.getElementById('stat-accepted').textContent = stats.accepted;
+        document.getElementById('stat-declined').textContent = stats.declined;
+
+        const tableBody = document.getElementById('table-body');
+
+        if (!rsvps.length) {
+          tableBody.innerHTML = '<p class="empty-state">No RSVPs yet. Share the link!</p>';
+          return;
+        }
+
+        let html = `
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Response</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        rsvps.forEach(r => {
+          const date = new Date(r.createdAt).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+          });
+          const badge = r.attendance === 'accept'
+            ? '<span class="badge accept">Accepted</span>'
+            : '<span class="badge decline">Declined</span>';
+
+          html += `
+            <tr>
+              <td>${escapeHtml(r.name)}</td>
+              <td>${badge}</td>
+              <td>${date}</td>
+            </tr>
+          `;
+        });
+
+        html += '</tbody></table>';
+        tableBody.innerHTML = html;
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+    })();
+  </script>
+</body>
+</html>
