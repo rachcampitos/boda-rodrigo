@@ -414,14 +414,14 @@
 
     function spawnTrail(member, cx, cy) {
       const now = Date.now();
-      if (now - lastSpawn < 50) return;
+      if (now - lastSpawn < 35) return;
       lastSpawn = now;
 
       const rect = member.getBoundingClientRect();
       const x = cx - rect.left;
       const y = cy - rect.top;
 
-      const count = 1 + Math.floor(Math.random() * 2);
+      const count = 3 + Math.floor(Math.random() * 3);
       for (let i = 0; i < count; i++) {
         const star = document.createElement('div');
         star.className = 'party-trail-star';
