@@ -831,6 +831,15 @@ h1, h2, h3 {
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 }
 
+/* Tap pulse on dealt cards */
+@keyframes oracleTap {
+  0%, 100% { transform: translate(0,0) rotate(0deg) scale(1); box-shadow: 0 2px 16px rgba(0,0,0,0.3); }
+  50% { transform: translate(0,0) rotate(0deg) scale(0.96); box-shadow: 0 0 24px rgba(212,168,83,0.5); }
+}
+.oracle-card.oracle-tap {
+  animation: oracleTap 0.4s ease-out;
+}
+
 /* Hover/tap glow on dealt cards */
 .oracle-card.dealt:hover,
 .oracle-card.dealt:active {
