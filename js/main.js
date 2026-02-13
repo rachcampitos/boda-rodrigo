@@ -127,6 +127,8 @@
     } else {
       // Reduced motion: show all cards dealt immediately
       cards.forEach(card => card.classList.add('dealt'));
+      const hint = document.getElementById('gallery-hint');
+      if (hint) hint.classList.add('shown');
     }
 
     // Deal from top of deck outward: farthest cards first, card 0 last (it stays in place and flips)
@@ -137,6 +139,13 @@
           card.classList.add('dealt');
         }, i * 200);
       });
+
+      // Show hint after all cards finish dealing + flip
+      const totalDealTime = dealOrder.length * 200 + 1200;
+      const hint = document.getElementById('gallery-hint');
+      if (hint) {
+        setTimeout(() => hint.classList.add('shown'), totalDealTime);
+      }
     }
 
     // Make dealt cards keyboard-accessible

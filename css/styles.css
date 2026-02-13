@@ -782,6 +782,23 @@ h1, h2, h3 {
   z-index: 1;
 }
 
+/* Gallery hint text */
+.gallery-hint {
+  text-align: center;
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--gold);
+  opacity: 0;
+  letter-spacing: 0.05em;
+  margin-bottom: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+.gallery-hint.shown {
+  opacity: 0.7;
+}
+
 /* ---------- ORACLE CARD GALLERY — Deck Deal Effect ---------- */
 .oracle-grid {
   display: grid;
@@ -814,9 +831,41 @@ h1, h2, h3 {
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* Hover lift on dealt cards */
-.oracle-card.dealt:hover {
+/* Hover/tap glow on dealt cards */
+.oracle-card.dealt:hover,
+.oracle-card.dealt:active {
   box-shadow: 0 8px 30px rgba(212, 168, 83, 0.15);
+  border-radius: 10px;
+}
+.oracle-card.dealt:hover .oracle-front,
+.oracle-card.dealt:active .oracle-front {
+  border-color: rgba(139, 123, 184, 0.5);
+  box-shadow: 0 0 18px rgba(139, 123, 184, 0.12), 0 0 4px rgba(212, 168, 83, 0.1);
+}
+
+/* Shimmer sweep across dealt cards */
+.oracle-card.dealt .oracle-front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(212, 168, 83, 0.08) 45%,
+    rgba(212, 168, 83, 0.15) 50%,
+    rgba(212, 168, 83, 0.08) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  animation: oracleShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: 10px;
+}
+@keyframes oracleShimmer {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -50% 0; }
 }
 
 /* --- 3D flip inner container --- */
@@ -907,6 +956,8 @@ h1, h2, h3 {
   border: 1px solid rgba(212, 168, 83, 0.2);
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: border-color 0.4s, box-shadow 0.4s;
 }
 
 .oracle-front img {
