@@ -386,33 +386,27 @@
       }, REVEAL_DUR + HOLD_DUR);
     }
 
-    // ---- Click to advance ----
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        if (parseInt(card.getAttribute('data-order')) !== N - 1) return;
-        if (timeout) clearTimeout(timeout);
-
-        if (card.classList.contains('revealed') && !card.classList.contains('vanishing')) {
-          vanish(card, () => {
-            resetCard(card);
-            order = order.map(o => (o + 1) % N);
-            applyOrder();
-            requestAnimationFrame(() => { card.style.opacity = ''; });
-            setTimeout(() => { busy = false; cycle(); }, SETTLE_DUR);
-          });
-        } else if (!card.classList.contains('vanishing')) {
-          busy = false;
-          cycle();
-        }
-      });
-    });
-
     applyOrder();
     setTimeout(cycle, 1200);
   }
 
+  // ---------- Invite Code Gate (disabled — enable when portfolio is public) ----------
+  // function checkInviteCode() {
+  //   const params = new URLSearchParams(window.location.search);
+  //   const code = params.get('invite');
+  //   const VALID_CODE = 'starswear-1015';
+  //   const form = document.getElementById('rsvp-form');
+  //   const locked = document.getElementById('rsvp-locked');
+  //   if (!form || !locked) return;
+  //   if (code !== VALID_CODE) {
+  //     form.style.display = 'none';
+  //     locked.style.display = '';
+  //   }
+  // }
+
   // ---------- Initialize Everything ----------
   function init() {
+    // checkInviteCode();
     initMobileNav();
     initCardDeck();
     initOracleCards();
