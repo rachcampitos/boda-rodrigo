@@ -159,10 +159,18 @@
     cards.forEach(card => {
       card.addEventListener('click', () => {
         if (!card.classList.contains('dealt')) return;
-        card.classList.add('oracle-tap');
-        card.addEventListener('animationend', () => card.classList.remove('oracle-tap'), { once: true });
         const idx = parseInt(card.dataset.index, 10);
-        setTimeout(() => openLightbox(idx), 350);
+
+        // Pulse: shrink + glow
+        card.classList.add('oracle-tap');
+        setTimeout(() => {
+          card.classList.remove('oracle-tap');
+          card.classList.add('oracle-tap-out');
+        }, 200);
+        setTimeout(() => {
+          card.classList.remove('oracle-tap-out');
+          openLightbox(idx);
+        }, 450);
       });
 
       // Keyboard: Enter/Space to open lightbox
