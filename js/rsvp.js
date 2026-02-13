@@ -116,14 +116,18 @@ const RSVP = (() => {
     memorial.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
 
-    // Spawn floating stars inside the card
-    const starsContainer = memorial.querySelector('.luna-memorial-stars');
-    if (starsContainer && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      for (let i = 0; i < 20; i++) {
-        setTimeout(() => spawnLunaStar(starsContainer), i * 300);
+    // Portal effect: tiny stars spawn from card border inward
+    const card = memorial.querySelector('.luna-memorial-card');
+    if (card && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Initial burst
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => spawnPortalStar(card), i * 80);
       }
-      // Keep spawning
-      memorial._starInterval = setInterval(() => spawnLunaStar(starsContainer), 600);
+      // Continuous spawning
+      memorial._starInterval = setInterval(() => {
+        const count = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) spawnPortalStar(card);
+      }, 120);
     }
 
     // Close handlers
@@ -147,20 +151,59 @@ const RSVP = (() => {
     });
   }
 
-  function spawnLunaStar(container) {
+  function spawnPortalStar(card) {
     const star = document.createElement('div');
-    star.className = 'luna-star';
-    const x = 10 + Math.random() * 80;
-    const size = 2 + Math.random() * 2;
-    const dur = 3000 + Math.random() * 3000;
+    star.className = 'luna-portal-star';
+
+    const W = card.offsetWidth;
+    const H = card.offsetHeight;
+    const size = 1 + Math.random() * 2;
+    const dur = 800 + Math.random() * 1000;
+
+    // Pick a random edge: 0=top, 1=right, 2=bottom, 3=left
+    const edge = Math.floor(Math.random() * 4);
+    let x, y, dx, dy;
+
+    switch (edge) {
+      case 0: // top
+        x = Math.random() * W;
+        y = 0;
+        dx = (Math.random() - 0.5) * 16;
+        dy = 15 + Math.random() * 25;
+        break;
+      case 1: // right
+        x = W;
+        y = Math.random() * H;
+        dx = -(15 + Math.random() * 25);
+        dy = (Math.random() - 0.5) * 16;
+        break;
+      case 2: // bottom
+        x = Math.random() * W;
+        y = H;
+        dx = (Math.random() - 0.5) * 16;
+        dy = -(15 + Math.random() * 25);
+        break;
+      case 3: // left
+        x = 0;
+        y = Math.random() * H;
+        dx = 15 + Math.random() * 25;
+        dy = (Math.random() - 0.5) * 16;
+        break;
+    }
+
     star.style.cssText = `
-      left: ${x}%; bottom: 10%;
+      left: ${x}px; top: ${y}px;
       width: ${size}px; height: ${size}px;
-      animation-duration: ${dur}ms;
-      animation-delay: ${Math.random() * 500}ms;
+      transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
     `;
-    container.appendChild(star);
-    setTimeout(() => star.remove(), dur + 500);
+    card.appendChild(star);
+
+    requestAnimationFrame(() => {
+      star.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
+      star.style.opacity = '0';
+    });
+
+    setTimeout(() => star.remove(), dur + 50);
   }
 
   // Form submission
