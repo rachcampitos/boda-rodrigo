@@ -162,7 +162,7 @@
         card.classList.add('oracle-tap');
         card.addEventListener('animationend', () => card.classList.remove('oracle-tap'), { once: true });
         const idx = parseInt(card.dataset.index, 10);
-        openLightbox(idx);
+        setTimeout(() => openLightbox(idx), 350);
       });
 
       // Keyboard: Enter/Space to open lightbox
