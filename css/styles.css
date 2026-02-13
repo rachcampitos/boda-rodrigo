@@ -1285,6 +1285,166 @@ h1, h2, h3 {
   pointer-events: none;
 }
 
+/* ---------- LUNA MEMORIAL EASTER EGG ---------- */
+.luna-memorial {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.luna-memorial.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.luna-memorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 2, 8, 0.94);
+}
+.luna-memorial-card {
+  position: relative;
+  max-width: 380px;
+  width: 90%;
+  padding: 44px 32px 36px;
+  background: linear-gradient(160deg, rgba(22, 16, 42, 0.96), rgba(10, 6, 22, 0.98));
+  border: 1px solid rgba(212, 168, 83, 0.3);
+  border-radius: 20px;
+  text-align: center;
+  box-shadow:
+    0 0 60px rgba(212, 168, 83, 0.08),
+    0 0 120px rgba(139, 123, 184, 0.06),
+    0 30px 80px rgba(0, 0, 0, 0.5);
+  transform: scale(0.85) translateY(30px);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.luna-memorial.open .luna-memorial-card {
+  transform: scale(1) translateY(0);
+}
+.luna-memorial-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.8rem;
+  color: var(--silver-muted);
+  transition: color 0.3s;
+  z-index: 10;
+}
+.luna-memorial-close:hover { color: #fff; }
+.luna-memorial-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.luna-memorial-photo {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(212, 168, 83, 0.5);
+  box-shadow:
+    0 0 20px rgba(212, 168, 83, 0.2),
+    0 0 40px rgba(139, 123, 184, 0.1);
+  animation: lunaGlow 3s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+.luna-memorial-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@keyframes lunaGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(212, 168, 83, 0.2),
+      0 0 40px rgba(139, 123, 184, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(212, 168, 83, 0.35),
+      0 0 60px rgba(139, 123, 184, 0.15);
+  }
+}
+.luna-memorial-name {
+  font-family: var(--ff-heading);
+  font-size: 2rem;
+  color: var(--lavender-lt);
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 2;
+}
+.luna-memorial-years {
+  font-family: var(--ff-heading);
+  font-size: 0.9rem;
+  color: var(--copper);
+  letter-spacing: 0.15em;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+.luna-memorial-msg {
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--silver);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+}
+.luna-memorial-sub {
+  font-family: var(--ff-heading);
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  position: relative;
+  z-index: 2;
+}
+.luna-memorial-paw {
+  font-size: 1.4rem;
+  margin-top: 16px;
+  opacity: 0.5;
+  position: relative;
+  z-index: 2;
+}
+/* Stars floating inside the memorial card */
+.luna-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: lunaStarFloat linear infinite;
+  box-shadow: 0 0 4px rgba(212, 168, 83, 0.6);
+}
+@keyframes lunaStarFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0.3);
+  }
+}
+
 /* ---------- FOOTER ---------- */
 .footer {
   position: relative;

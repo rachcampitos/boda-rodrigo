@@ -103,6 +103,66 @@ const RSVP = (() => {
     });
   }
 
+  // Luna memorial Easter egg
+  function isLuna(name) {
+    return name.toLowerCase().replace(/\s+/g, '') === 'luna';
+  }
+
+  function showLunaMemorial() {
+    const memorial = document.getElementById('luna-memorial');
+    if (!memorial) return;
+
+    memorial.classList.add('open');
+    memorial.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    // Spawn floating stars inside the card
+    const starsContainer = memorial.querySelector('.luna-memorial-stars');
+    if (starsContainer && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => spawnLunaStar(starsContainer), i * 300);
+      }
+      // Keep spawning
+      memorial._starInterval = setInterval(() => spawnLunaStar(starsContainer), 600);
+    }
+
+    // Close handlers
+    const closeBtn = memorial.querySelector('.luna-memorial-close');
+    const backdrop = memorial.querySelector('.luna-memorial-backdrop');
+
+    function closeLuna() {
+      memorial.classList.remove('open');
+      memorial.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (memorial._starInterval) clearInterval(memorial._starInterval);
+    }
+
+    closeBtn?.addEventListener('click', closeLuna);
+    backdrop?.addEventListener('click', closeLuna);
+    document.addEventListener('keydown', function lunaEsc(e) {
+      if (e.key === 'Escape' && memorial.classList.contains('open')) {
+        closeLuna();
+        document.removeEventListener('keydown', lunaEsc);
+      }
+    });
+  }
+
+  function spawnLunaStar(container) {
+    const star = document.createElement('div');
+    star.className = 'luna-star';
+    const x = 10 + Math.random() * 80;
+    const size = 2 + Math.random() * 2;
+    const dur = 3000 + Math.random() * 3000;
+    star.style.cssText = `
+      left: ${x}%; bottom: 10%;
+      width: ${size}px; height: ${size}px;
+      animation-duration: ${dur}ms;
+      animation-delay: ${Math.random() * 500}ms;
+    `;
+    container.appendChild(star);
+    setTimeout(() => star.remove(), dur + 500);
+  }
+
   // Form submission
   function initFormSubmit() {
     form.addEventListener('submit', async (e) => {
@@ -125,6 +185,12 @@ const RSVP = (() => {
       }
 
       if (!valid) return;
+
+      // Easter egg: Luna memorial
+      if (isLuna(name)) {
+        showLunaMemorial();
+        return;
+      }
 
       const data = {
         name,
