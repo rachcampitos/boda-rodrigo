@@ -1416,9 +1416,10 @@ h1, h2, h3 {
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
-  background: radial-gradient(circle, #f5e6a0, #d4a853);
-  box-shadow: 0 0 3px rgba(212, 168, 83, 0.7);
+  background: #d4a853;
+  box-shadow: 0 0 4px 1px rgba(212, 168, 83, 0.8);
   opacity: 0.9;
+  will-change: transform, opacity;
 }
 
 /* ---------- FOOTER ---------- */

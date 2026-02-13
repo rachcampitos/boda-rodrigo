@@ -157,7 +157,7 @@ const RSVP = (() => {
 
     const W = card.offsetWidth;
     const H = card.offsetHeight;
-    const size = 1 + Math.random() * 2;
+    const size = 1.5 + Math.random() * 1.5;
     const dur = 800 + Math.random() * 1000;
 
     // Pick a random edge: 0=top, 1=right, 2=bottom, 3=left
@@ -194,13 +194,17 @@ const RSVP = (() => {
     star.style.cssText = `
       left: ${x}px; top: ${y}px;
       width: ${size}px; height: ${size}px;
+      -webkit-transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
       transition: transform ${dur}ms ease-out, opacity ${dur}ms ease-out;
     `;
     card.appendChild(star);
 
+    // Double rAF ensures Safari paints the initial state before transitioning
     requestAnimationFrame(() => {
-      star.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-      star.style.opacity = '0';
+      requestAnimationFrame(() => {
+        star.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
+        star.style.opacity = '0';
+      });
     });
 
     setTimeout(() => star.remove(), dur + 50);
