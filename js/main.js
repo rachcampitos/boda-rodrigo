@@ -284,24 +284,15 @@
       const px = Math.random() * stack.offsetWidth;
       const size = 1 + Math.random() * 2;
       const drift = (Math.random() - 0.5) * 50;
-      const rise = -(30 + Math.random() * 50);
+      const rise = 30 + Math.random() * 50;
       const dur = 500 + Math.random() * 500;
 
       p.style.cssText =
         `left:${px}px;top:${edgeY}px;width:${size}px;height:${size}px;` +
-        `-webkit-transition:transform ${dur}ms ease-out,opacity ${dur}ms ease-out;` +
-        `transition:transform ${dur}ms ease-out,opacity ${dur}ms ease-out;`;
+        `--drift:${drift}px;--rise:${-rise}px;animation-duration:${dur}ms;`;
 
       stack.appendChild(p);
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          p.style.transform = `translate(${drift}px, ${rise}px) scale(0)`;
-          p.style.opacity = '0';
-        });
-      });
-
-      setTimeout(() => p.remove(), dur + 50);
+      setTimeout(() => p.remove(), dur);
     }
 
     // ---- Vanish: bottom → top dissolve + dust particles ----
