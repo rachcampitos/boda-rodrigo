@@ -1149,7 +1149,8 @@
         if (stats.total === 0) {
           totalSub.textContent = 'Awaiting responses';
         } else {
-          totalSub.textContent = `${stats.accepted} aligned, ${stats.declined} wandering`;
+          const hc = stats.acceptedHeadCount || stats.accepted;
+          totalSub.textContent = `${hc} guests attending`;
         }
 
         // Moon phase
@@ -1228,10 +1229,11 @@
           const timeAgo = getTimeAgo(new Date(r.createdAt));
           const verb = r.attendance === 'accept' ? 'aligned with the stars' : 'wanders still';
           const icon = r.attendance === 'accept' ? '&#10022;' : '&#10023;';
+          const name = r.displayName || r.name || 'Unknown';
           return `
             <div class="alignment-item">
               <span class="alignment-icon">${icon}</span>
-              <span class="alignment-text"><strong>${escapeHtml(r.name)}</strong> ${verb}</span>
+              <span class="alignment-text"><strong>${escapeHtml(name)}</strong> ${verb}</span>
               <span class="alignment-time">${timeAgo}</span>
             </div>
           `;
@@ -1248,7 +1250,12 @@
           filtered = filtered.filter(r => r.attendance === currentFilter);
         }
         if (query) {
-          filtered = filtered.filter(r => r.name.toLowerCase().includes(query));
+          filtered = filtered.filter(r => {
+            const name = (r.displayName || r.name || '').toLowerCase();
+            const members = (r.members || []).join(' ').toLowerCase();
+            const respondedBy = (r.respondedBy || '').toLowerCase();
+            return name.includes(query) || members.includes(query) || respondedBy.includes(query);
+          });
         }
 
         if (!filtered.length) {
@@ -1271,14 +1278,18 @@
           const badgeClass = isAccept ? 'guest-badge--accept' : 'guest-badge--decline';
           const badgeText = isAccept ? 'Aligned' : 'Wandering';
           const cardClass = isAccept ? 'guest-card--accept' : 'guest-card--decline';
+          const displayName = r.displayName || r.name || 'Unknown';
+          const headCount = r.headCount || 1;
+          const respondedBy = r.respondedBy ? `by ${escapeHtml(r.respondedBy)}` : '';
 
           return `
             <div class="guest-card ${cardClass}" style="transition-delay: ${i * 40}ms">
               <div class="guest-star">${starIcon}</div>
               <div class="guest-info">
-                <div class="guest-name">${escapeHtml(r.name)}</div>
-                <div class="guest-date">${date}</div>
+                <div class="guest-name">${escapeHtml(displayName)}</div>
+                <div class="guest-date">${date}${respondedBy ? ' &middot; ' + respondedBy : ''}</div>
               </div>
+              ${headCount > 1 ? `<span class="guest-badge" style="background:rgba(139,123,184,0.08);color:var(--silver-muted);border:1px solid rgba(139,123,184,0.15);margin-right:4px;">${headCount} guests</span>` : ''}
               <span class="guest-badge ${badgeClass}">${badgeText}</span>
             </div>
           `;

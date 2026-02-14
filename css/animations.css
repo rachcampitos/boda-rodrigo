@@ -165,6 +165,12 @@
   }
 }
 
+/* ---------- Constellation Line Draw ---------- */
+@keyframes constellationLineDraw {
+  from { stroke-dashoffset: var(--line-len); stroke-opacity: 0; }
+  to { stroke-dashoffset: 0; stroke-opacity: 0.7; }
+}
+
 /* ---------- Oracle Card Deal Glow ---------- */
 @keyframes dealGlow {
   0% { box-shadow: 0 0 0 rgba(212, 168, 83, 0); }

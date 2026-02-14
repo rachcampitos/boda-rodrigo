@@ -12,9 +12,13 @@ const ADMIN_KEY = process.env.ADMIN_KEY || 'frankie-rodrigo-2026';
 
 // ── Mongoose Model ──────────────────────────────────────
 const rsvpSchema = new mongoose.Schema({
-  name:       { type: String, required: true, trim: true },
-  attendance: { type: String, enum: ['accept', 'decline'], required: true },
-  createdAt:  { type: Date, default: Date.now },
+  groupId:     { type: String, required: true, unique: true },
+  displayName: { type: String, required: true },
+  members:     [{ type: String }],
+  headCount:   { type: Number, required: true },
+  attendance:  { type: String, enum: ['accept', 'decline'], required: true },
+  respondedBy: { type: String, required: true },
+  createdAt:   { type: Date, default: Date.now },
 });
 
 const Rsvp = mongoose.model('Rsvp', rsvpSchema);
@@ -35,28 +39,72 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Submit RSVP
+// Check RSVP status for a group (guest-facing, no auth)
+app.get('/api/rsvp/check/:groupId', async (req, res) => {
+  try {
+    const rsvp = await Rsvp.findOne({ groupId: req.params.groupId });
+    if (rsvp) {
+      res.json({
+        found: true,
+        attendance: rsvp.attendance,
+        respondedBy: rsvp.respondedBy,
+        createdAt: rsvp.createdAt,
+      });
+    } else {
+      res.json({ found: false });
+    }
+  } catch (err) {
+    console.error('Check RSVP error:', err);
+    res.status(500).json({ message: 'Something went wrong.' });
+  }
+});
+
+// Get all accepted groupIds (public, for star constellation)
+app.get('/api/rsvp/accepted', async (_req, res) => {
+  try {
+    const accepted = await Rsvp.find({ attendance: 'accept' }, 'groupId -_id').lean();
+    res.json(accepted.map(r => r.groupId));
+  } catch (err) {
+    console.error('Accepted list error:', err);
+    res.status(500).json({ message: 'Something went wrong.' });
+  }
+});
+
+// Submit RSVP (upsert by groupId)
 app.post('/api/rsvp', async (req, res) => {
   try {
-    const { name, attendance } = req.body;
+    const { groupId, displayName, members, headCount, attendance, respondedBy } = req.body;
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({ message: 'Name is required' });
+    if (!groupId || !groupId.trim()) {
+      return res.status(400).json({ message: 'Group ID is required' });
     }
     if (!['accept', 'decline'].includes(attendance)) {
       return res.status(400).json({ message: 'Attendance must be "accept" or "decline"' });
     }
+    if (!respondedBy || !respondedBy.trim()) {
+      return res.status(400).json({ message: 'Responded by is required' });
+    }
 
-    const rsvp = await Rsvp.create({
-      name: name.trim(),
-      attendance,
-    });
+    const rsvp = await Rsvp.findOneAndUpdate(
+      { groupId: groupId.trim() },
+      {
+        groupId: groupId.trim(),
+        displayName: displayName || '',
+        members: members || [],
+        headCount: headCount || 1,
+        attendance,
+        respondedBy: respondedBy.trim(),
+        createdAt: Date.now(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     res.status(201).json({
       message: 'RSVP received!',
       rsvp: {
         id: rsvp._id,
-        name: rsvp.name,
+        groupId: rsvp.groupId,
+        displayName: rsvp.displayName,
         attendance: rsvp.attendance,
       },
     });
@@ -75,11 +123,15 @@ app.get('/api/rsvps', async (req, res) => {
 
   try {
     const rsvps = await Rsvp.find().sort({ createdAt: -1 });
+    const accepted = rsvps.filter(r => r.attendance === 'accept');
+    const declined = rsvps.filter(r => r.attendance === 'decline');
     const stats = {
       total: rsvps.length,
-      accepted: rsvps.filter(r => r.attendance === 'accept').length,
-      declined: rsvps.filter(r => r.attendance === 'decline').length,
-      totalAttending: rsvps.filter(r => r.attendance === 'accept').length,
+      accepted: accepted.length,
+      declined: declined.length,
+      totalHeadCount: rsvps.reduce((sum, r) => sum + (r.headCount || 1), 0),
+      acceptedHeadCount: accepted.reduce((sum, r) => sum + (r.headCount || 1), 0),
+      declinedHeadCount: declined.reduce((sum, r) => sum + (r.headCount || 1), 0),
     };
     res.json({ stats, rsvps });
   } catch (err) {
