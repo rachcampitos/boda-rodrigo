@@ -638,6 +638,10 @@
 
   <!-- ============ RSVP ============ -->
   <section id="rsvp" class="section section--alt">
+    <!-- Star constellation: one placeholder per invitation -->
+    <div class="rsvp-starfield" id="rsvp-starfield" aria-hidden="true"></div>
+    <!-- Mirrored RSVP watermark -->
+    <div class="rsvp-watermark" aria-hidden="true"><span>RSVP</span></div>
     <div class="section-inner">
       <h2 class="section-title reveal">RSVP</h2>
       <p class="section-subtitle reveal">The cards await your answer &bull; Please RSVP by September 1, 2026</p>
@@ -654,54 +658,97 @@
             </svg>
           </div>
 
-          <!-- Invite-only overlay (shown when no invite code) -->
-          <div id="rsvp-locked" class="rsvp-locked" style="display:none;">
-            <div class="rsvp-locked-icon" aria-hidden="true">&#9878;</div>
-            <h3 class="rsvp-locked-title">By Invitation Only</h3>
-            <p class="rsvp-locked-msg">This RSVP is reserved for invited guests.<br>If you received an invitation, please use the link provided.</p>
+          <!-- State 1: Search -->
+          <div id="rsvp-search" class="rsvp-state">
+            <label for="rsvp-search-input" class="rsvp-search-label">Find Your Invitation</label>
+            <p class="rsvp-search-hint">Begin typing your first or last name</p>
+            <div class="rsvp-search-wrap">
+              <input type="text" id="rsvp-search-input" class="rsvp-search-input" placeholder="Type your name..." autocomplete="off" autocorrect="off" spellcheck="false">
+              <ul id="rsvp-dropdown" class="rsvp-dropdown" role="listbox" aria-label="Guest matches"></ul>
+            </div>
+            <p id="rsvp-search-error" class="rsvp-error-msg" style="display:none;"></p>
           </div>
 
-          <!-- Form -->
-          <form id="rsvp-form" novalidate>
-            <div class="rsvp-field">
-              <label for="rsvp-name" class="rsvp-label">Your Name</label>
-              <input type="text" id="rsvp-name" name="name" required autocomplete="name" placeholder="First and Last Name">
+          <!-- State 2: Invitation Card (deal + flip) -->
+          <div id="rsvp-invite" class="rsvp-state" style="display:none;">
+            <!-- Decorative deck stack -->
+            <div class="rsvp-deck" aria-hidden="true">
+              <div class="rsvp-deck-card"></div>
+              <div class="rsvp-deck-card"></div>
+              <div class="rsvp-deck-card"></div>
             </div>
-
-            <div class="rsvp-field">
-              <label class="rsvp-label">Will you be joining us?</label>
-              <div class="rsvp-attendance">
-                <label class="rsvp-choice rsvp-choice--accept">
-                  <input type="radio" name="attendance" value="accept" required>
-                  <span class="rsvp-choice-card">
-                    <span class="rsvp-choice-icon">&#10022;</span>
-                    <span class="rsvp-choice-text">Joyfully Accept</span>
-                  </span>
-                </label>
-                <label class="rsvp-choice rsvp-choice--decline">
-                  <input type="radio" name="attendance" value="decline">
-                  <span class="rsvp-choice-card">
-                    <span class="rsvp-choice-icon">&#9790;</span>
-                    <span class="rsvp-choice-text">Regretfully Decline</span>
-                  </span>
-                </label>
+            <div class="rsvp-invite-card">
+              <div class="rsvp-invite-card-inner">
+                <!-- Back: decorative tarot-style -->
+                <div class="rsvp-invite-face rsvp-invite-back">
+                  <div class="rsvp-invite-back-border">
+                    <div class="rsvp-invite-back-content">
+                      <div class="rsvp-invite-back-star">&#10022;</div>
+                      <span class="rsvp-invite-back-symbol">RSVP</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Front: personalized invitation -->
+                <div class="rsvp-invite-face rsvp-invite-front">
+                  <div class="rsvp-invite-front-border">
+                    <div class="rsvp-invite-front-content">
+                      <span class="rsvp-invite-ornament-tl" aria-hidden="true">&#10022;</span>
+                      <span class="rsvp-invite-ornament-tr" aria-hidden="true">&#10022;</span>
+                      <span class="rsvp-invite-ornament-bl" aria-hidden="true">&#10022;</span>
+                      <span class="rsvp-invite-ornament-br" aria-hidden="true">&#10022;</span>
+                      <div class="rsvp-invite-moon" aria-hidden="true">&#9790;</div>
+                      <p class="rsvp-invite-header">You are cordially invited</p>
+                      <div class="rsvp-invite-divider" aria-hidden="true"><span>&#10022;</span></div>
+                      <h3 class="rsvp-invite-title" id="rsvp-invite-title"></h3>
+                      <p class="rsvp-invite-members" id="rsvp-invite-members"></p>
+                      <p class="rsvp-invite-msg">to the wedding celebration of<br><strong>Frankie &amp; Rodrigo</strong><br>October 15, 2026</p>
+                      <div class="rsvp-invite-stars" aria-hidden="true">&#10022; &#10023; &#10022;</div>
+                      <div class="rsvp-invite-attendance">
+                        <button type="button" class="rsvp-attend-btn rsvp-attend-btn--accept" data-attendance="accept">
+                          <span class="rsvp-attend-icon">&#10022;</span>
+                          <span>Joyfully Accept</span>
+                        </button>
+                        <button type="button" class="rsvp-attend-btn rsvp-attend-btn--decline" data-attendance="decline">
+                          <span class="rsvp-attend-icon">&#9790;</span>
+                          <span>Regretfully Decline</span>
+                        </button>
+                      </div>
+                      <button type="button" class="rsvp-back-btn" id="rsvp-back-invite">&#8592; Not you? Search again</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <button type="submit" class="btn rsvp-submit" id="rsvp-submit">
-              <span class="rsvp-submit-text">Cast Your Card</span>
-              <span class="rsvp-submit-loading" style="display:none;">
-                <span class="rsvp-spinner"></span> Sending...
-              </span>
-            </button>
-          </form>
+          <!-- State 3: Already RSVP'd -->
+          <div id="rsvp-already" class="rsvp-state" style="display:none;">
+            <div class="rsvp-already-content">
+              <div class="rsvp-already-icon" aria-hidden="true">&#10022;</div>
+              <h3 class="rsvp-already-title">Your Destiny Has Been Written</h3>
+              <p class="rsvp-already-msg" id="rsvp-already-msg"></p>
+              <div class="rsvp-already-actions">
+                <button type="button" class="btn" id="rsvp-change-btn">Change Your Response</button>
+                <button type="button" class="rsvp-back-btn" id="rsvp-back-already">&#8592; Search for another name</button>
+              </div>
+            </div>
+          </div>
 
-          <!-- Success state -->
-          <div id="rsvp-success" class="rsvp-success" style="display:none;" role="status" aria-live="polite">
+          <!-- State 4: Success -->
+          <div id="rsvp-success" class="rsvp-state rsvp-success" style="display:none;" role="status" aria-live="polite">
             <div class="rsvp-success-icon" aria-hidden="true">&#10022;</div>
             <h3 class="rsvp-success-title">The Stars Have Spoken</h3>
             <p class="rsvp-success-msg" id="rsvp-success-msg"></p>
-            <p class="rsvp-success-sub">We can&rsquo;t wait to celebrate with you!</p>
+            <p class="rsvp-success-sub" id="rsvp-success-sub">We can&rsquo;t wait to celebrate with you!</p>
+            <button type="button" class="rsvp-back-btn" id="rsvp-back-success" style="margin-top:16px;">&#8592; Search for another name</button>
+          </div>
+
+          <!-- Loading state -->
+          <div id="rsvp-loading" class="rsvp-state" style="display:none;">
+            <div class="rsvp-loading-content">
+              <span class="rsvp-spinner"></span>
+              <p class="rsvp-loading-msg">Consulting the stars...</p>
+            </div>
           </div>
 
           <!-- Decorative bottom -->
@@ -715,8 +762,6 @@
       </div>
     </div>
 
-    <!-- Celebration particles container -->
-    <div id="rsvp-celebration" class="rsvp-celebration" aria-hidden="true"></div>
 
     <!-- Luna Memorial Easter Egg -->
     <div id="luna-memorial" class="luna-memorial" role="dialog" aria-label="In loving memory of Luna" aria-hidden="true">
@@ -761,6 +806,7 @@
   <script src="js/tarot.js"></script>
   <script src="js/scroll.js"></script>
   <script src="js/countdown.js"></script>
+  <script src="js/guests.js"></script>
   <script src="js/rsvp.js"></script>
   <script src="js/main.js"></script>
 </body>
