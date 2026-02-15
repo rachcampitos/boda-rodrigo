@@ -16,8 +16,7 @@ const RSVP = (() => {
 
   if (!searchState) return { init() {} };
 
-  const codeInput = document.getElementById('rsvp-code-input');
-  const codeSubmitBtn = document.getElementById('rsvp-code-submit');
+  const digitBoxes = document.querySelectorAll('.rsvp-digit');
   const searchError = document.getElementById('rsvp-search-error');
 
   const inviteCard = inviteState.querySelector('.rsvp-invite-card');
@@ -57,8 +56,14 @@ const RSVP = (() => {
     if (!code) return;
 
     // Strip STAR- prefix if present, keep only digits
-    const digits = code.trim().toUpperCase().replace(/^STAR-/, '');
-    codeInput.value = digits;
+    const digits = code.trim().toUpperCase().replace(/^STAR-?/, '').replace(/\D/g, '').slice(0, 4);
+    if (!digits) return;
+
+    // Fill digit boxes
+    for (let j = 0; j < digitBoxes.length; j++) {
+      digitBoxes[j].value = digits[j] || '';
+      digitBoxes[j].classList.toggle('filled', !!digits[j]);
+    }
 
     // Small delay so the page renders first, then auto-submit
     setTimeout(() => {
@@ -66,23 +71,93 @@ const RSVP = (() => {
     }, 600);
   }
 
-  // ── Code Input ─────────────────────────────────────────
+  // ── Digit Box Input ────────────────────────────────────
 
   function initCodeInput() {
-    codeInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleCodeSubmit();
-      }
+    digitBoxes.forEach((box, i) => {
+      box.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, ''); // digits only
+        e.target.value = val.charAt(0) || '';
+
+        if (val) {
+          box.classList.add('filled');
+          // Auto-advance to next box
+          if (i < digitBoxes.length - 1) {
+            digitBoxes[i + 1].focus();
+          }
+          // Check if all 4 digits are filled → auto-submit
+          const code = getDigitsValue();
+          if (code.length === 4) {
+            // Small delay so user sees the last digit land
+            setTimeout(() => handleCodeSubmit(), 300);
+          }
+        } else {
+          box.classList.remove('filled');
+        }
+        hideError();
+      });
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          if (!box.value && i > 0) {
+            digitBoxes[i - 1].focus();
+            digitBoxes[i - 1].value = '';
+            digitBoxes[i - 1].classList.remove('filled');
+          } else {
+            box.classList.remove('filled');
+          }
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleCodeSubmit();
+        }
+      });
+
+      box.addEventListener('focus', () => {
+        // Clear error state on focus
+        digitBoxes.forEach(b => b.classList.remove('error'));
+      });
     });
-    codeSubmitBtn.addEventListener('click', handleCodeSubmit);
+
+    // Paste support: distribute digits across boxes
+    const container = document.getElementById('rsvp-digit-boxes');
+    if (container) {
+      container.addEventListener('paste', (e) => {
+        e.preventDefault();
+        let pasted = (e.clipboardData || window.clipboardData).getData('text').trim();
+        // Strip STAR- prefix if pasted
+        pasted = pasted.toUpperCase().replace(/^STAR-?/, '');
+        const nums = pasted.replace(/\D/g, '').slice(0, 4);
+        for (let j = 0; j < digitBoxes.length; j++) {
+          digitBoxes[j].value = nums[j] || '';
+          digitBoxes[j].classList.toggle('filled', !!nums[j]);
+        }
+        if (nums.length === 4) {
+          digitBoxes[3].focus();
+          setTimeout(() => handleCodeSubmit(), 300);
+        } else if (nums.length > 0) {
+          digitBoxes[Math.min(nums.length, 3)].focus();
+        }
+      });
+    }
+  }
+
+  function getDigitsValue() {
+    return Array.from(digitBoxes).map(b => b.value).join('');
+  }
+
+  function clearDigitBoxes() {
+    digitBoxes.forEach(b => {
+      b.value = '';
+      b.classList.remove('filled', 'error');
+    });
   }
 
   function handleCodeSubmit() {
-    const digits = codeInput.value.trim();
+    const digits = getDigitsValue();
     hideError();
 
-    if (!digits) return;
+    if (!digits || digits.length < 4) return;
 
     // Luna Easter egg
     if (digits.toUpperCase() === 'LUNA') {
@@ -96,6 +171,7 @@ const RSVP = (() => {
     const guest = findGuestByCode(raw);
     if (!guest) {
       showError('Code not recognized. Please check your invitation and try again.');
+      digitBoxes.forEach(b => b.classList.add('error'));
       return;
     }
 
@@ -525,7 +601,7 @@ const RSVP = (() => {
     memberStates = {};
     plusOneAttending = false;
     plusOneName = '';
-    codeInput.value = '';
+    clearDigitBoxes();
     inviteState.classList.remove('dealing', 'dealt', 'flipped', 'dissolving', 'dissolving-decline');
     confirmBtn.disabled = false;
     confirmBtn.style.opacity = '';
@@ -543,7 +619,7 @@ const RSVP = (() => {
     successState.style.transition = '';
 
     showState('search');
-    codeInput.focus();
+    digitBoxes[0].focus();
   }
 
   // ── State Management ────────────────────────────────────

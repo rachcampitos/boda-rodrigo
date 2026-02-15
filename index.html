@@ -690,16 +690,14 @@
             <label class="rsvp-search-label">Enter Your Invitation Code</label>
             <p class="rsvp-search-hint">You'll find it on your invitation card</p>
             <div class="rsvp-code-wrap">
-              <div class="rsvp-code-field">
-                <span class="rsvp-code-prefix">STAR-</span>
-                <input type="text" id="rsvp-code-input" class="rsvp-code-input"
-                       placeholder="0000" maxlength="4" inputmode="numeric"
-                       autocomplete="off" autocorrect="off" spellcheck="false">
+              <span class="rsvp-code-prefix">STAR</span>
+              <span class="rsvp-code-dash">—</span>
+              <div class="rsvp-digit-boxes" id="rsvp-digit-boxes">
+                <input type="text" class="rsvp-digit" maxlength="1" inputmode="numeric" data-index="0" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Digit 1 of 4">
+                <input type="text" class="rsvp-digit" maxlength="1" inputmode="numeric" data-index="1" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Digit 2 of 4">
+                <input type="text" class="rsvp-digit" maxlength="1" inputmode="numeric" data-index="2" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Digit 3 of 4">
+                <input type="text" class="rsvp-digit" maxlength="1" inputmode="numeric" data-index="3" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Digit 4 of 4">
               </div>
-              <button type="button" id="rsvp-code-submit" class="rsvp-code-btn">
-                <span class="rsvp-code-btn-icon">&#10022;</span>
-                <span>Reveal</span>
-              </button>
             </div>
             <p id="rsvp-search-error" class="rsvp-error-msg" style="display:none;"></p>
           </div>
