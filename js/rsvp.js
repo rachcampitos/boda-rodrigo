@@ -46,6 +46,23 @@ const RSVP = (() => {
     initBackButtons();
     initConfirmButton();
     loadAcceptedStars();
+    checkUrlCode();
+  }
+
+  // ── Auto-detect code from URL param (?code=STAR-XXXX) ──
+
+  function checkUrlCode() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+
+    const raw = code.trim().toUpperCase();
+    codeInput.value = raw;
+
+    // Small delay so the page renders first, then auto-submit
+    setTimeout(() => {
+      handleCodeSubmit();
+    }, 600);
   }
 
   // ── Code Input ─────────────────────────────────────────
@@ -248,7 +265,19 @@ const RSVP = (() => {
       hint.textContent = 'Touch the stars to reveal who shall attend';
       attendanceContainer.appendChild(hint);
       hintShown = true;
-      setTimeout(() => { if (hint.parentNode) hint.remove(); }, 7500);
+      // After fade-out animation (7s), smoothly collapse the space
+      setTimeout(() => {
+        if (!hint.parentNode) return;
+        const h = hint.offsetHeight;
+        hint.style.height = h + 'px';
+        hint.style.overflow = 'hidden';
+        requestAnimationFrame(() => {
+          hint.style.transition = 'height 0.6s ease, margin-bottom 0.6s ease';
+          hint.style.height = '0';
+          hint.style.marginBottom = '0';
+        });
+        setTimeout(() => { if (hint.parentNode) hint.remove(); }, 700);
+      }, 7000);
     }
 
     const starSVG = '<svg viewBox="0 0 24 24"><path d="M12 2 L14.5 8.5 L21.5 9.5 L16 14.5 L17.5 21.5 L12 18 L6.5 21.5 L8 14.5 L2.5 9.5 L9.5 8.5 Z"/></svg>';
