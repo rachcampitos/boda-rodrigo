@@ -1184,81 +1184,72 @@ h1, h2, h3 {
 }
 .rsvp-code-wrap {
   display: flex;
-  gap: 10px;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 .rsvp-code-prefix {
-  font-family: var(--ff-body);
-  font-size: 1.05rem;
+  font-family: var(--ff-heading);
+  font-size: 1.6rem;
   font-weight: 500;
-  color: var(--gold);
-  letter-spacing: 0.15em;
-  line-height: 1;
-  white-space: nowrap;
-  pointer-events: none;
+  color: var(--copper);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 12px rgba(196, 149, 106, 0.3);
   user-select: none;
 }
-.rsvp-code-field {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(139, 123, 184, 0.25);
-  border-radius: 8px;
-  padding: 14px 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-.rsvp-code-field:focus-within {
-  border-color: rgba(212, 168, 83, 0.5);
-  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
-}
-.rsvp-code-input {
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: var(--ff-body);
-  font-size: 1.05rem;
-  color: var(--silver);
-  outline: none;
-  letter-spacing: 0.3em;
-  min-width: 0;
-}
-.rsvp-code-input::placeholder {
+.rsvp-code-dash {
+  font-family: var(--ff-heading);
+  font-size: 1.2rem;
   color: var(--silver-muted);
   opacity: 0.4;
-  letter-spacing: 0.3em;
+  user-select: none;
+  margin: 0 -4px;
 }
-.rsvp-code-btn {
+.rsvp-digit-boxes {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, var(--btn-bg), rgba(91, 81, 137, 0.8));
-  border: 1px solid rgba(139, 123, 184, 0.3);
-  border-radius: 8px;
-  font-family: var(--ff-heading);
-  font-size: 0.9rem;
+  gap: 10px;
+}
+.rsvp-digit {
+  width: 52px;
+  height: 66px;
+  background: rgba(15, 15, 20, 0.6);
+  border: 2px solid rgba(139, 123, 184, 0.25);
+  border-radius: 10px;
+  font-family: var(--ff-body);
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
   color: var(--silver);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
+  outline: none;
+  caret-color: var(--gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s, color 0.3s, transform 0.2s;
+  -webkit-appearance: none;
 }
-.rsvp-code-btn:hover {
-  background: linear-gradient(135deg, var(--btn-hover), rgba(110, 99, 163, 0.9));
-  border-color: rgba(212, 168, 83, 0.5);
+.rsvp-digit:focus {
+  border-color: var(--lavender);
+  background: rgba(15, 15, 20, 0.9);
+  box-shadow: 0 0 16px rgba(139, 123, 184, 0.35), 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: scale(1.05);
+}
+.rsvp-digit.filled {
+  border-color: var(--gold);
   color: var(--gold);
-  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
-  transform: translateY(-1px);
+  background: rgba(212, 168, 83, 0.06);
+  box-shadow: 0 0 12px rgba(212, 168, 83, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
-.rsvp-code-btn-icon {
-  font-size: 1.1rem;
-  color: var(--gold);
-  transition: text-shadow 0.3s;
+.rsvp-digit.error {
+  border-color: #c85050;
+  animation: digitShake 0.5s ease;
 }
-.rsvp-code-btn:hover .rsvp-code-btn-icon {
-  text-shadow: 0 0 8px var(--gold-glow);
+@keyframes digitShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.rsvp-digit::placeholder {
+  color: var(--silver-muted);
+  opacity: 0.2;
 }
 
 /* ---- State 2: Deck + Deal + Flip ---- */
@@ -2161,8 +2152,11 @@ h1, h2, h3 {
   .oracle-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
 
   .rsvp-card-inner { padding: 30px 20px; }
-  .rsvp-code-wrap { flex-direction: column; }
-  .rsvp-code-btn { justify-content: center; padding: 12px; }
+  .rsvp-code-wrap { gap: 8px; }
+  .rsvp-code-prefix { font-size: 1.3rem; }
+  .rsvp-code-dash { font-size: 1rem; }
+  .rsvp-digit-boxes { gap: 8px; }
+  .rsvp-digit { width: 44px; height: 56px; font-size: 1.3rem; border-radius: 8px; }
   .rsvp-invite-card { max-width: 260px; }
   .rsvp-invite-card-inner { padding-top: 150%; }
   .rsvp-invite-front-content { padding: 16px 14px; gap: 6px; }
