@@ -49,7 +49,7 @@ const RSVP = (() => {
     checkUrlCode();
   }
 
-  // ── Auto-detect code from URL param (?code=STAR-XXXX) ──
+  // ── Auto-detect code from URL param (?code=XXXX) ──
 
   function checkUrlCode() {
     const params = new URLSearchParams(window.location.search);
@@ -83,8 +83,8 @@ const RSVP = (() => {
 
     if (!raw) return;
 
-    // Luna Easter egg: check for LUNA or STAR-LUNA
-    if (raw === 'LUNA' || raw === 'STAR-LUNA') {
+    // Luna Easter egg
+    if (raw === 'LUNA') {
       showLunaMemorial();
       return;
     }
