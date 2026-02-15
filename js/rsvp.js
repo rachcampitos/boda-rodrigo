@@ -248,7 +248,7 @@ const RSVP = (() => {
       hint.textContent = 'Touch the stars to reveal who shall attend';
       attendanceContainer.appendChild(hint);
       hintShown = true;
-      setTimeout(() => { if (hint.parentNode) hint.remove(); }, 3500);
+      setTimeout(() => { if (hint.parentNode) hint.remove(); }, 7500);
     }
 
     const starSVG = '<svg viewBox="0 0 24 24"><path d="M12 2 L14.5 8.5 L21.5 9.5 L16 14.5 L17.5 21.5 L12 18 L6.5 21.5 L8 14.5 L2.5 9.5 L9.5 8.5 Z"/></svg>';
@@ -319,7 +319,7 @@ const RSVP = (() => {
         starBtns.forEach(btn => btn.classList.add('hint-pulse'));
         setTimeout(() => {
           starBtns.forEach(btn => btn.classList.remove('hint-pulse'));
-        }, 3000);
+        }, 5500);
       });
     }
   }

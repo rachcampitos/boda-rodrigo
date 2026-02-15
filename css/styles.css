@@ -1419,6 +1419,20 @@ h1, h2, h3 {
   padding: 20px 18px;
   text-align: center;
   gap: 6px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 168, 83, 0.3) transparent;
+}
+.rsvp-invite-front-content::-webkit-scrollbar {
+  width: 4px;
+}
+.rsvp-invite-front-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rsvp-invite-front-content::-webkit-scrollbar-thumb {
+  background: rgba(212, 168, 83, 0.3);
+  border-radius: 4px;
 }
 /* Corner ornaments */
 .rsvp-invite-ornament-tl,
@@ -1509,20 +1523,20 @@ h1, h2, h3 {
   letter-spacing: 0.04em;
   margin-bottom: 2px;
   opacity: 0;
-  animation: starHintFade 3s ease forwards;
+  animation: starHintFade 7s ease forwards;
 }
 @keyframes starHintFade {
   0% { opacity: 0; }
-  12% { opacity: 0.85; }
-  65% { opacity: 0.85; }
+  8% { opacity: 0.85; }
+  75% { opacity: 0.85; }
   100% { opacity: 0; }
 }
 /* Star pulse synchronized with hint */
 .rsvp-member-star.hint-pulse svg path {
-  animation: starHintPulse 1s ease-in-out 2;
+  animation: starHintPulse 1.2s ease-in-out 3;
 }
 .rsvp-member-toggle.attending .rsvp-member-star.hint-pulse svg path {
-  animation: starHintPulseGold 1s ease-in-out 2;
+  animation: starHintPulseGold 1.2s ease-in-out 3;
 }
 @keyframes starHintPulse {
   0%, 100% { fill: rgba(139, 123, 184, 0.25); }
