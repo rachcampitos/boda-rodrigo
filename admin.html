@@ -719,6 +719,37 @@
       border: 1px solid rgba(139, 123, 184, 0.2);
     }
 
+    /* Per-member chips */
+    .guest-members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .member-chip {
+      font-size: 0.6rem;
+      padding: 1px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
+    .member-chip--accept {
+      background: rgba(212, 168, 83, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(212, 168, 83, 0.25);
+    }
+    .member-chip--decline {
+      background: rgba(139, 123, 184, 0.06);
+      color: var(--silver-muted);
+      border: 1px solid rgba(139, 123, 184, 0.15);
+      opacity: 0.6;
+    }
+    .member-chip--legacy {
+      background: rgba(139, 123, 184, 0.06);
+      color: var(--silver);
+      border: 1px solid rgba(139, 123, 184, 0.12);
+    }
+
     .empty-state {
       text-align: center;
       padding: 48px 24px;
@@ -1149,7 +1180,7 @@
         if (stats.total === 0) {
           totalSub.textContent = 'Awaiting responses';
         } else {
-          const hc = stats.acceptedHeadCount || stats.accepted;
+          const hc = stats.totalAttendingPeople || stats.acceptedHeadCount || stats.accepted;
           totalSub.textContent = `${hc} guests attending`;
         }
 
@@ -1227,9 +1258,18 @@
 
         body.innerHTML = recent.map(r => {
           const timeAgo = getTimeAgo(new Date(r.createdAt));
-          const verb = r.attendance === 'accept' ? 'aligned with the stars' : 'wanders still';
-          const icon = r.attendance === 'accept' ? '&#10022;' : '&#10023;';
+          const isAccept = r.attendance === 'accept';
+          const icon = isAccept ? '&#10022;' : '&#10023;';
           const name = r.displayName || r.name || 'Unknown';
+          const totalAtt = r.totalAttending || 0;
+          let verb;
+          if (isAccept && totalAtt > 1) {
+            verb = `aligned with the stars (${totalAtt} attending)`;
+          } else if (isAccept) {
+            verb = 'aligned with the stars';
+          } else {
+            verb = 'wanders still';
+          }
           return `
             <div class="alignment-item">
               <span class="alignment-icon">${icon}</span>
@@ -1253,8 +1293,11 @@
           filtered = filtered.filter(r => {
             const name = (r.displayName || r.name || '').toLowerCase();
             const members = (r.members || []).join(' ').toLowerCase();
+            const attending = (r.attendingMembers || []).join(' ').toLowerCase();
+            const declining = (r.decliningMembers || []).join(' ').toLowerCase();
+            const plusOne = (r.plusOneName || '').toLowerCase();
             const respondedBy = (r.respondedBy || '').toLowerCase();
-            return name.includes(query) || members.includes(query) || respondedBy.includes(query);
+            return name.includes(query) || members.includes(query) || attending.includes(query) || declining.includes(query) || plusOne.includes(query) || respondedBy.includes(query);
           });
         }
 
@@ -1279,8 +1322,33 @@
           const badgeText = isAccept ? 'Aligned' : 'Wandering';
           const cardClass = isAccept ? 'guest-card--accept' : 'guest-card--decline';
           const displayName = r.displayName || r.name || 'Unknown';
-          const headCount = r.headCount || 1;
           const respondedBy = r.respondedBy ? `by ${escapeHtml(r.respondedBy)}` : '';
+
+          // Per-member chips
+          const attending = r.attendingMembers || [];
+          const declining = r.decliningMembers || [];
+          const hasPerMember = attending.length > 0 || declining.length > 0;
+          let memberChips = '';
+          if (hasPerMember) {
+            const chips = [];
+            attending.forEach(m => chips.push(`<span class="member-chip member-chip--accept">&#9733; ${escapeHtml(m)}</span>`));
+            declining.forEach(m => chips.push(`<span class="member-chip member-chip--decline">&#9734; ${escapeHtml(m)}</span>`));
+            if (r.plusOneName) chips.push(`<span class="member-chip member-chip--accept">&#9733; ${escapeHtml(r.plusOneName)} (+1)</span>`);
+            memberChips = `<div class="guest-members">${chips.join('')}</div>`;
+          } else if (r.members && r.members.length > 1) {
+            const chips = r.members.map(m => `<span class="member-chip member-chip--legacy">${escapeHtml(m)}</span>`);
+            memberChips = `<div class="guest-members">${chips.join('')}</div>`;
+          }
+
+          // Attending count badge
+          const totalAtt = r.totalAttending || 0;
+          const headCount = r.headCount || 1;
+          let countBadge = '';
+          if (hasPerMember && isAccept) {
+            countBadge = `<span class="guest-badge" style="background:rgba(212,168,83,0.08);color:var(--gold);border:1px solid rgba(212,168,83,0.2);margin-right:4px;">${totalAtt} attending</span>`;
+          } else if (headCount > 1) {
+            countBadge = `<span class="guest-badge" style="background:rgba(139,123,184,0.08);color:var(--silver-muted);border:1px solid rgba(139,123,184,0.15);margin-right:4px;">${headCount} guests</span>`;
+          }
 
           return `
             <div class="guest-card ${cardClass}" style="transition-delay: ${i * 40}ms">
@@ -1288,8 +1356,9 @@
               <div class="guest-info">
                 <div class="guest-name">${escapeHtml(displayName)}</div>
                 <div class="guest-date">${date}${respondedBy ? ' &middot; ' + respondedBy : ''}</div>
+                ${memberChips}
               </div>
-              ${headCount > 1 ? `<span class="guest-badge" style="background:rgba(139,123,184,0.08);color:var(--silver-muted);border:1px solid rgba(139,123,184,0.15);margin-right:4px;">${headCount} guests</span>` : ''}
+              ${countBadge}
               <span class="guest-badge ${badgeClass}">${badgeText}</span>
             </div>
           `;

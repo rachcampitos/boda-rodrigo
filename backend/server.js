@@ -12,13 +12,17 @@ const ADMIN_KEY = process.env.ADMIN_KEY || 'frankie-rodrigo-2026';
 
 // ── Mongoose Model ──────────────────────────────────────
 const rsvpSchema = new mongoose.Schema({
-  groupId:     { type: String, required: true, unique: true },
-  displayName: { type: String, required: true },
-  members:     [{ type: String }],
-  headCount:   { type: Number, required: true },
-  attendance:  { type: String, enum: ['accept', 'decline'], required: true },
-  respondedBy: { type: String, required: true },
-  createdAt:   { type: Date, default: Date.now },
+  groupId:          { type: String, required: true, unique: true },
+  displayName:      { type: String, required: true },
+  members:          [{ type: String }],
+  headCount:        { type: Number, required: true },
+  attendance:       { type: String, enum: ['accept', 'decline'], required: true },
+  respondedBy:      { type: String, required: true },
+  attendingMembers: [{ type: String }],
+  decliningMembers: [{ type: String }],
+  plusOneName:       { type: String, default: null },
+  totalAttending:   { type: Number, default: 0 },
+  createdAt:        { type: Date, default: Date.now },
 });
 
 const Rsvp = mongoose.model('Rsvp', rsvpSchema);
@@ -48,6 +52,10 @@ app.get('/api/rsvp/check/:groupId', async (req, res) => {
         found: true,
         attendance: rsvp.attendance,
         respondedBy: rsvp.respondedBy,
+        attendingMembers: rsvp.attendingMembers || [],
+        decliningMembers: rsvp.decliningMembers || [],
+        plusOneName: rsvp.plusOneName || null,
+        totalAttending: rsvp.totalAttending || 0,
         createdAt: rsvp.createdAt,
       });
     } else {
@@ -59,11 +67,18 @@ app.get('/api/rsvp/check/:groupId', async (req, res) => {
   }
 });
 
-// Get all accepted groupIds (public, for star constellation)
+// Get accepted groups with attending details (public, for star constellation)
 app.get('/api/rsvp/accepted', async (_req, res) => {
   try {
-    const accepted = await Rsvp.find({ attendance: 'accept' }, 'groupId -_id').lean();
-    res.json(accepted.map(r => r.groupId));
+    const accepted = await Rsvp.find(
+      { attendance: 'accept' },
+      'groupId totalAttending attendingMembers -_id'
+    ).lean();
+    res.json(accepted.map(r => ({
+      groupId: r.groupId,
+      totalAttending: r.totalAttending || 0,
+      attendingMembers: r.attendingMembers || [],
+    })));
   } catch (err) {
     console.error('Accepted list error:', err);
     res.status(500).json({ message: 'Something went wrong.' });
@@ -73,7 +88,11 @@ app.get('/api/rsvp/accepted', async (_req, res) => {
 // Submit RSVP (upsert by groupId)
 app.post('/api/rsvp', async (req, res) => {
   try {
-    const { groupId, displayName, members, headCount, attendance, respondedBy } = req.body;
+    const {
+      groupId, displayName, members, headCount,
+      attendance, respondedBy,
+      attendingMembers, decliningMembers, plusOneName, totalAttending,
+    } = req.body;
 
     if (!groupId || !groupId.trim()) {
       return res.status(400).json({ message: 'Group ID is required' });
@@ -94,6 +113,10 @@ app.post('/api/rsvp', async (req, res) => {
         headCount: headCount || 1,
         attendance,
         respondedBy: respondedBy.trim(),
+        attendingMembers: attendingMembers || [],
+        decliningMembers: decliningMembers || [],
+        plusOneName: plusOneName || null,
+        totalAttending: totalAttending || 0,
         createdAt: Date.now(),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -125,6 +148,7 @@ app.get('/api/rsvps', async (req, res) => {
     const rsvps = await Rsvp.find().sort({ createdAt: -1 });
     const accepted = rsvps.filter(r => r.attendance === 'accept');
     const declined = rsvps.filter(r => r.attendance === 'decline');
+    const totalAttendingPeople = accepted.reduce((sum, r) => sum + (r.totalAttending || r.headCount || 1), 0);
     const stats = {
       total: rsvps.length,
       accepted: accepted.length,
@@ -132,6 +156,7 @@ app.get('/api/rsvps', async (req, res) => {
       totalHeadCount: rsvps.reduce((sum, r) => sum + (r.headCount || 1), 0),
       acceptedHeadCount: accepted.reduce((sum, r) => sum + (r.headCount || 1), 0),
       declinedHeadCount: declined.reduce((sum, r) => sum + (r.headCount || 1), 0),
+      totalAttendingPeople,
     };
     res.json({ stats, rsvps });
   } catch (err) {

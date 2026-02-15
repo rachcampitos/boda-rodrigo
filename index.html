@@ -253,6 +253,33 @@
             </div>
           </div>
         </div>
+        <!-- Card IV: After Party -->
+        <div class="tarot-card reveal" data-card="4">
+          <div class="tarot-card-inner">
+            <div class="tarot-face tarot-back">
+              <div class="tarot-back-border">
+                <div class="tarot-back-content">
+                  <div class="tarot-star">&#10022;</div>
+                  <span class="tarot-numeral">IV</span>
+                </div>
+              </div>
+            </div>
+            <div class="tarot-face tarot-front">
+              <div class="tarot-front-content">
+                <span class="tarot-card-numeral">IV</span>
+                <h3 class="tarot-card-title">The After Party</h3>
+                <p class="tarot-time">11:30 PM</p>
+                <p class="tarot-venue">The Borderline</p>
+                <p class="tarot-address">244-18 Jericho Turnpike, Bellerose, NY 11001</p>
+                <p class="tarot-quote">&ldquo;Couldn&rsquo;t get enough of us? Join us at The Borderline Tavern for drinks, music and even more fun.&rdquo;</p>
+                <div class="tarot-actions">
+                  <a href="https://maps.google.com/?q=The+Borderline+244-18+Jericho+Turnpike+Bellerose+NY+11001" target="_blank" rel="noopener" class="btn btn--small">Map</a>
+                  <a href="#" class="btn btn--small btn-ics" data-event="afterparty">Add to Calendar</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -658,13 +685,18 @@
             </svg>
           </div>
 
-          <!-- State 1: Search -->
+          <!-- State 1: Code Entry -->
           <div id="rsvp-search" class="rsvp-state">
-            <label for="rsvp-search-input" class="rsvp-search-label">Find Your Invitation</label>
-            <p class="rsvp-search-hint">Begin typing your first or last name</p>
-            <div class="rsvp-search-wrap">
-              <input type="text" id="rsvp-search-input" class="rsvp-search-input" placeholder="Type your name..." autocomplete="off" autocorrect="off" spellcheck="false">
-              <ul id="rsvp-dropdown" class="rsvp-dropdown" role="listbox" aria-label="Guest matches"></ul>
+            <label class="rsvp-search-label">Enter Your Invitation Code</label>
+            <p class="rsvp-search-hint">You'll find it on your invitation card</p>
+            <div class="rsvp-code-wrap">
+              <input type="text" id="rsvp-code-input" class="rsvp-code-input"
+                     placeholder="STAR-0000" maxlength="9" inputmode="text"
+                     autocomplete="off" autocorrect="off" spellcheck="false">
+              <button type="button" id="rsvp-code-submit" class="rsvp-code-btn">
+                <span class="rsvp-code-btn-icon">&#10022;</span>
+                <span>Reveal</span>
+              </button>
             </div>
             <p id="rsvp-search-error" class="rsvp-error-msg" style="display:none;"></p>
           </div>
@@ -703,17 +735,13 @@
                       <p class="rsvp-invite-members" id="rsvp-invite-members"></p>
                       <p class="rsvp-invite-msg">to the wedding celebration of<br><strong>Frankie &amp; Rodrigo</strong><br>October 15, 2026</p>
                       <div class="rsvp-invite-stars" aria-hidden="true">&#10022; &#10023; &#10022;</div>
-                      <div class="rsvp-invite-attendance">
-                        <button type="button" class="rsvp-attend-btn rsvp-attend-btn--accept" data-attendance="accept">
-                          <span class="rsvp-attend-icon">&#10022;</span>
-                          <span>Joyfully Accept</span>
-                        </button>
-                        <button type="button" class="rsvp-attend-btn rsvp-attend-btn--decline" data-attendance="decline">
-                          <span class="rsvp-attend-icon">&#9790;</span>
-                          <span>Regretfully Decline</span>
-                        </button>
+                      <div class="rsvp-invite-attendance" id="rsvp-invite-attendance">
+                        <!-- Populated dynamically by JS with member toggles -->
                       </div>
-                      <button type="button" class="rsvp-back-btn" id="rsvp-back-invite">&#8592; Not you? Search again</button>
+                      <button type="button" class="rsvp-confirm-btn" id="rsvp-confirm-btn">
+                        <span class="rsvp-confirm-icon">&#10022;</span>
+                        <span>Confirm Response</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -729,7 +757,6 @@
               <p class="rsvp-already-msg" id="rsvp-already-msg"></p>
               <div class="rsvp-already-actions">
                 <button type="button" class="btn" id="rsvp-change-btn">Change Your Response</button>
-                <button type="button" class="rsvp-back-btn" id="rsvp-back-already">&#8592; Search for another name</button>
               </div>
             </div>
           </div>
@@ -740,7 +767,7 @@
             <h3 class="rsvp-success-title">The Stars Have Spoken</h3>
             <p class="rsvp-success-msg" id="rsvp-success-msg"></p>
             <p class="rsvp-success-sub" id="rsvp-success-sub">We can&rsquo;t wait to celebrate with you!</p>
-            <button type="button" class="rsvp-back-btn" id="rsvp-back-success" style="margin-top:16px;">&#8592; Search for another name</button>
+            <button type="button" class="rsvp-back-btn" id="rsvp-back-success" style="margin-top:16px;">Changed your mind? Resubmit</button>
           </div>
 
           <!-- Loading state -->

@@ -490,7 +490,7 @@ h1, h2, h3 {
 /* ---------- TAROT CARDS ---------- */
 .tarot-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 30px;
   perspective: 1200px;
 }
@@ -1082,7 +1082,7 @@ h1, h2, h3 {
   margin-bottom: 48px;
 }
 .faq-question { text-align: center; }
-.faq-answer { text-align: left; }
+.faq-answer { text-align: center; }
 .faq-question {
   font-size: clamp(1.3rem, 3vw, 1.8rem);
   margin-bottom: 12px;
@@ -1165,7 +1165,7 @@ h1, h2, h3 {
   text-align: center;
 }
 
-/* ---- State 1: Search ---- */
+/* ---- State 1: Code Entry ---- */
 .rsvp-search-label {
   display: block;
   font-family: var(--ff-heading);
@@ -1182,83 +1182,65 @@ h1, h2, h3 {
   font-family: var(--ff-heading);
   margin-bottom: 16px;
 }
-.rsvp-search-wrap {
-  position: relative;
+.rsvp-code-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
 }
-.rsvp-search-input {
-  width: 100%;
+.rsvp-code-input {
+  flex: 1;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(139, 123, 184, 0.2);
+  border: 1px solid rgba(139, 123, 184, 0.25);
   border-radius: 8px;
   padding: 14px 16px;
   font-family: var(--ff-body);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: var(--silver);
   outline: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
-.rsvp-search-input:focus {
+.rsvp-code-input:focus {
   border-color: rgba(212, 168, 83, 0.5);
-  box-shadow: 0 0 16px rgba(212, 168, 83, 0.1);
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
 }
-.rsvp-search-input::placeholder {
+.rsvp-code-input::placeholder {
   color: var(--silver-muted);
-  opacity: 0.5;
+  opacity: 0.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
-
-/* ---- Autocomplete Dropdown ---- */
-.rsvp-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  list-style: none;
-  margin: 4px 0 0;
-  padding: 4px 0;
-  background: rgba(14, 8, 30, 0.97);
-  border: 1px solid rgba(212, 168, 83, 0.25);
+.rsvp-code-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--btn-bg), rgba(91, 81, 137, 0.8));
+  border: 1px solid rgba(139, 123, 184, 0.3);
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  max-height: 280px;
-  overflow-y: auto;
-  display: none;
-}
-.rsvp-dropdown.open {
-  display: block;
-}
-.rsvp-dropdown-item {
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.rsvp-dropdown-item:hover,
-.rsvp-dropdown-item.active {
-  background: rgba(212, 168, 83, 0.1);
-}
-.rsvp-dropdown-name {
+  font-family: var(--ff-heading);
   font-size: 0.9rem;
-  color: #e0e0e8;
+  color: var(--silver);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
 }
-.rsvp-dropdown-name mark {
-  background: none;
+.rsvp-code-btn:hover {
+  background: linear-gradient(135deg, var(--btn-hover), rgba(110, 99, 163, 0.9));
+  border-color: rgba(212, 168, 83, 0.5);
   color: var(--gold);
-  font-weight: 600;
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
+  transform: translateY(-1px);
 }
-.rsvp-dropdown-group {
-  font-size: 0.72rem;
-  color: var(--silver-muted);
-  margin-top: 2px;
-  font-style: italic;
-  font-family: var(--ff-heading);
+.rsvp-code-btn-icon {
+  font-size: 1.1rem;
+  color: var(--gold);
+  transition: text-shadow 0.3s;
 }
-.rsvp-dropdown-empty {
-  padding: 16px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--silver-muted);
-  font-style: italic;
-  font-family: var(--ff-heading);
+.rsvp-code-btn:hover .rsvp-code-btn-icon {
+  text-shadow: 0 0 8px var(--gold-glow);
 }
 
 /* ---- State 2: Deck + Deal + Flip ---- */
@@ -1517,62 +1499,174 @@ h1, h2, h3 {
   opacity: 0.6;
   margin: 2px 0;
 }
-/* Attendance buttons */
+/* Star hint — ephemeral shimmer */
+.rsvp-star-hint {
+  font-family: var(--ff-heading);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  opacity: 0;
+  animation: starHintFade 3s ease forwards;
+}
+@keyframes starHintFade {
+  0% { opacity: 0; }
+  12% { opacity: 0.85; }
+  65% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+/* Star pulse synchronized with hint */
+.rsvp-member-star.hint-pulse svg path {
+  animation: starHintPulse 1s ease-in-out 2;
+}
+.rsvp-member-toggle.attending .rsvp-member-star.hint-pulse svg path {
+  animation: starHintPulseGold 1s ease-in-out 2;
+}
+@keyframes starHintPulse {
+  0%, 100% { fill: rgba(139, 123, 184, 0.25); }
+  50% { fill: rgba(212, 168, 83, 0.5); }
+}
+@keyframes starHintPulseGold {
+  0%, 100% { fill: var(--gold); }
+  50% { fill: #fff; filter: drop-shadow(0 0 8px var(--gold-glow)); }
+}
+
+/* Member toggles + confirm button */
 .rsvp-invite-attendance {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
   margin-top: 4px;
 }
-.rsvp-attend-btn {
+.rsvp-member-toggle {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
-  border-radius: 10px;
-  background: transparent;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 123, 184, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.3s, background 0.3s;
+}
+.rsvp-member-toggle.attending {
+  border-color: rgba(212, 168, 83, 0.25);
+  background: rgba(212, 168, 83, 0.04);
+}
+.rsvp-member-star {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
   cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.rsvp-member-star:hover {
+  transform: scale(1.15);
+}
+.rsvp-member-star svg {
+  width: 22px;
+  height: 22px;
+  transition: fill 0.3s, filter 0.3s;
+}
+.rsvp-member-star svg path {
+  fill: rgba(139, 123, 184, 0.25);
+  transition: fill 0.3s;
+}
+.rsvp-member-toggle.attending .rsvp-member-star svg path {
+  fill: var(--gold);
+}
+.rsvp-member-toggle.attending .rsvp-member-star svg {
+  filter: drop-shadow(0 0 6px var(--gold-glow));
+}
+.rsvp-member-name {
   font-family: var(--ff-heading);
   font-size: 0.85rem;
   color: var(--silver-muted);
-  transition: border-color 0.3s, background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
-  white-space: nowrap;
+  flex: 1;
+  transition: color 0.3s;
 }
-.rsvp-attend-btn:hover {
-  transform: translateY(-2px);
+.rsvp-member-toggle.attending .rsvp-member-name {
+  color: var(--silver);
 }
-.rsvp-attend-icon {
-  font-size: 1.4rem;
-  transition: color 0.3s, text-shadow 0.3s;
+.rsvp-member-toggle.not-attending .rsvp-member-name {
+  opacity: 0.5;
 }
-/* Accept button — gold themed */
-.rsvp-attend-btn--accept {
-  border: 1px solid rgba(212, 168, 83, 0.3);
-}
-.rsvp-attend-btn--accept:hover {
-  border-color: rgba(212, 168, 83, 0.6);
-  background: rgba(212, 168, 83, 0.08);
-  color: var(--gold);
-  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
-}
-.rsvp-attend-btn--accept:hover .rsvp-attend-icon {
-  color: var(--gold);
-  text-shadow: 0 0 12px var(--gold-glow);
-}
-/* Decline button — silver/lavender themed */
-.rsvp-attend-btn--decline {
+/* Plus-one name input */
+.rsvp-plusone-name {
+  width: 100%;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(139, 123, 184, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: var(--ff-body);
+  font-size: 0.78rem;
+  color: var(--silver);
+  outline: none;
+  transition: border-color 0.3s;
 }
-.rsvp-attend-btn--decline:hover {
-  border-color: rgba(139, 123, 184, 0.4);
-  background: rgba(139, 123, 184, 0.06);
+.rsvp-plusone-name:focus {
+  border-color: rgba(212, 168, 83, 0.4);
+}
+.rsvp-plusone-name::placeholder {
+  color: var(--silver-muted);
+  opacity: 0.5;
+  font-style: italic;
+}
+/* Confirm button */
+.rsvp-confirm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.15), rgba(212, 168, 83, 0.08));
+  border: 1px solid rgba(212, 168, 83, 0.35);
+  border-radius: 10px;
+  font-family: var(--ff-heading);
+  font-size: 0.9rem;
+  color: var(--gold);
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.rsvp-confirm-btn:hover {
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.22), rgba(212, 168, 83, 0.12));
+  border-color: rgba(212, 168, 83, 0.6);
+  box-shadow: 0 0 20px rgba(212, 168, 83, 0.15);
+  transform: translateY(-1px);
+}
+.rsvp-confirm-icon {
+  font-size: 1.1rem;
+  transition: text-shadow 0.3s;
+}
+.rsvp-confirm-btn:hover .rsvp-confirm-icon {
+  text-shadow: 0 0 8px var(--gold-glow);
+}
+/* Decline variant (all members OFF) */
+.rsvp-confirm-btn.decline-mode {
+  background: linear-gradient(135deg, rgba(139, 123, 184, 0.12), rgba(139, 123, 184, 0.06));
+  border-color: rgba(139, 123, 184, 0.3);
   color: var(--lavender-lt);
 }
-.rsvp-attend-btn--decline:hover .rsvp-attend-icon {
+.rsvp-confirm-btn.decline-mode:hover {
+  background: linear-gradient(135deg, rgba(139, 123, 184, 0.18), rgba(139, 123, 184, 0.1));
+  border-color: rgba(139, 123, 184, 0.5);
+  box-shadow: 0 0 20px rgba(139, 123, 184, 0.15);
+}
+.rsvp-confirm-btn.decline-mode .rsvp-confirm-icon {
   color: var(--lavender);
 }
+
 /* Back / search again link */
 .rsvp-back-btn {
   background: none;
@@ -2035,16 +2129,26 @@ h1, h2, h3 {
   .oracle-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
 
   .rsvp-card-inner { padding: 30px 20px; }
+  .rsvp-code-wrap { flex-direction: column; }
+  .rsvp-code-btn { justify-content: center; padding: 12px; }
   .rsvp-invite-card { max-width: 260px; }
   .rsvp-invite-card-inner { padding-top: 150%; }
   .rsvp-invite-front-content { padding: 16px 14px; gap: 6px; }
   .rsvp-invite-title { font-size: 1.1rem; }
   .rsvp-invite-msg { font-size: 0.75rem; }
-  .rsvp-attend-btn { padding: 10px 6px; font-size: 0.75rem; }
-  .rsvp-attend-icon { font-size: 1.1rem; }
+  .rsvp-member-star { width: 28px; height: 28px; }
+  .rsvp-member-star svg { width: 18px; height: 18px; }
+  .rsvp-member-name { font-size: 0.78rem; }
+  .rsvp-member-toggle { padding: 6px 8px; gap: 8px; }
+  .rsvp-confirm-btn { padding: 10px 12px; font-size: 0.82rem; }
+  .rsvp-plusone-name { font-size: 0.72rem; padding: 5px 8px; }
   .rsvp-deck { width: 90px; height: 126px; }
   #rsvp-invite { min-height: 360px; }
   .rsvp-invite-card { transform: scale(0.3) translateY(-140px) rotate(-8deg); }
+
+  .rsvp-constellation-lines line { stroke-width: 0.5; }
+  .rsvp-constellation-lines line.lit { stroke-width: 0.8; }
+  .rsvp-starfield-star.lit { transform: scale(1.8); }
 
   .countdown { gap: 16px; }
 
@@ -2058,7 +2162,7 @@ h1, h2, h3 {
     width: 180px;
     height: 180px;
   }
-  .tarot-grid { gap: 20px; }
+  .tarot-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .tarot-card { max-width: 240px; }
 }
 
