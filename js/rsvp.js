@@ -1,5 +1,5 @@
 /* ======================================================
-   RSVP — Autocomplete search, card flip, API submission
+   RSVP — Code entry, member toggles, card flip, API submission
    ====================================================== */
 const RSVP = (() => {
   // API URL
@@ -16,17 +16,15 @@ const RSVP = (() => {
 
   if (!searchState) return { init() {} };
 
-  const searchInput = document.getElementById('rsvp-search-input');
-  const dropdown = document.getElementById('rsvp-dropdown');
+  const codeInput = document.getElementById('rsvp-code-input');
+  const codeSubmitBtn = document.getElementById('rsvp-code-submit');
   const searchError = document.getElementById('rsvp-search-error');
 
   const inviteCard = inviteState.querySelector('.rsvp-invite-card');
   const inviteTitle = document.getElementById('rsvp-invite-title');
   const inviteMembers = document.getElementById('rsvp-invite-members');
-  const attendBtns = inviteState.querySelectorAll('.rsvp-attend-btn');
-
-  const alreadyMsg = document.getElementById('rsvp-already-msg');
-  const changeBtn = document.getElementById('rsvp-change-btn');
+  const attendanceContainer = document.getElementById('rsvp-invite-attendance');
+  const confirmBtn = document.getElementById('rsvp-confirm-btn');
 
   const successMsg = document.getElementById('rsvp-success-msg');
   const successSub = document.getElementById('rsvp-success-sub');
@@ -35,184 +33,59 @@ const RSVP = (() => {
 
   // State
   let selectedGuest = null;
-  let activeIndex = -1;
-  let results = [];
+  let usedCode = null;
+  let memberStates = {};    // { memberName: boolean }
+  let plusOneAttending = false;
+  let plusOneName = '';
+  let hintShown = false;
   const starMap = {}; // groupId → { container, stars[], lines[], headCount }
 
   function init() {
     initStarfield();
-    initAutocomplete();
+    initCodeInput();
     initBackButtons();
-    initAttendanceButtons();
-    initChangeButton();
+    initConfirmButton();
     loadAcceptedStars();
   }
 
-  // ── Autocomplete ────────────────────────────────────────
+  // ── Code Input ─────────────────────────────────────────
 
-  function initAutocomplete() {
-    searchInput.addEventListener('input', onSearchInput);
-    searchInput.addEventListener('keydown', onSearchKeydown);
-
-    // Close dropdown on outside click
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.rsvp-search-wrap')) {
-        closeDropdown();
+  function initCodeInput() {
+    codeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleCodeSubmit();
       }
     });
+    codeSubmitBtn.addEventListener('click', handleCodeSubmit);
   }
 
-  function onSearchInput() {
-    const query = searchInput.value.trim();
+  function handleCodeSubmit() {
+    const raw = codeInput.value.trim().toUpperCase();
     hideError();
 
-    // Luna Easter egg: check on any input
-    if (isLuna(query)) {
-      closeDropdown();
+    if (!raw) return;
+
+    // Luna Easter egg: check for LUNA or STAR-LUNA
+    if (raw === 'LUNA' || raw === 'STAR-LUNA') {
+      showLunaMemorial();
       return;
     }
 
-    if (query.length < 2) {
-      closeDropdown();
+    const guest = findGuestByCode(raw);
+    if (!guest) {
+      showError('Code not recognized. Please check your invitation and try again.');
       return;
     }
 
-    results = searchGuests(query);
-    activeIndex = -1;
-
-    if (results.length === 0) {
-      dropdown.innerHTML = '<li class="rsvp-dropdown-empty">No invitations found for that name</li>';
-      dropdown.classList.add('open');
-      return;
-    }
-
-    dropdown.innerHTML = results.map((r, i) => `
-      <li class="rsvp-dropdown-item" role="option" data-index="${i}">
-        <div class="rsvp-dropdown-name">${highlightMatch(r.matchedName, query)}</div>
-        <div class="rsvp-dropdown-group">${escapeHtml(r.guest.display)}</div>
-      </li>
-    `).join('');
-
-    dropdown.classList.add('open');
-
-    // Click handlers on results
-    dropdown.querySelectorAll('.rsvp-dropdown-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const idx = parseInt(item.dataset.index, 10);
-        selectResult(idx);
-      });
-    });
-  }
-
-  function onSearchKeydown(e) {
-    if (!dropdown.classList.contains('open')) {
-      // Enter on Luna check
-      if (e.key === 'Enter' && isLuna(searchInput.value.trim())) {
-        e.preventDefault();
-        showLunaMemorial();
-        return;
-      }
-      return;
-    }
-
-    const items = dropdown.querySelectorAll('.rsvp-dropdown-item');
-    if (!items.length) return;
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      activeIndex = Math.min(activeIndex + 1, items.length - 1);
-      updateActive(items);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      activeIndex = Math.max(activeIndex - 1, 0);
-      updateActive(items);
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (activeIndex >= 0) {
-        selectResult(activeIndex);
-      }
-    } else if (e.key === 'Escape') {
-      closeDropdown();
-    }
-  }
-
-  function updateActive(items) {
-    items.forEach((item, i) => {
-      item.classList.toggle('active', i === activeIndex);
-      if (i === activeIndex) item.scrollIntoView({ block: 'nearest' });
-    });
-  }
-
-  function closeDropdown() {
-    dropdown.classList.remove('open');
-    dropdown.innerHTML = '';
-    results = [];
-    activeIndex = -1;
-  }
-
-  function selectResult(index) {
-    const match = results[index];
-    if (!match) return;
-    selectedGuest = match.guest;
-    searchInput.value = match.matchedName;
-    closeDropdown();
-    checkAndShowInvitation(match.matchedName);
-  }
-
-  // ── Search Algorithm ────────────────────────────────────
-
-  function searchGuests(query) {
-    const queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = [];
-
-    for (const guest of GUEST_LIST) {
-      let matched = false;
-
-      // Match against member names
-      for (const member of guest.members) {
-        const memberWords = member.toLowerCase().split(/\s+/);
-        const allMatch = queryWords.every(qw =>
-          memberWords.some(mw => mw.startsWith(qw))
-        );
-        if (allMatch) {
-          matches.push({ guest, matchedName: member });
-          matched = true;
-          break;
-        }
-      }
-
-      // Also match against display name (family/group name)
-      if (!matched) {
-        const displayWords = guest.display.toLowerCase().split(/\s+/);
-        const displayMatch = queryWords.every(qw =>
-          displayWords.some(dw => dw.startsWith(qw))
-        );
-        if (displayMatch) {
-          matches.push({ guest, matchedName: guest.members[0] });
-        }
-      }
-    }
-
-    return matches.slice(0, 8);
-  }
-
-  function highlightMatch(name, query) {
-    const queryWords = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const words = name.split(' ');
-
-    return words.map(word => {
-      const matchedQ = queryWords.find(qw => word.toLowerCase().startsWith(qw));
-      if (matchedQ) {
-        const len = matchedQ.length;
-        return `<mark>${escapeHtml(word.slice(0, len))}</mark>${escapeHtml(word.slice(len))}`;
-      }
-      return escapeHtml(word);
-    }).join(' ');
+    selectedGuest = guest;
+    usedCode = raw;
+    checkAndShowInvitation(raw);
   }
 
   // ── Check & Show Invitation ─────────────────────────────
 
-  async function checkAndShowInvitation(respondedByName) {
+  async function checkAndShowInvitation(code) {
     if (!selectedGuest) return;
 
     showState('loading');
@@ -230,10 +103,26 @@ const RSVP = (() => {
       const data = await res.json();
 
       if (data.found) {
-        showAlreadyState(data, respondedByName);
+        // Pre-populate toggles from previous response
+        memberStates = {};
+        const attending = data.attendingMembers || [];
+        const declining = data.decliningMembers || [];
+        for (const m of selectedGuest.members) {
+          if (attending.includes(m)) {
+            memberStates[m] = true;
+          } else if (declining.includes(m)) {
+            memberStates[m] = false;
+          } else {
+            memberStates[m] = true; // default ON
+          }
+        }
+        plusOneAttending = data.plusOneName ? true : false;
+        plusOneName = data.plusOneName || '';
       } else {
-        showInvitationCard(respondedByName);
+        initMemberStatesDefault();
       }
+
+      showInvitationCard(code);
     } catch (err) {
       showState('search');
       showError(err.name === 'AbortError'
@@ -242,38 +131,42 @@ const RSVP = (() => {
     }
   }
 
+  function initMemberStatesDefault() {
+    memberStates = {};
+    for (const m of selectedGuest.members) {
+      memberStates[m] = true; // all ON by default
+    }
+    plusOneAttending = false;
+    plusOneName = '';
+  }
+
   // ── Invitation Card ─────────────────────────────────────
 
-  function showInvitationCard(respondedByName) {
+  function showInvitationCard(code) {
     populateInviteCard();
 
     // Clear any previous animation classes
     inviteState.classList.remove('dealing', 'dealt', 'flipped');
 
     showState('invite');
-    inviteState.dataset.respondedBy = respondedByName;
+    inviteState.dataset.code = code;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReduced) {
-      // Skip animation — go straight to flipped
       inviteState.classList.add('dealt', 'flipped');
       return;
     }
 
-    // Phase 1: Deal — card flies from deck to center (0.5s)
-    // Double rAF ensures browser paints the base state (opacity:0) first
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         inviteState.classList.add('dealing');
         spawnDealSparkles();
 
-        // Phase 2: Dealt — card arrived
         setTimeout(() => {
           inviteState.classList.remove('dealing');
           inviteState.classList.add('dealt');
 
-          // Phase 3: Flip — reveal front face (0.8s)
           setTimeout(() => {
             inviteState.classList.add('flipped');
           }, 200);
@@ -326,58 +219,195 @@ const RSVP = (() => {
   function populateInviteCard() {
     const guest = selectedGuest;
     inviteTitle.textContent = guest.display;
+    inviteMembers.style.display = 'none';
 
-    if (guest.members.length > 1) {
-      inviteMembers.textContent = guest.members.join(' \u2022 ');
-      inviteMembers.style.display = '';
+    // Adjust card height for large groups
+    const cardInner = inviteCard.querySelector('.rsvp-invite-card-inner');
+    const memberCount = guest.members.length + (guest.plusOne ? 1 : 0);
+    if (memberCount > 3) {
+      cardInner.style.paddingTop = (140 + (memberCount - 3) * 15) + '%';
     } else {
-      inviteMembers.style.display = 'none';
+      cardInner.style.paddingTop = '';
+    }
+
+    buildMemberToggles();
+    updateConfirmButton();
+  }
+
+  // ── Member Toggles ────────────────────────────────────
+
+  function buildMemberToggles() {
+    const guest = selectedGuest;
+    attendanceContainer.innerHTML = '';
+
+    // Shimmer hint (first time only)
+    const showHint = !hintShown;
+    if (showHint) {
+      const hint = document.createElement('p');
+      hint.className = 'rsvp-star-hint';
+      hint.textContent = 'Touch the stars to reveal who shall attend';
+      attendanceContainer.appendChild(hint);
+      hintShown = true;
+      setTimeout(() => { if (hint.parentNode) hint.remove(); }, 3500);
+    }
+
+    const starSVG = '<svg viewBox="0 0 24 24"><path d="M12 2 L14.5 8.5 L21.5 9.5 L16 14.5 L17.5 21.5 L12 18 L6.5 21.5 L8 14.5 L2.5 9.5 L9.5 8.5 Z"/></svg>';
+
+    // Build toggle for each member
+    for (const member of guest.members) {
+      const isOn = memberStates[member] !== false;
+      const row = document.createElement('div');
+      row.className = 'rsvp-member-toggle' + (isOn ? ' attending' : ' not-attending');
+      row.dataset.member = member;
+
+      const starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.className = 'rsvp-member-star';
+      starBtn.innerHTML = starSVG;
+      starBtn.setAttribute('aria-label', `Toggle ${member}`);
+      starBtn.addEventListener('click', () => toggleMember(member));
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'rsvp-member-name';
+      nameSpan.textContent = member;
+
+      row.appendChild(starBtn);
+      row.appendChild(nameSpan);
+      attendanceContainer.appendChild(row);
+    }
+
+    // Plus-one toggle
+    if (guest.plusOne) {
+      const isOn = plusOneAttending;
+      const row = document.createElement('div');
+      row.className = 'rsvp-member-toggle' + (isOn ? ' attending' : ' not-attending');
+      row.dataset.member = '__plusone__';
+
+      const starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.className = 'rsvp-member-star';
+      starBtn.innerHTML = starSVG;
+      starBtn.setAttribute('aria-label', 'Toggle guest');
+      starBtn.addEventListener('click', () => togglePlusOne());
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'rsvp-member-name';
+      nameSpan.textContent = 'Guest';
+
+      row.appendChild(starBtn);
+      row.appendChild(nameSpan);
+
+      // Plus-one name input (shown when ON)
+      if (isOn) {
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'rsvp-plusone-name';
+        nameInput.placeholder = "Guest's name...";
+        nameInput.value = plusOneName;
+        nameInput.maxLength = 60;
+        nameInput.addEventListener('input', (e) => { plusOneName = e.target.value; });
+        row.appendChild(nameInput);
+      }
+
+      attendanceContainer.appendChild(row);
+    }
+
+    // Synchronized star pulse on first load
+    if (showHint) {
+      requestAnimationFrame(() => {
+        const starBtns = attendanceContainer.querySelectorAll('.rsvp-member-star');
+        starBtns.forEach(btn => btn.classList.add('hint-pulse'));
+        setTimeout(() => {
+          starBtns.forEach(btn => btn.classList.remove('hint-pulse'));
+        }, 3000);
+      });
     }
   }
 
-  // ── Already RSVP'd State ────────────────────────────────
-
-  function showAlreadyState(data, respondedByName) {
-    const verb = data.attendance === 'accept' ? 'joyfully accepted' : 'regretfully declined';
-    const date = new Date(data.createdAt).toLocaleDateString('en-US', {
-      month: 'long', day: 'numeric', year: 'numeric',
-    });
-
-    alreadyMsg.innerHTML = `
-      <strong>${escapeHtml(selectedGuest.display)}</strong> has ${verb} this invitation.<br>
-      <span style="font-size:0.8rem;color:var(--silver-muted);">Responded by ${escapeHtml(data.respondedBy)} on ${date}</span>
-    `;
-
-    alreadyState.dataset.respondedBy = respondedByName;
-    showState('already');
+  function toggleMember(member) {
+    memberStates[member] = !memberStates[member];
+    refreshToggles();
+    updateConfirmButton();
   }
 
-  // ── Attendance Buttons ──────────────────────────────────
+  function togglePlusOne() {
+    plusOneAttending = !plusOneAttending;
+    if (!plusOneAttending) plusOneName = '';
+    refreshToggles();
+    updateConfirmButton();
+  }
 
-  function initAttendanceButtons() {
-    attendBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const attendance = btn.dataset.attendance;
-        const respondedBy = inviteState.dataset.respondedBy || '';
-        submitRsvp(attendance, respondedBy);
-      });
+  function refreshToggles() {
+    const rows = attendanceContainer.querySelectorAll('.rsvp-member-toggle');
+    rows.forEach(row => {
+      const member = row.dataset.member;
+      let isOn;
+      if (member === '__plusone__') {
+        isOn = plusOneAttending;
+      } else {
+        isOn = memberStates[member] !== false;
+      }
+      row.classList.toggle('attending', isOn);
+      row.classList.toggle('not-attending', !isOn);
+
+      // Handle plus-one name input visibility
+      if (member === '__plusone__') {
+        const existing = row.querySelector('.rsvp-plusone-name');
+        if (isOn && !existing) {
+          const nameInput = document.createElement('input');
+          nameInput.type = 'text';
+          nameInput.className = 'rsvp-plusone-name';
+          nameInput.placeholder = "Guest's name...";
+          nameInput.value = plusOneName;
+          nameInput.maxLength = 60;
+          nameInput.addEventListener('input', (e) => { plusOneName = e.target.value; });
+          row.appendChild(nameInput);
+        } else if (!isOn && existing) {
+          existing.remove();
+        }
+      }
     });
   }
 
-  function initChangeButton() {
-    changeBtn.addEventListener('click', () => {
-      const respondedBy = alreadyState.dataset.respondedBy || '';
-      showInvitationCard(respondedBy);
+  function updateConfirmButton() {
+    const anyAttending = Object.values(memberStates).some(v => v) || plusOneAttending;
+    const btnText = confirmBtn.querySelector('span:last-child');
+    const btnIcon = confirmBtn.querySelector('.rsvp-confirm-icon');
+
+    if (anyAttending) {
+      btnText.textContent = 'Confirm Response';
+      btnIcon.innerHTML = '&#10022;';
+      confirmBtn.classList.remove('decline-mode');
+    } else {
+      btnText.textContent = 'Send Regrets';
+      btnIcon.innerHTML = '&#9790;';
+      confirmBtn.classList.add('decline-mode');
+    }
+  }
+
+  // ── Confirm Button ────────────────────────────────────
+
+  function initConfirmButton() {
+    confirmBtn.addEventListener('click', () => {
+      const code = inviteState.dataset.code || usedCode || '';
+      submitRsvp(code);
     });
   }
 
   // ── Submit RSVP ─────────────────────────────────────────
 
-  async function submitRsvp(attendance, respondedBy) {
+  async function submitRsvp(code) {
     if (!selectedGuest) return;
 
-    // Disable buttons
-    attendBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+    confirmBtn.disabled = true;
+    confirmBtn.style.opacity = '0.5';
+
+    const attendingMembers = selectedGuest.members.filter(m => memberStates[m]);
+    const decliningMembers = selectedGuest.members.filter(m => !memberStates[m]);
+    let totalAttending = attendingMembers.length;
+    if (plusOneAttending) totalAttending++;
+
+    const attendance = totalAttending > 0 ? 'accept' : 'decline';
 
     const payload = {
       groupId: selectedGuest.id,
@@ -385,7 +415,11 @@ const RSVP = (() => {
       members: selectedGuest.members,
       headCount: selectedGuest.headCount,
       attendance,
-      respondedBy,
+      respondedBy: code,
+      attendingMembers,
+      decliningMembers,
+      plusOneName: plusOneAttending ? (plusOneName.trim() || null) : null,
+      totalAttending,
     };
 
     try {
@@ -405,14 +439,14 @@ const RSVP = (() => {
         throw new Error(err.message || 'Something went wrong');
       }
 
-      // Success — trigger themed animation
       if (attendance === 'accept') {
-        launchAcceptAnimation();
+        launchAcceptAnimation(totalAttending, attendingMembers);
       } else {
         launchDeclineAnimation();
       }
     } catch (err) {
-      attendBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = '';
       showError(err.name === 'AbortError'
         ? 'Request timed out. Please try again.'
         : (err.message || 'Failed to submit. Please try again.'));
@@ -422,35 +456,61 @@ const RSVP = (() => {
   // ── Back Buttons ────────────────────────────────────────
 
   function initBackButtons() {
-    document.getElementById('rsvp-back-invite')?.addEventListener('click', resetToSearch);
-    document.getElementById('rsvp-back-already')?.addEventListener('click', resetToSearch);
-    document.getElementById('rsvp-back-success')?.addEventListener('click', resetToSearch);
+    document.getElementById('rsvp-back-success')?.addEventListener('click', returnToInviteCard);
   }
 
-  function resetToSearch() {
-    selectedGuest = null;
-    searchInput.value = '';
-    inviteState.classList.remove('dealing', 'dealt', 'flipped', 'dissolving', 'dissolving-decline');
-    attendBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+  function returnToInviteCard() {
+    if (!selectedGuest) { resetToSearch(); return; }
 
-    // Clear residuals from accept dissolve
+    inviteState.classList.remove('dealing', 'dealt', 'flipped', 'dissolving', 'dissolving-decline');
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '';
     inviteCard.style.visibility = '';
     const frontFace = inviteCard.querySelector('.rsvp-invite-front');
     if (frontFace) { frontFace.style.maskImage = ''; frontFace.style.webkitMaskImage = ''; }
 
-    // Reset success state to default (accept) styling
     const icon = successState.querySelector('.rsvp-success-icon');
     const title = successState.querySelector('.rsvp-success-title');
     if (icon) { icon.innerHTML = '&#10022;'; icon.style.color = ''; icon.style.textShadow = ''; }
     if (title) title.textContent = 'The Stars Have Spoken';
+    successState.style.opacity = '';
+    successState.style.transform = '';
+    successState.style.transition = '';
 
-    // Reset any inline transition/opacity on success state
+    // If we already have toggle states (from user interaction), re-show card directly
+    // instead of re-fetching from server (avoids overwrite if backend lacks new fields)
+    if (Object.keys(memberStates).length > 0) {
+      showInvitationCard(usedCode || '');
+    } else {
+      checkAndShowInvitation(usedCode || '');
+    }
+  }
+
+  function resetToSearch() {
+    selectedGuest = null;
+    usedCode = null;
+    memberStates = {};
+    plusOneAttending = false;
+    plusOneName = '';
+    codeInput.value = '';
+    inviteState.classList.remove('dealing', 'dealt', 'flipped', 'dissolving', 'dissolving-decline');
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = '';
+
+    inviteCard.style.visibility = '';
+    const frontFace = inviteCard.querySelector('.rsvp-invite-front');
+    if (frontFace) { frontFace.style.maskImage = ''; frontFace.style.webkitMaskImage = ''; }
+
+    const icon = successState.querySelector('.rsvp-success-icon');
+    const title = successState.querySelector('.rsvp-success-title');
+    if (icon) { icon.innerHTML = '&#10022;'; icon.style.color = ''; icon.style.textShadow = ''; }
+    if (title) title.textContent = 'The Stars Have Spoken';
     successState.style.opacity = '';
     successState.style.transform = '';
     successState.style.transition = '';
 
     showState('search');
-    searchInput.focus();
+    codeInput.focus();
   }
 
   // ── State Management ────────────────────────────────────
@@ -468,21 +528,17 @@ const RSVP = (() => {
     const target = map[name];
     if (!target) return;
 
-    // Capture current height
     const startH = cardInnerEl ? cardInnerEl.offsetHeight : 0;
 
-    // Switch states
     states.forEach(el => { el.style.display = 'none'; });
     target.style.display = '';
 
-    // Animate height transition
     if (cardInnerEl && startH > 0) {
       const endH = cardInnerEl.scrollHeight;
       if (Math.abs(endH - startH) > 5) {
         cardInnerEl.style.height = startH + 'px';
         requestAnimationFrame(() => {
           cardInnerEl.style.height = endH + 'px';
-          // Clear fixed height after transition
           const onEnd = () => {
             cardInnerEl.style.height = '';
             cardInnerEl.removeEventListener('transitionend', onEnd);
@@ -589,7 +645,6 @@ const RSVP = (() => {
 
   // ── Star Constellation ─────────────────────────────────
 
-  // Simple deterministic hash from string → 0..1
   function hashStr(str, seed) {
     let h = seed || 0;
     for (let i = 0; i < str.length; i++) {
@@ -598,7 +653,6 @@ const RSVP = (() => {
     return ((h >>> 0) % 10000) / 10000;
   }
 
-  // Chain-style constellation patterns — px offsets from center
   const CONSTELLATION_PATTERNS = {
     2: { nodes: [[-14, 0], [14, 0]], edges: [[0, 1]] },
     3: { nodes: [[-16, 8], [0, -12], [16, 6]], edges: [[0, 1], [1, 2]] },
@@ -607,7 +661,6 @@ const RSVP = (() => {
     6: { nodes: [[-22, 0], [-10, -14], [6, -12], [18, -2], [12, 12], [-4, 14]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
   };
 
-  // Generate N-pointed star SVG path in a 24×24 viewBox
   function makeStarPath(points, outerR, innerR) {
     const cx = 12, cy = 12, step = Math.PI / points;
     let d = '';
@@ -630,7 +683,6 @@ const RSVP = (() => {
   function initStarfield() {
     if (!starfield || typeof GUEST_LIST === 'undefined') return;
 
-    // Card zone (center ~25-75% horizontal, ~15-85% vertical) to avoid
     const cardZone = { left: 25, right: 75, top: 15, bottom: 85 };
 
     function isInsideCard(xPct, yPct) {
@@ -638,65 +690,82 @@ const RSVP = (() => {
              yPct > cardZone.top && yPct < cardZone.bottom;
     }
 
-    // Overlap avoidance — track placed positions
-    const placed = []; // { x, y, hc }
+    const isMobile = window.innerWidth < 768;
+    const cScale = isMobile ? 0.55 : 1.0;
+    const sfW = starfield.offsetWidth || 375;
+    const sfH = starfield.offsetHeight || 500;
 
-    function minSep(hc1, hc2) {
-      const r1 = hc1 === 1 ? 1 : 2 + hc1 * 0.4;
-      const r2 = hc2 === 1 ? 1 : 2 + hc2 * 0.4;
-      return r1 + r2;
+    function boundingRadiusPx(hc) {
+      if (hc === 1) {
+        const avgStarSize = isMobile ? 5.5 : 9.5;
+        return avgStarSize + 2;
+      }
+      const p = CONSTELLATION_PATTERNS[hc];
+      if (!p) return 10;
+      let maxR = 0;
+      for (const [nx, ny] of p.nodes) {
+        maxR = Math.max(maxR, Math.sqrt(nx * nx + ny * ny));
+      }
+      return maxR * cScale + 4;
     }
 
-    function isTooClose(x, y, hc) {
+    const placed = [];
+
+    function isTooClose(xPct, yPct, hc) {
+      const px1 = xPct * sfW / 100;
+      const py1 = yPct * sfH / 100;
+      const r1 = boundingRadiusPx(hc);
       for (const p of placed) {
-        const dx = x - p.x;
-        const dy = y - p.y;
-        if (Math.sqrt(dx * dx + dy * dy) < minSep(hc, p.hc)) return true;
+        const px2 = p.x * sfW / 100;
+        const py2 = p.y * sfH / 100;
+        const dx = px1 - px2;
+        const dy = py1 - py2;
+        const minDist = r1 + boundingRadiusPx(p.hc);
+        if (Math.sqrt(dx * dx + dy * dy) < minDist) return true;
       }
       return false;
     }
 
+    const yMin = isMobile ? 12 : 10;
+    const yRange = isMobile ? 68 : 80;
+    const yBottom = isMobile ? 78 : 86;
+    const yBottomRange = isMobile ? 3 : 4;
+
     function computeRawPos(id, seed1, seed2) {
       return {
         x: 8 + hashStr(id, seed1) * 84,
-        y: 10 + hashStr(id, seed2) * 80,
+        y: yMin + hashStr(id, seed2) * yRange,
       };
     }
 
     function pushToEdge(id, gi, seed) {
       const side = (gi + seed) % 4;
       let x, y;
-      if (side === 0)      { x = 8 + hashStr(id, 300 + seed) * 16;  y = 10 + hashStr(id, 400 + seed) * 80; }
-      else if (side === 1) { x = 76 + hashStr(id, 300 + seed) * 16; y = 10 + hashStr(id, 400 + seed) * 80; }
-      else if (side === 2) { x = 8 + hashStr(id, 300 + seed) * 84;  y = 10 + hashStr(id, 400 + seed) * 4; }
-      else                 { x = 8 + hashStr(id, 300 + seed) * 84;  y = 86 + hashStr(id, 400 + seed) * 4; }
+      if (side === 0)      { x = 4 + hashStr(id, 300 + seed) * 18;  y = yMin + hashStr(id, 400 + seed) * yRange; }
+      else if (side === 1) { x = 78 + hashStr(id, 300 + seed) * 18; y = yMin + hashStr(id, 400 + seed) * yRange; }
+      else if (side === 2) { x = 4 + hashStr(id, 300 + seed) * 92;  y = yMin + hashStr(id, 400 + seed) * 4; }
+      else                 { x = 4 + hashStr(id, 300 + seed) * 92;  y = yBottom + hashStr(id, 400 + seed) * yBottomRange; }
       return { x, y };
     }
 
     function getPosition(guest, gi) {
       const hc = guest.headCount || 1;
-
-      // Primary position
       let { x, y } = computeRawPos(guest.id, 1, 2);
       if (isInsideCard(x, y)) {
         ({ x, y } = pushToEdge(guest.id, gi, 0));
       }
-
-      // Overlap avoidance — try alternate positions
       if (isTooClose(x, y, hc)) {
-        for (let t = 1; t <= 40; t++) {
+        for (let t = 1; t <= 80; t++) {
           const alt = computeRawPos(guest.id, 100 + t, 200 + t);
           if (!isInsideCard(alt.x, alt.y) && !isTooClose(alt.x, alt.y, hc)) {
             x = alt.x; y = alt.y; break;
           }
-          // Also try edge positions
           const edge = pushToEdge(guest.id, gi, t);
           if (!isTooClose(edge.x, edge.y, hc)) {
             x = edge.x; y = edge.y; break;
           }
         }
       }
-
       placed.push({ x, y, hc });
       return { x, y };
     }
@@ -718,15 +787,15 @@ const RSVP = (() => {
     for (let gi = 0; gi < GUEST_LIST.length; gi++) {
       const guest = GUEST_LIST[gi];
       const hc = guest.headCount || 1;
-      const size = 7 + hashStr(guest.id, 99) * 5;
+      const size = isMobile
+        ? 4 + hashStr(guest.id, 99) * 3
+        : 7 + hashStr(guest.id, 99) * 5;
       const pos = getPosition(guest, gi);
 
-      // Pick star shape (4, 5, or 6 points) deterministically
       const starPathIdx = Math.floor(hashStr(guest.id, 55) * 3);
       const starPath = STAR_PATHS[starPathIdx];
 
       if (hc === 1) {
-        // Single star — same as before
         const star = createStarEl(size, starPath);
         star.dataset.groupId = guest.id;
         star.style.left = pos.x + '%';
@@ -734,7 +803,6 @@ const RSVP = (() => {
         starfield.appendChild(star);
         starMap[guest.id] = { container: star, stars: [star], lines: [], headCount: 1 };
       } else {
-        // Constellation — wrapper with multiple stars + SVG lines
         const pattern = CONSTELLATION_PATTERNS[hc];
         if (!pattern) continue;
 
@@ -744,23 +812,20 @@ const RSVP = (() => {
         wrapper.style.left = pos.x + '%';
         wrapper.style.top = pos.y + '%';
 
-        // Deterministic rotation from hash
         const angle = hashStr(guest.id, 50) * Math.PI * 2;
         const cosA = Math.cos(angle);
         const sinA = Math.sin(angle);
 
         const starEls = [];
-        const nodePositions = []; // store actual rotated positions for line drawing
+        const nodePositions = [];
 
         for (let ni = 0; ni < pattern.nodes.length; ni++) {
           const [nx, ny] = pattern.nodes[ni];
-          // Rotate
-          const rx = nx * cosA - ny * sinA;
-          const ry = nx * sinA + ny * cosA;
+          const rx = (nx * cosA - ny * sinA) * cScale;
+          const ry = (nx * sinA + ny * cosA) * cScale;
           nodePositions.push([rx, ry]);
 
           const starSize = size * (0.85 + hashStr(guest.id, 200 + ni) * 0.3);
-          // Each star in a constellation can have its own shape
           const niPath = STAR_PATHS[Math.floor(hashStr(guest.id, 55 + ni * 11) * 3)];
           const starEl = createStarEl(starSize, niPath);
           starEl.style.position = 'absolute';
@@ -770,14 +835,13 @@ const RSVP = (() => {
           starEls.push(starEl);
         }
 
-        // SVG overlay for lines
         const svgNS = 'http://www.w3.org/2000/svg';
         const linesSvg = document.createElementNS(svgNS, 'svg');
         linesSvg.setAttribute('class', 'rsvp-constellation-lines');
         linesSvg.setAttribute('overflow', 'visible');
 
         const lineEls = [];
-        const inset = 3; // px gap so line endpoints hide behind stars
+        const inset = isMobile ? 2 : 3;
         for (const [a, b] of pattern.edges) {
           const [ax, ay] = nodePositions[a];
           const [bx, by] = nodePositions[b];
@@ -810,34 +874,91 @@ const RSVP = (() => {
     try {
       const res = await fetch(`${API_BASE}/rsvp/accepted`);
       if (!res.ok) return;
-      const acceptedIds = await res.json();
-      for (const groupId of acceptedIds) {
+      const accepted = await res.json(); // array of { groupId, totalAttending, attendingMembers }
+      for (const item of accepted) {
+        const groupId = item.groupId;
         const entry = starMap[groupId];
         if (!entry) continue;
 
-        // Light up all stars + lines instantly (no animation)
-        for (let si = 0; si < entry.stars.length; si++) {
-          const star = entry.stars[si];
-          star.style.setProperty('--twinkle-dur', (2.5 + hashStr(groupId, 77 + si * 13) * 1.5) + 's');
-          star.style.setProperty('--twinkle-delay', (hashStr(groupId, 88 + si * 7) * 2) + 's');
-          star.classList.add('lit');
-        }
-        for (const line of entry.lines) {
-          line.classList.add('lit');
+        // Light up stars for attending members
+        const guest = GUEST_LIST.find(g => g.id === groupId);
+        const attendingMembers = item.attendingMembers || [];
+
+        if (entry.headCount === 1) {
+          // Single star — light if attending
+          if (attendingMembers.length > 0 || item.totalAttending > 0) {
+            const star = entry.stars[0];
+            star.style.setProperty('--twinkle-dur', (2.5 + hashStr(groupId, 77) * 1.5) + 's');
+            star.style.setProperty('--twinkle-delay', (hashStr(groupId, 88) * 2) + 's');
+            star.classList.add('lit');
+          }
+        } else if (guest) {
+          // Multi-star: light only attending member stars
+          for (let si = 0; si < entry.stars.length; si++) {
+            const memberName = guest.members[si];
+            if (attendingMembers.includes(memberName) || (attendingMembers.length === 0 && item.totalAttending > 0)) {
+              const star = entry.stars[si];
+              star.style.setProperty('--twinkle-dur', (2.5 + hashStr(groupId, 77 + si * 13) * 1.5) + 's');
+              star.style.setProperty('--twinkle-delay', (hashStr(groupId, 88 + si * 7) * 2) + 's');
+              star.classList.add('lit');
+            }
+          }
+          // Light lines only if both endpoints are attending
+          for (let li = 0; li < entry.lines.length; li++) {
+            const pattern = CONSTELLATION_PATTERNS[entry.headCount];
+            if (!pattern) continue;
+            const [a, b] = pattern.edges[li];
+            const mA = guest.members[a];
+            const mB = guest.members[b];
+            const aLit = attendingMembers.includes(mA) || (attendingMembers.length === 0 && item.totalAttending > 0);
+            const bLit = attendingMembers.includes(mB) || (attendingMembers.length === 0 && item.totalAttending > 0);
+            if (aLit && bLit) {
+              entry.lines[li].classList.add('lit');
+            }
+          }
         }
       }
     } catch (_) {
-      // Silently fail — stars just stay dim
+      // Silently fail
     }
   }
 
   // ── Accept Animation — Dissolve + Star Flight ─────────
 
-  function launchAcceptAnimation() {
+  function launchAcceptAnimation(totalAttending, attendingMembers) {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const groupId = selectedGuest.id;
+    const entry = starMap[groupId];
+    const guest = GUEST_LIST.find(g => g.id === groupId);
+
+    // Determine which stars are newly attending vs already lit
+    let starsToFly = attendingMembers;
+    if (entry && guest) {
+      const alreadyLit = [];
+      if (entry.headCount === 1) {
+        if (entry.stars[0].classList.contains('lit')) alreadyLit.push(guest.members[0]);
+      } else {
+        for (let si = 0; si < entry.stars.length; si++) {
+          if (entry.stars[si].classList.contains('lit')) alreadyLit.push(guest.members[si]);
+        }
+      }
+      starsToFly = attendingMembers.filter(m => !alreadyLit.includes(m));
+
+      // Dim stars that were lit but are no longer attending
+      const toDim = alreadyLit.filter(m => !attendingMembers.includes(m));
+      if (toDim.length > 0) {
+        dimSpecificStars(groupId, toDim);
+      }
+    }
 
     if (prefersReduced) {
-      lightUpConstellation(selectedGuest.id);
+      lightUpConstellation(groupId, attendingMembers);
+      showAcceptSuccess();
+      return;
+    }
+
+    // No new stars to fly — show success immediately
+    if (starsToFly.length === 0) {
       showAcceptSuccess();
       return;
     }
@@ -847,20 +968,17 @@ const RSVP = (() => {
     const DISSOLVE_DUR = 1600;
     let start = null;
 
-    // Fade deck out
     inviteState.classList.add('dissolving');
 
-    // Use the card-inner's front face for masking (like the hero does)
     const frontFace = cardInner.querySelector('.rsvp-invite-front');
     const W = inviteCard.offsetWidth;
     const H = inviteCard.offsetHeight;
-    const maxR = Math.sqrt(W * W + H * H) / 2; // diagonal radius in px
+    const maxR = Math.sqrt(W * W + H * H) / 2;
 
     function frame(ts) {
       if (!start) start = ts;
       const t = Math.min((ts - start) / DISSOLVE_DUR, 1);
 
-      // Radial mask: dissolve from outside edges → center with soft edge
       const edgePct = (1 - t) * 100;
       const soft = 12;
       const inner = Math.max(0, edgePct - soft);
@@ -869,7 +987,6 @@ const RSVP = (() => {
       frontFace.style.maskImage = mask;
       frontFace.style.webkitMaskImage = mask;
 
-      // Spawn golden dust just OUTSIDE the dissolve edge
       if (t > 0.02 && t < 0.95) {
         const edgeR = (edgePct / 100) * maxR;
         const count = 5 + Math.floor(Math.random() * 4);
@@ -887,7 +1004,7 @@ const RSVP = (() => {
 
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
-        flyStarToPlaceholder(cx, cy, selectedGuest.id);
+        flyStarToPlaceholder(cx, cy, selectedGuest.id, starsToFly, attendingMembers);
       }
     }
 
@@ -903,12 +1020,10 @@ const RSVP = (() => {
     const angle = Math.random() * Math.PI * 2;
     const cx = cardRect.left + cardRect.width / 2;
     const cy = cardRect.top + cardRect.height / 2;
-    // Spawn just OUTSIDE the dissolving edge (edge + 5-15px outward)
     const spawnR = edgeRadiusPx + 5 + Math.random() * 10;
     const startX = cx + Math.cos(angle) * spawnR + (Math.random() - 0.5) * 8;
     const startY = cy + Math.sin(angle) * spawnR + (Math.random() - 0.5) * 8;
     const dur = 400 + Math.random() * 400;
-    // Drift outward from center (away from the card)
     const drift = Math.cos(angle) * (15 + Math.random() * 30);
     const rise = Math.sin(angle) * (15 + Math.random() * 30) - 10;
 
@@ -934,28 +1049,67 @@ const RSVP = (() => {
     setTimeout(() => p.remove(), dur + 50);
   }
 
-  function flyStarToPlaceholder(fromX, fromY, groupId) {
+  function lightUpOneStar(starEl, cb) {
+    starEl.classList.add('lighting-up');
+    setTimeout(() => {
+      starEl.classList.remove('lighting-up');
+      starEl.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
+      starEl.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
+      starEl.classList.add('lit');
+      if (cb) cb();
+    }, 300);
+  }
+
+  function drawOneLine(lineEl, cb) {
+    lineEl.classList.add('lighting-up');
+    setTimeout(() => {
+      lineEl.classList.remove('lighting-up');
+      lineEl.classList.add('lit');
+      if (cb) cb();
+    }, 400);
+  }
+
+  function flyStarToPlaceholder(fromX, fromY, groupId, starsToFly, allAttending) {
     const entry = starMap[groupId];
     if (!entry) {
       showAcceptSuccess();
       return;
     }
 
+    const guest = GUEST_LIST.find(g => g.id === groupId);
     const startSize = 24;
     const FLIGHT_DUR = 1000;
-    const STAGGER = 200;
+    const STAGGER = 250;
 
-    // For each star in the constellation, launch a flying star to its position
-    const starTargets = entry.stars.map(s => {
+    // Only fly stars for newly attending members (starsToFly)
+    const targetIndices = [];
+    if (entry.headCount === 1) {
+      targetIndices.push(0);
+    } else if (guest) {
+      for (let si = 0; si < guest.members.length; si++) {
+        if (starsToFly.includes(guest.members[si])) {
+          targetIndices.push(si);
+        }
+      }
+    }
+
+    if (targetIndices.length === 0) {
+      showAcceptSuccess();
+      return;
+    }
+
+    const starTargets = targetIndices.map(si => {
+      const s = entry.stars[si];
       const r = s.getBoundingClientRect();
       return {
+        idx: si,
         x: r.left + r.width / 2,
         y: r.top + r.height / 2,
         size: s.querySelector('svg')?.getAttribute('width') || 8,
       };
     });
 
-    let lightingStarted = false;
+    const isLast = (i) => i === starTargets.length - 1;
 
     for (let i = 0; i < starTargets.length; i++) {
       const delay = i * STAGGER;
@@ -972,96 +1126,129 @@ const RSVP = (() => {
         const dy = target.y - fromY;
 
         requestAnimationFrame(() => {
-          flyer.style.transition = `transform ${FLIGHT_DUR}ms cubic-bezier(0.25, 0.1, 0.25, 1), ` +
-            `opacity ${FLIGHT_DUR * 0.3}ms ease ${FLIGHT_DUR * 0.7}ms`;
+          flyer.style.transition = `transform ${FLIGHT_DUR}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
           flyer.style.transform = `translate(${dx}px, ${dy}px) scale(${target.size / startSize})`;
         });
 
         setTimeout(() => {
           flyer.remove();
-          // Start constellation lighting when first star arrives
-          if (!lightingStarted) {
-            lightingStarted = true;
-            lightUpConstellation(groupId, () => {
-              setTimeout(showAcceptSuccess, 400);
-            });
+          const si = target.idx;
+
+          // Draw lines connecting to already-lit stars (use allAttending for check)
+          if (guest && entry.headCount > 1) {
+            const pattern = CONSTELLATION_PATTERNS[entry.headCount];
+            if (pattern) {
+              for (let li = 0; li < pattern.edges.length; li++) {
+                const [a, b] = pattern.edges[li];
+                if (a === si || b === si) {
+                  const otherIdx = a === si ? b : a;
+                  const otherMember = guest.members[otherIdx];
+                  if (allAttending.includes(otherMember) && entry.stars[otherIdx].classList.contains('lit')) {
+                    drawOneLine(entry.lines[li]);
+                  }
+                }
+              }
+            }
           }
+
+          lightUpOneStar(entry.stars[si], () => {
+            if (isLast(i)) setTimeout(showAcceptSuccess, 400);
+          });
         }, FLIGHT_DUR);
       }, delay);
     }
   }
 
-  function lightUpConstellation(groupId, onComplete) {
+  function lightUpConstellation(groupId, attendingMembers) {
     const entry = starMap[groupId];
-    if (!entry) { if (onComplete) onComplete(); return; }
+    if (!entry) return;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const guest = GUEST_LIST.find(g => g.id === groupId);
 
     if (entry.headCount === 1) {
-      // Single star — flash + twinkle
       const star = entry.stars[0];
-      if (prefersReduced) {
-        star.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
-        star.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
-        star.classList.add('lit');
-        if (onComplete) onComplete();
-        return;
-      }
-      star.classList.add('lighting-up');
-      setTimeout(() => {
-        star.classList.remove('lighting-up');
-        star.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
-        star.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
-        star.classList.add('lit');
-        if (onComplete) onComplete();
-      }, 500);
+      star.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
+      star.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
+      star.classList.add('lit');
       return;
     }
 
-    // Multi-star constellation — sequential: star → line → star → line → star
-    if (prefersReduced) {
-      for (const s of entry.stars) {
+    if (!guest) return;
+
+    for (let si = 0; si < entry.stars.length; si++) {
+      if (attendingMembers.includes(guest.members[si])) {
+        const s = entry.stars[si];
         s.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
         s.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
         s.classList.add('lit');
       }
-      for (const l of entry.lines) l.classList.add('lit');
-      if (onComplete) onComplete();
-      return;
     }
 
-    // Build sequence: [star0, line0, star1, line1, star2, ...]
-    const steps = [];
-    for (let i = 0; i < entry.stars.length; i++) {
-      steps.push({ type: 'star', el: entry.stars[i] });
-      if (i < entry.lines.length) {
-        steps.push({ type: 'line', el: entry.lines[i] });
+    const pattern = CONSTELLATION_PATTERNS[entry.headCount];
+    if (pattern) {
+      for (let li = 0; li < pattern.edges.length; li++) {
+        const [a, b] = pattern.edges[li];
+        if (attendingMembers.includes(guest.members[a]) && attendingMembers.includes(guest.members[b])) {
+          entry.lines[li].classList.add('lit');
+        }
+      }
+    }
+  }
+
+  function dimSpecificStars(groupId, membersToDim) {
+    const entry = starMap[groupId];
+    if (!entry) return;
+    const guest = GUEST_LIST.find(g => g.id === groupId);
+    if (!guest) return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    for (let si = 0; si < entry.stars.length; si++) {
+      if (membersToDim.includes(guest.members[si])) {
+        const star = entry.stars[si];
+        star.classList.remove('lighting-up');
+        if (prefersReduced) {
+          star.classList.remove('lit');
+        } else {
+          star.style.transition = 'opacity 2s ease, transform 2s ease';
+          star.style.opacity = '0.12';
+          star.style.transform = 'scale(1)';
+          setTimeout(((s) => () => {
+            s.classList.remove('lit');
+            s.style.transition = '';
+            s.style.opacity = '';
+            s.style.transform = '';
+          })(star), 2100);
+        }
       }
     }
 
-    let idx = 0;
-    function nextStep() {
-      if (idx >= steps.length) { if (onComplete) onComplete(); return; }
-      const step = steps[idx++];
-      if (step.type === 'star') {
-        step.el.classList.add('lighting-up');
-        setTimeout(() => {
-          step.el.classList.remove('lighting-up');
-          step.el.style.setProperty('--twinkle-dur', (2.5 + Math.random() * 1.5) + 's');
-          step.el.style.setProperty('--twinkle-delay', (Math.random() * 0.5) + 's');
-          step.el.classList.add('lit');
-          setTimeout(nextStep, 150);
-        }, 300);
-      } else {
-        step.el.classList.add('lighting-up');
-        setTimeout(() => {
-          step.el.classList.remove('lighting-up');
-          step.el.classList.add('lit');
-          setTimeout(nextStep, 150);
-        }, 500);
+    if (entry.headCount > 1) {
+      const pattern = CONSTELLATION_PATTERNS[entry.headCount];
+      if (pattern) {
+        for (let li = 0; li < pattern.edges.length; li++) {
+          const [a, b] = pattern.edges[li];
+          if (membersToDim.includes(guest.members[a]) || membersToDim.includes(guest.members[b])) {
+            const line = entry.lines[li];
+            if (prefersReduced) {
+              line.classList.remove('lit', 'lighting-up');
+            } else {
+              line.style.transition = 'stroke 1.5s ease, stroke-opacity 1.5s ease, filter 1.5s ease';
+              line.style.stroke = 'rgba(212, 168, 83, 0.25)';
+              line.style.strokeOpacity = '1';
+              line.style.filter = 'none';
+              setTimeout(((l) => () => {
+                l.classList.remove('lit', 'lighting-up');
+                l.style.transition = '';
+                l.style.stroke = '';
+                l.style.strokeOpacity = '';
+                l.style.filter = '';
+              })(line), 1600);
+            }
+          }
+        }
       }
     }
-    nextStep();
   }
 
   function dimConstellation(groupId) {
@@ -1075,10 +1262,20 @@ const RSVP = (() => {
 
     if (entry.headCount === 1) {
       const star = entry.stars[0];
-      star.classList.remove('lit', 'lighting-up');
-      star.style.transition = 'opacity 2.5s ease';
+      star.classList.remove('lighting-up');
+      if (prefersReduced) {
+        star.classList.remove('lit');
+        return;
+      }
+      star.style.transition = 'opacity 2.5s ease, transform 2.5s ease';
       star.style.opacity = '0.12';
-      setTimeout(() => { star.style.transition = ''; star.style.opacity = ''; }, 2600);
+      star.style.transform = 'scale(1)';
+      setTimeout(() => {
+        star.classList.remove('lit');
+        star.style.transition = '';
+        star.style.opacity = '';
+        star.style.transform = '';
+      }, 2600);
       return;
     }
 
@@ -1088,7 +1285,6 @@ const RSVP = (() => {
       return;
     }
 
-    // Reverse order: last star → line → star → line → star[0]
     const steps = [];
     for (let i = entry.stars.length - 1; i >= 0; i--) {
       steps.push({ type: 'star', el: entry.stars[i] });
@@ -1102,14 +1298,30 @@ const RSVP = (() => {
       if (idx >= steps.length) return;
       const step = steps[idx++];
       if (step.type === 'star') {
-        step.el.classList.remove('lit', 'lighting-up');
-        step.el.style.transition = 'opacity 2s ease';
+        step.el.classList.remove('lighting-up');
+        step.el.style.transition = 'opacity 2s ease, transform 2s ease';
         step.el.style.opacity = '0.12';
-        setTimeout(() => { step.el.style.transition = ''; step.el.style.opacity = ''; }, 2100);
+        step.el.style.transform = 'scale(1)';
+        setTimeout(() => {
+          step.el.classList.remove('lit');
+          step.el.style.transition = '';
+          step.el.style.opacity = '';
+          step.el.style.transform = '';
+        }, 2100);
       } else {
-        step.el.classList.remove('lit', 'lighting-up');
+        step.el.style.transition = 'stroke 1.5s ease, stroke-opacity 1.5s ease, filter 1.5s ease';
+        step.el.style.stroke = 'rgba(212, 168, 83, 0.25)';
+        step.el.style.strokeOpacity = '1';
+        step.el.style.filter = 'none';
+        setTimeout(() => {
+          step.el.classList.remove('lit', 'lighting-up');
+          step.el.style.transition = '';
+          step.el.style.stroke = '';
+          step.el.style.strokeOpacity = '';
+          step.el.style.filter = '';
+        }, 1600);
       }
-      setTimeout(nextDim, 300);
+      setTimeout(nextDim, 400);
     }
     nextDim();
   }
@@ -1118,7 +1330,6 @@ const RSVP = (() => {
     successMsg.textContent = `Thank you! We can\u2019t wait to celebrate with you.`;
     successSub.textContent = `We can\u2019t wait to celebrate with you!`;
 
-    // Fade in gently
     successState.style.opacity = '0';
     successState.style.transform = 'translateY(10px)';
     successState.style.transition = 'none';
@@ -1138,7 +1349,6 @@ const RSVP = (() => {
   function launchDeclineAnimation() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Dim the star if it was previously lit
     if (selectedGuest) dimConstellation(selectedGuest.id);
 
     if (prefersReduced) {
@@ -1146,16 +1356,13 @@ const RSVP = (() => {
       return;
     }
 
-    // Phase 1: Card fades, lifts, blurs
     inviteState.classList.add('dissolving-decline');
 
-    // Phase 2: Floating stars from card edges
     setTimeout(() => {
       const rect = inviteCard.getBoundingClientRect();
       spawnDeclineStars(rect);
     }, 300);
 
-    // Phase 3: Show decline message with slow fade (after card fully dissolves)
     setTimeout(() => {
       showDeclineSuccess();
     }, 2200);
@@ -1170,7 +1377,6 @@ const RSVP = (() => {
     if (icon) { icon.innerHTML = '&#9790;'; icon.style.color = 'var(--lavender)'; icon.style.textShadow = '0 0 16px rgba(139, 123, 184, 0.5)'; }
     if (title) title.textContent = 'The Universe Understands';
 
-    // Start invisible, then fade in gently
     successState.style.opacity = '0';
     successState.style.transform = 'translateY(10px)';
     successState.style.transition = 'none';
