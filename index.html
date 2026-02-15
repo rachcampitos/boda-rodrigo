@@ -690,9 +690,12 @@
             <label class="rsvp-search-label">Enter Your Invitation Code</label>
             <p class="rsvp-search-hint">You'll find it on your invitation card</p>
             <div class="rsvp-code-wrap">
-              <input type="text" id="rsvp-code-input" class="rsvp-code-input"
-                     placeholder="0000" maxlength="4" inputmode="numeric"
-                     autocomplete="off" autocorrect="off" spellcheck="false">
+              <div class="rsvp-code-field">
+                <span class="rsvp-code-prefix">STAR-</span>
+                <input type="text" id="rsvp-code-input" class="rsvp-code-input"
+                       placeholder="0000" maxlength="4" inputmode="numeric"
+                       autocomplete="off" autocorrect="off" spellcheck="false">
+              </div>
               <button type="button" id="rsvp-code-submit" class="rsvp-code-btn">
                 <span class="rsvp-code-btn-icon">&#10022;</span>
                 <span>Reveal</span>
