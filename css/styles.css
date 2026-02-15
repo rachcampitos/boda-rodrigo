@@ -1187,23 +1187,43 @@ h1, h2, h3 {
   gap: 10px;
   align-items: stretch;
 }
-.rsvp-code-input {
+.rsvp-code-prefix {
+  font-family: var(--ff-body);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.rsvp-code-field {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(139, 123, 184, 0.25);
   border-radius: 8px;
   padding: 14px 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.rsvp-code-field:focus-within {
+  border-color: rgba(212, 168, 83, 0.5);
+  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
+}
+.rsvp-code-input {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
   font-family: var(--ff-body);
   font-size: 1.05rem;
   color: var(--silver);
   outline: none;
-  text-align: center;
   letter-spacing: 0.3em;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-.rsvp-code-input:focus {
-  border-color: rgba(212, 168, 83, 0.5);
-  box-shadow: 0 0 16px rgba(212, 168, 83, 0.15);
+  min-width: 0;
 }
 .rsvp-code-input::placeholder {
   color: var(--silver-muted);

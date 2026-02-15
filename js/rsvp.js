@@ -49,15 +49,16 @@ const RSVP = (() => {
     checkUrlCode();
   }
 
-  // ── Auto-detect code from URL param (?code=XXXX) ──
+  // ── Auto-detect code from URL param (?code=STAR-XXXX or ?code=XXXX) ──
 
   function checkUrlCode() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     if (!code) return;
 
-    const raw = code.trim().toUpperCase();
-    codeInput.value = raw;
+    // Strip STAR- prefix if present, keep only digits
+    const digits = code.trim().toUpperCase().replace(/^STAR-/, '');
+    codeInput.value = digits;
 
     // Small delay so the page renders first, then auto-submit
     setTimeout(() => {
@@ -78,16 +79,19 @@ const RSVP = (() => {
   }
 
   function handleCodeSubmit() {
-    const raw = codeInput.value.trim().toUpperCase();
+    const digits = codeInput.value.trim();
     hideError();
 
-    if (!raw) return;
+    if (!digits) return;
 
     // Luna Easter egg
-    if (raw === 'LUNA') {
+    if (digits.toUpperCase() === 'LUNA') {
       showLunaMemorial();
       return;
     }
+
+    // Prepend STAR- prefix to form full code
+    const raw = 'STAR-' + digits;
 
     const guest = findGuestByCode(raw);
     if (!guest) {
