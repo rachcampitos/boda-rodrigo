@@ -44,6 +44,7 @@ const RSVP = (() => {
     initCodeInput();
     initBackButtons();
     initConfirmButton();
+    initChangeButton();
     loadAcceptedStars();
     checkUrlCode();
   }
@@ -215,10 +216,13 @@ const RSVP = (() => {
         }
         plusOneAttending = data.plusOneName ? true : false;
         plusOneName = data.plusOneName || '';
-      } else {
-        initMemberStatesDefault();
+
+        // Show "already responded" state first
+        showAlreadyState(data);
+        return;
       }
 
+      initMemberStatesDefault();
       showInvitationCard(code);
     } catch (err) {
       showState('search');
@@ -546,6 +550,50 @@ const RSVP = (() => {
       showError(err.name === 'AbortError'
         ? 'Request timed out. Please try again.'
         : (err.message || 'Failed to submit. Please try again.'));
+    }
+  }
+
+  // ── Already Responded State ────────────────────────────
+
+  function showAlreadyState(data) {
+    const alreadyMsg = document.getElementById('rsvp-already-msg');
+    const alreadyTitle = document.querySelector('.rsvp-already-title');
+    const alreadyIcon = document.querySelector('.rsvp-already-icon');
+    const totalAttending = data.totalAttending || 0;
+
+    if (totalAttending > 0) {
+      const attending = data.attendingMembers || [];
+      const names = attending.length > 0
+        ? attending.join(', ')
+        : selectedGuest.display;
+      if (alreadyIcon) { alreadyIcon.innerHTML = '&#10024;'; alreadyIcon.style.color = ''; alreadyIcon.style.textShadow = ''; }
+      if (alreadyTitle) alreadyTitle.textContent = 'The Cards Remember You';
+      alreadyMsg.innerHTML =
+        `<span style="color:var(--gold);">${escapeHtml(names)}</span> ` +
+        (attending.length === 1 ? 'is' : 'are') +
+        ' aligned with the stars.<br>' +
+        '<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">Had a change of heart?</span>';
+    } else {
+      if (alreadyIcon) { alreadyIcon.innerHTML = '&#9790;'; alreadyIcon.style.color = 'var(--lavender)'; alreadyIcon.style.textShadow = '0 0 16px rgba(139,123,184,0.5)'; }
+      if (alreadyTitle) alreadyTitle.textContent = 'The Stars Await Your Return';
+      alreadyMsg.innerHTML =
+        'Your regrets have been noted by the cosmos.<br>' +
+        '<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">The stars still hold a place for you.</span>';
+    }
+
+    showState('already');
+  }
+
+  function initChangeButton() {
+    const changeBtn = document.getElementById('rsvp-change-btn');
+    if (changeBtn) {
+      changeBtn.addEventListener('click', () => {
+        showInvitationCard(usedCode || '');
+      });
+    }
+    const backAlready = document.getElementById('rsvp-back-already');
+    if (backAlready) {
+      backAlready.addEventListener('click', resetToSearch);
     }
   }
 
@@ -1098,9 +1146,21 @@ const RSVP = (() => {
         frontFace.style.maskImage = '';
         frontFace.style.webkitMaskImage = '';
 
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        flyStarToPlaceholder(cx, cy, selectedGuest.id, starsToFly, attendingMembers);
+        const isMob = window.innerWidth < 768;
+        if (isMob && entry) {
+          // On mobile, constellation targets are off-screen.
+          // Scroll to reveal the target, then fly the star from viewport center.
+          entry.container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const fromCx = window.innerWidth / 2;
+            const fromCy = window.innerHeight * 0.45;
+            flyStarToPlaceholder(fromCx, fromCy, selectedGuest.id, starsToFly, attendingMembers);
+          }, 700);
+        } else {
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          flyStarToPlaceholder(cx, cy, selectedGuest.id, starsToFly, attendingMembers);
+        }
       }
     }
 
