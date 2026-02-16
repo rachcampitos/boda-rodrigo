@@ -54,6 +54,7 @@
       'Our Oogie. 🐢💚',
       'A baby Frankie \u2014 a heart full of wonder. 🩵',
       'A young Rodrigo \u2014 there\u2019s a whole world to explore. 🌎',
+      'And they lived happily ever after. \u2728',
     ];
 
     // Collect image data for lightbox
