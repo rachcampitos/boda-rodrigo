@@ -34,8 +34,8 @@ const Tarot = (() => {
       title: 'Frankie & Rodrigo — After Party',
       start: '20261015T233000',
       end: '20261016T020000',
-      location: 'The Borderline, 244-18 Jericho Turnpike, Bellerose, NY 11001',
-      description: 'After party — drinks, music and even more fun at The Borderline Tavern!',
+      location: 'The Broderline Tavern, 244-18 Jericho Turnpike, Bellerose, NY 11001',
+      description: 'After party — drinks, music and even more fun at The Broderline Tavern!',
     },
   };
 
