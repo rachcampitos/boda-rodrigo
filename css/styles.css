@@ -601,7 +601,7 @@ h1, h2, h3 {
 .tarot-actions {
   display: flex;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: auto;
 }
 .tarot-actions .btn {
   display: flex;
