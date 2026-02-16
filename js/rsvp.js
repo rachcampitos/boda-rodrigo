@@ -360,14 +360,13 @@ const RSVP = (() => {
       starBtn.className = 'rsvp-member-star';
       starBtn.innerHTML = starSVG;
       starBtn.setAttribute('aria-label', `Toggle ${member}`);
-      starBtn.addEventListener('click', () => toggleMember(member));
-
       const nameSpan = document.createElement('span');
       nameSpan.className = 'rsvp-member-name';
       nameSpan.textContent = member;
 
       row.appendChild(starBtn);
       row.appendChild(nameSpan);
+      row.addEventListener('click', () => toggleMember(member));
       attendanceContainer.appendChild(row);
     }
 
@@ -383,8 +382,6 @@ const RSVP = (() => {
       starBtn.className = 'rsvp-member-star';
       starBtn.innerHTML = starSVG;
       starBtn.setAttribute('aria-label', 'Toggle guest');
-      starBtn.addEventListener('click', () => togglePlusOne());
-
       const nameSpan = document.createElement('span');
       nameSpan.className = 'rsvp-member-name';
       nameSpan.textContent = 'Guest';
@@ -404,6 +401,10 @@ const RSVP = (() => {
         row.appendChild(nameInput);
       }
 
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.rsvp-plusone-name')) return; // don't toggle when typing name
+        togglePlusOne();
+      });
       attendanceContainer.appendChild(row);
     }
 

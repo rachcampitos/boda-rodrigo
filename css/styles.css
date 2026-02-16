@@ -1565,6 +1565,7 @@ h1, h2, h3 {
   border-radius: 8px;
   border: 1px solid rgba(139, 123, 184, 0.12);
   background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
   transition: border-color 0.3s, background 0.3s;
 }
 .rsvp-member-toggle.attending {
