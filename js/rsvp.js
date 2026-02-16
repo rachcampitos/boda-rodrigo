@@ -235,7 +235,7 @@ const RSVP = (() => {
   function initMemberStatesDefault() {
     memberStates = {};
     for (const m of selectedGuest.members) {
-      memberStates[m] = true; // all ON by default
+      memberStates[m] = false; // all OFF by default
     }
     plusOneAttending = false;
     plusOneName = '';
@@ -344,7 +344,7 @@ const RSVP = (() => {
     // Hint label
     const hint = document.createElement('p');
     hint.className = 'rsvp-star-hint';
-    hint.textContent = 'Touch the stars to reveal who shall attend';
+    hint.textContent = 'Tap each name to mark who shall attend';
     attendanceContainer.appendChild(hint);
 
     const showHint = !hintShown;
