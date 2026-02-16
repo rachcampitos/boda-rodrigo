@@ -337,28 +337,14 @@ const RSVP = (() => {
     const guest = selectedGuest;
     attendanceContainer.innerHTML = '';
 
-    // Shimmer hint (first time only)
+    // Hint label
+    const hint = document.createElement('p');
+    hint.className = 'rsvp-star-hint';
+    hint.textContent = 'Touch the stars to reveal who shall attend';
+    attendanceContainer.appendChild(hint);
+
     const showHint = !hintShown;
-    if (showHint) {
-      const hint = document.createElement('p');
-      hint.className = 'rsvp-star-hint';
-      hint.textContent = 'Touch the stars to reveal who shall attend';
-      attendanceContainer.appendChild(hint);
-      hintShown = true;
-      // After fade-out animation (7s), smoothly collapse the space
-      setTimeout(() => {
-        if (!hint.parentNode) return;
-        const h = hint.offsetHeight;
-        hint.style.height = h + 'px';
-        hint.style.overflow = 'hidden';
-        requestAnimationFrame(() => {
-          hint.style.transition = 'height 0.6s ease, margin-bottom 0.6s ease';
-          hint.style.height = '0';
-          hint.style.marginBottom = '0';
-        });
-        setTimeout(() => { if (hint.parentNode) hint.remove(); }, 700);
-      }, 7000);
-    }
+    if (showHint) hintShown = true;
 
     const starSVG = '<svg viewBox="0 0 24 24"><path d="M12 2 L14.5 8.5 L21.5 9.5 L16 14.5 L17.5 21.5 L12 18 L6.5 21.5 L8 14.5 L2.5 9.5 L9.5 8.5 Z"/></svg>';
 
