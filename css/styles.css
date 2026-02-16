@@ -1357,8 +1357,14 @@ h1, h2, h3 {
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 12px;
   overflow: hidden;
+}
+/* Hide back-face content as card flips (fixes mobile rendering bleed-through) */
+#rsvp-invite.flipped .rsvp-invite-back-content {
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 /* Back face */
 .rsvp-invite-back {
@@ -1388,6 +1394,9 @@ h1, h2, h3 {
   text-shadow: 0 0 20px var(--gold-glow);
   margin-bottom: 12px;
   animation: glowPulse 2s ease-in-out infinite;
+}
+#rsvp-invite.flipped .rsvp-invite-back-star {
+  animation: none;
 }
 .rsvp-invite-back-symbol {
   display: block;
