@@ -827,17 +827,35 @@ const RSVP = (() => {
   function initStarfield() {
     if (!starfield || typeof GUEST_LIST === 'undefined') return;
 
-    const cardZone = { left: 25, right: 75, top: 15, bottom: 85 };
+    const isMobile = window.innerWidth < 768;
+
+    // On mobile, create a visible panel below the card (instead of absolute behind it)
+    let activeField = starfield;
+    if (isMobile) {
+      const panel = document.createElement('div');
+      panel.className = 'rsvp-constellation-panel';
+      panel.id = 'rsvp-constellation-panel';
+      const label = document.createElement('span');
+      label.className = 'rsvp-constellation-label';
+      label.textContent = 'Each star is a guest who answered the call';
+      panel.appendChild(label);
+      const sectionInner = rsvpSection.querySelector('.section-inner');
+      if (sectionInner) sectionInner.appendChild(panel);
+      activeField = panel;
+    }
+
+    // On mobile, stars fill the full panel (no card overlap to avoid)
+    const cardZone = isMobile ? null : { left: 25, right: 75, top: 15, bottom: 85 };
 
     function isInsideCard(xPct, yPct) {
+      if (!cardZone) return false;
       return xPct > cardZone.left && xPct < cardZone.right &&
              yPct > cardZone.top && yPct < cardZone.bottom;
     }
 
-    const isMobile = window.innerWidth < 768;
     const cScale = isMobile ? 0.55 : 1.0;
-    const sfW = starfield.offsetWidth || 375;
-    const sfH = starfield.offsetHeight || 500;
+    const sfW = activeField.offsetWidth || 375;
+    const sfH = activeField.offsetHeight || 500;
 
     function boundingRadiusPx(hc) {
       if (hc === 1) {
@@ -870,10 +888,10 @@ const RSVP = (() => {
       return false;
     }
 
-    const yMin = isMobile ? 12 : 10;
-    const yRange = isMobile ? 68 : 80;
-    const yBottom = isMobile ? 78 : 86;
-    const yBottomRange = isMobile ? 3 : 4;
+    const yMin = isMobile ? 6 : 10;
+    const yRange = isMobile ? 82 : 80;
+    const yBottom = isMobile ? 88 : 86;
+    const yBottomRange = isMobile ? 4 : 4;
 
     function computeRawPos(id, seed1, seed2) {
       return {
@@ -944,7 +962,7 @@ const RSVP = (() => {
         star.dataset.groupId = guest.id;
         star.style.left = pos.x + '%';
         star.style.top = pos.y + '%';
-        starfield.appendChild(star);
+        activeField.appendChild(star);
         starMap[guest.id] = { container: star, stars: [star], lines: [], headCount: 1 };
       } else {
         const pattern = CONSTELLATION_PATTERNS[hc];
@@ -1006,7 +1024,7 @@ const RSVP = (() => {
         }
 
         wrapper.appendChild(linesSvg);
-        starfield.appendChild(wrapper);
+        activeField.appendChild(wrapper);
         starMap[guest.id] = { container: wrapper, stars: starEls, lines: lineEls, headCount: hc };
       }
     }
@@ -1148,12 +1166,15 @@ const RSVP = (() => {
 
         const isMob = window.innerWidth < 768;
         if (isMob && entry) {
-          // On mobile, constellation targets are off-screen.
-          // Scroll to reveal the target, then fly the star from viewport center.
-          entry.container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // On mobile, constellations live in a panel below the card.
+          // Scroll to reveal it, then fly the star from top of panel.
+          const panel = document.getElementById('rsvp-constellation-panel');
+          const scrollTarget = panel || entry.container;
+          scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => {
-            const fromCx = window.innerWidth / 2;
-            const fromCy = window.innerHeight * 0.45;
+            const panelRect = scrollTarget.getBoundingClientRect();
+            const fromCx = panelRect.left + panelRect.width / 2;
+            const fromCy = panelRect.top + 20;
             flyStarToPlaceholder(fromCx, fromCy, selectedGuest.id, starsToFly, attendingMembers);
           }, 700);
         } else {
