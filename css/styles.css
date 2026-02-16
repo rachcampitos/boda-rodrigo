@@ -1522,7 +1522,7 @@ h1, h2, h3 {
   opacity: 0.6;
   margin: 2px 0;
 }
-/* Star hint — ephemeral shimmer */
+/* Star hint — persistent label */
 .rsvp-star-hint {
   font-family: var(--ff-heading);
   font-style: italic;
@@ -1531,14 +1531,7 @@ h1, h2, h3 {
   text-align: center;
   letter-spacing: 0.04em;
   margin-bottom: 2px;
-  opacity: 0;
-  animation: starHintFade 7s ease forwards;
-}
-@keyframes starHintFade {
-  0% { opacity: 0; }
-  8% { opacity: 0.85; }
-  75% { opacity: 0.85; }
-  100% { opacity: 0; }
+  opacity: 0.75;
 }
 /* Star pulse synchronized with hint */
 .rsvp-member-star.hint-pulse svg path {
