@@ -49,12 +49,14 @@
       '\u2018till death do us part. 💍🩵',
       '09.05.23 \u2014 The day we decided on forever. 💜',
       'From the very beginning, we just knew.',
-      'Simply Meant To Be.',
       'Our baby, Meet Tigger-Roo. 🐾🧡',
       'Our Oogie. 🐢💚',
       'A baby Frankie \u2014 a heart full of wonder. 🩵',
       'A young Rodrigo \u2014 there\u2019s a whole world to explore. 🌎',
+      'Simply Meant To Be.',
       'And they lived happily ever after. \u2728',
+      'Two souls ignite, written in starlight and smoke. \u2728',
+      'Love blooms eternal, painted in autumn\u2019s golden light. \u2728',
     ];
 
     // Collect image data for lightbox
