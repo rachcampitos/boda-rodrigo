@@ -77,8 +77,14 @@ const RSVP = (() => {
   function initCodeInput() {
     digitBoxes.forEach((box, i) => {
       box.addEventListener('input', (e) => {
-        const val = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-        e.target.value = val.charAt(0) || '';
+        const LUNA = ['L', 'U', 'N', 'A'];
+        let val = e.target.value.toUpperCase();
+        // Allow only digits, or the exact LUNA letter for this position
+        if (val && !/\d/.test(val)) {
+          val = val === LUNA[i] ? val : '';
+        }
+        val = val.replace(/[^A-Z0-9]/g, '').charAt(0);
+        e.target.value = val || '';
 
         if (val) {
           box.classList.add('filled');
