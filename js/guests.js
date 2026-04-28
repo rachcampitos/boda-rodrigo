@@ -159,11 +159,18 @@ const GUEST_LIST = [
     code: 'STAR-1022',
   },
   {
-    id: 'blum-misuraca',
-    display: 'Mrs Denise Blum & Mrs Amanda Misuraca',
-    members: ['Denise Blum', 'Amanda Misuraca'],
-    headCount: 2,
+    id: 'denise-blum',
+    display: 'Mrs Denise Blum',
+    members: ['Denise Blum'],
+    headCount: 1,
     code: 'STAR-1023',
+  },
+  {
+    id: 'amanda-misuraca',
+    display: 'Mrs Amanda Misuraca',
+    members: ['Amanda Misuraca'],
+    headCount: 1,
+    code: 'STAR-1091',
   },
   {
     id: 'flores-montoya-family',
