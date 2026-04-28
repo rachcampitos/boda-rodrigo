@@ -77,7 +77,7 @@ const RSVP = (() => {
   function initCodeInput() {
     digitBoxes.forEach((box, i) => {
       box.addEventListener('input', (e) => {
-        const val = e.target.value.replace(/\D/g, ''); // digits only
+        const val = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
         e.target.value = val.charAt(0) || '';
 
         if (val) {
@@ -128,16 +128,16 @@ const RSVP = (() => {
         let pasted = (e.clipboardData || window.clipboardData).getData('text').trim();
         // Strip STAR- prefix if pasted
         pasted = pasted.toUpperCase().replace(/^STAR-?/, '');
-        const nums = pasted.replace(/\D/g, '').slice(0, 4);
+        const cleaned = pasted === 'LUNA' ? 'LUNA' : pasted.replace(/\D/g, '').slice(0, 4);
         for (let j = 0; j < digitBoxes.length; j++) {
-          digitBoxes[j].value = nums[j] || '';
-          digitBoxes[j].classList.toggle('filled', !!nums[j]);
+          digitBoxes[j].value = cleaned[j] || '';
+          digitBoxes[j].classList.toggle('filled', !!cleaned[j]);
         }
-        if (nums.length === 4) {
+        if (cleaned.length === 4) {
           digitBoxes[3].focus();
           setTimeout(() => handleCodeSubmit(), 300);
-        } else if (nums.length > 0) {
-          digitBoxes[Math.min(nums.length, 3)].focus();
+        } else if (cleaned.length > 0) {
+          digitBoxes[Math.min(cleaned.length, 3)].focus();
         }
       });
     }
