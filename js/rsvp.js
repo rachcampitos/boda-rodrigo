@@ -724,6 +724,7 @@ const RSVP = (() => {
     memorial.classList.add('open');
     memorial.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    clearDigitBoxes();
 
     const card = memorial.querySelector('.luna-memorial-card');
     if (card && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
