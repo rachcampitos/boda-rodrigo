@@ -7,6 +7,21 @@ function _t(key) {
   return (window.I18n && window.I18n.t(key)) || key;
 }
 
+// Helper: localize guest display names based on current language
+function localizeDisplayName(display) {
+  const lang = window.currentLang || 'en';
+  if (lang !== 'es') return display;
+
+  return display
+    .replace(/^The (.+) Family$/, 'Familia $1')
+    .replace(/^Mr and Mrs /, 'Sr. y Sra. ')
+    .replace(/^Mr & Mrs /, 'Sr. y Sra. ')
+    .replace(/\bMr\b /g, 'Sr. ')
+    .replace(/\bMrs\b /g, 'Sra. ')
+    .replace(/\bMs\b /g, 'Sra. ')
+    .replace(/\b& Guest\b/, '& Acompañante');
+}
+
 const RSVP = (() => {
   // API URL
   const API_BASE = window.location.hostname === 'localhost'
@@ -58,6 +73,7 @@ const RSVP = (() => {
     document.addEventListener('langchange', () => {
       // Update confirm button if invite is visible
       if (inviteState.style.display !== 'none' && selectedGuest) {
+        inviteTitle.textContent = localizeDisplayName(selectedGuest.display);
         updateConfirmButton();
         // Update hint
         const hint = attendanceContainer.querySelector('.rsvp-star-hint');
@@ -355,7 +371,7 @@ const RSVP = (() => {
 
   function populateInviteCard() {
     const guest = selectedGuest;
-    inviteTitle.textContent = guest.display;
+    inviteTitle.textContent = localizeDisplayName(guest.display);
     inviteMembers.style.display = 'none';
 
     // Adjust card height for large groups
@@ -601,7 +617,7 @@ const RSVP = (() => {
       const attending = data.attendingMembers || [];
       const names = attending.length > 0
         ? attending.join(', ')
-        : selectedGuest.display;
+        : localizeDisplayName(selectedGuest.display);
       if (alreadyIcon) { alreadyIcon.innerHTML = '&#10024;'; alreadyIcon.style.color = ''; alreadyIcon.style.textShadow = ''; }
       if (alreadyTitle) alreadyTitle.textContent = _t('rsvp.already.titleAccept');
       alreadyMsg.innerHTML =
