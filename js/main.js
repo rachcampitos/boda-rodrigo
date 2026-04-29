@@ -486,6 +486,9 @@
 
   // ---------- Initialize Everything ----------
   function init() {
+    // I18n must run first so text is set before other modules read DOM text
+    if (window.I18n) I18n.init();
+
     // checkInviteCode();
     initMobileNav();
     initCardDeck();

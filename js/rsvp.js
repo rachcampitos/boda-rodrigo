@@ -1,6 +1,12 @@
 /* ======================================================
    RSVP — Code entry, member toggles, card flip, API submission
    ====================================================== */
+
+// Helper: get a translated string (falls back to English key)
+function _t(key) {
+  return (window.I18n && window.I18n.t(key)) || key;
+}
+
 const RSVP = (() => {
   // API URL
   const API_BASE = window.location.hostname === 'localhost'
@@ -47,6 +53,30 @@ const RSVP = (() => {
     initChangeButton();
     loadAcceptedStars();
     checkUrlCode();
+
+    // Re-render dynamic text on language change
+    document.addEventListener('langchange', () => {
+      // Update confirm button if invite is visible
+      if (inviteState.style.display !== 'none' && selectedGuest) {
+        updateConfirmButton();
+        // Update hint
+        const hint = attendanceContainer.querySelector('.rsvp-star-hint');
+        if (hint) hint.textContent = _t('rsvp.invite.hint');
+        // Update guest name label
+        document.querySelectorAll('.rsvp-member-name').forEach(el => {
+          if (el.textContent === 'Guest' || el.textContent === 'Invitado') {
+            el.textContent = _t('rsvp.invite.guest');
+          }
+        });
+        // Update plus-one placeholder
+        document.querySelectorAll('.rsvp-plusone-name').forEach(el => {
+          el.placeholder = _t('rsvp.invite.guestPlaceholder');
+        });
+      }
+      // Update constellation panel label (mobile)
+      const panelLabel = document.querySelector('.rsvp-constellation-label');
+      if (panelLabel) panelLabel.textContent = _t('rsvp.constellation.label');
+    });
   }
 
   // ── Auto-detect code from URL param (?code=STAR-XXXX or ?code=XXXX) ──
@@ -177,7 +207,7 @@ const RSVP = (() => {
 
     const guest = findGuestByCode(raw);
     if (!guest) {
-      showError('Code not recognized. Please check your invitation and try again.');
+      showError(_t('rsvp.error.notFound'));
       digitBoxes.forEach(b => b.classList.add('error'));
       return;
     }
@@ -233,8 +263,8 @@ const RSVP = (() => {
     } catch (err) {
       showState('search');
       showError(err.name === 'AbortError'
-        ? 'Request timed out. Please try again.'
-        : 'Could not connect to server. Please try again.');
+        ? _t('rsvp.error.timeout')
+        : _t('rsvp.error.noServer'));
     }
   }
 
@@ -350,7 +380,7 @@ const RSVP = (() => {
     // Hint label
     const hint = document.createElement('p');
     hint.className = 'rsvp-star-hint';
-    hint.textContent = 'Tap each name to mark who shall attend';
+    hint.textContent = _t('rsvp.invite.hint');
     attendanceContainer.appendChild(hint);
 
     const showHint = !hintShown;
@@ -394,7 +424,7 @@ const RSVP = (() => {
       starBtn.setAttribute('aria-label', 'Toggle guest');
       const nameSpan = document.createElement('span');
       nameSpan.className = 'rsvp-member-name';
-      nameSpan.textContent = 'Guest';
+      nameSpan.textContent = _t('rsvp.invite.guest');
 
       row.appendChild(starBtn);
       row.appendChild(nameSpan);
@@ -404,7 +434,7 @@ const RSVP = (() => {
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.className = 'rsvp-plusone-name';
-        nameInput.placeholder = "Guest's name...";
+        nameInput.placeholder = _t('rsvp.invite.guestPlaceholder');
         nameInput.value = plusOneName;
         nameInput.maxLength = 60;
         nameInput.addEventListener('input', (e) => { plusOneName = e.target.value; });
@@ -463,7 +493,7 @@ const RSVP = (() => {
           const nameInput = document.createElement('input');
           nameInput.type = 'text';
           nameInput.className = 'rsvp-plusone-name';
-          nameInput.placeholder = "Guest's name...";
+          nameInput.placeholder = _t('rsvp.invite.guestPlaceholder');
           nameInput.value = plusOneName;
           nameInput.maxLength = 60;
           nameInput.addEventListener('input', (e) => { plusOneName = e.target.value; });
@@ -481,11 +511,11 @@ const RSVP = (() => {
     const btnIcon = confirmBtn.querySelector('.rsvp-confirm-icon');
 
     if (anyAttending) {
-      btnText.textContent = 'Confirm Response';
+      btnText.textContent = _t('rsvp.btn.confirm');
       btnIcon.innerHTML = '&#10022;';
       confirmBtn.classList.remove('decline-mode');
     } else {
-      btnText.textContent = 'Send Regrets';
+      btnText.textContent = _t('rsvp.btn.decline');
       btnIcon.innerHTML = '&#9790;';
       confirmBtn.classList.add('decline-mode');
     }
@@ -554,8 +584,8 @@ const RSVP = (() => {
       confirmBtn.disabled = false;
       confirmBtn.style.opacity = '';
       showError(err.name === 'AbortError'
-        ? 'Request timed out. Please try again.'
-        : (err.message || 'Failed to submit. Please try again.'));
+        ? _t('rsvp.error.timeout')
+        : (err.message || _t('rsvp.error.failed')));
     }
   }
 
@@ -573,18 +603,18 @@ const RSVP = (() => {
         ? attending.join(', ')
         : selectedGuest.display;
       if (alreadyIcon) { alreadyIcon.innerHTML = '&#10024;'; alreadyIcon.style.color = ''; alreadyIcon.style.textShadow = ''; }
-      if (alreadyTitle) alreadyTitle.textContent = 'The Cards Remember You';
+      if (alreadyTitle) alreadyTitle.textContent = _t('rsvp.already.titleAccept');
       alreadyMsg.innerHTML =
         `<span style="color:var(--gold);">${escapeHtml(names)}</span> ` +
-        (attending.length === 1 ? 'is' : 'are') +
-        ' aligned with the stars.<br>' +
-        '<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">Had a change of heart?</span>';
+        (attending.length === 1 ? _t('rsvp.already.isAligned') : _t('rsvp.already.areAligned')) +
+        ' ' + _t('rsvp.already.aligned') + '<br>' +
+        `<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">${_t('rsvp.already.changeHeart')}</span>`;
     } else {
       if (alreadyIcon) { alreadyIcon.innerHTML = '&#9790;'; alreadyIcon.style.color = 'var(--lavender)'; alreadyIcon.style.textShadow = '0 0 16px rgba(139,123,184,0.5)'; }
-      if (alreadyTitle) alreadyTitle.textContent = 'The Stars Await Your Return';
+      if (alreadyTitle) alreadyTitle.textContent = _t('rsvp.already.titleDecline');
       alreadyMsg.innerHTML =
-        'Your regrets have been noted by the cosmos.<br>' +
-        '<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">The stars still hold a place for you.</span>';
+        _t('rsvp.already.regretsNoted') + '<br>' +
+        `<span style="font-size:0.82rem;color:var(--silver-muted);opacity:0.7;">${_t('rsvp.already.placeHeld')}</span>`;
     }
 
     showState('already');
@@ -622,7 +652,7 @@ const RSVP = (() => {
     const icon = successState.querySelector('.rsvp-success-icon');
     const title = successState.querySelector('.rsvp-success-title');
     if (icon) { icon.innerHTML = '&#10022;'; icon.style.color = ''; icon.style.textShadow = ''; }
-    if (title) title.textContent = 'The Stars Have Spoken';
+    if (title) title.textContent = _t('rsvp.success.titleAccept');
     successState.style.opacity = '';
     successState.style.transform = '';
     successState.style.transition = '';
@@ -654,7 +684,7 @@ const RSVP = (() => {
     const icon = successState.querySelector('.rsvp-success-icon');
     const title = successState.querySelector('.rsvp-success-title');
     if (icon) { icon.innerHTML = '&#10022;'; icon.style.color = ''; icon.style.textShadow = ''; }
-    if (title) title.textContent = 'The Stars Have Spoken';
+    if (title) title.textContent = _t('rsvp.success.titleAccept');
     successState.style.opacity = '';
     successState.style.transform = '';
     successState.style.transition = '';
@@ -844,7 +874,7 @@ const RSVP = (() => {
       panel.id = 'rsvp-constellation-panel';
       const label = document.createElement('span');
       label.className = 'rsvp-constellation-label';
-      label.textContent = 'Each star is a guest who answered the call';
+      label.textContent = _t('rsvp.constellation.label');
       panel.appendChild(label);
       const sectionInner = rsvpSection.querySelector('.section-inner');
       if (sectionInner) sectionInner.appendChild(panel);
@@ -1511,8 +1541,8 @@ const RSVP = (() => {
   }
 
   function showAcceptSuccess() {
-    successMsg.textContent = `Thank you! We can\u2019t wait to celebrate with you.`;
-    successSub.textContent = `We can\u2019t wait to celebrate with you!`;
+    successMsg.textContent = _t('rsvp.success.msgAccept');
+    successSub.textContent = _t('rsvp.success.subAccept');
 
     successState.style.opacity = '0';
     successState.style.transform = 'translateY(10px)';
@@ -1553,13 +1583,13 @@ const RSVP = (() => {
   }
 
   function showDeclineSuccess() {
-    successMsg.textContent = 'Thank you for letting us know.';
-    successSub.textContent = 'We\u2019ll miss you, but we appreciate the response.';
+    successMsg.textContent = _t('rsvp.success.msgDecline');
+    successSub.textContent = _t('rsvp.success.subDecline');
 
     const icon = successState.querySelector('.rsvp-success-icon');
     const title = successState.querySelector('.rsvp-success-title');
     if (icon) { icon.innerHTML = '&#9790;'; icon.style.color = 'var(--lavender)'; icon.style.textShadow = '0 0 16px rgba(139, 123, 184, 0.5)'; }
-    if (title) title.textContent = 'The Universe Understands';
+    if (title) title.textContent = _t('rsvp.success.titleDecline');
 
     successState.style.opacity = '0';
     successState.style.transform = 'translateY(10px)';
