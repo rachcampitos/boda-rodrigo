@@ -456,6 +456,13 @@ const GUEST_LIST = [
     code: 'STAR-1063',
   },
   {
+    id: 'anissa-deu-pree',
+    display: 'Ms Anissa Deu Pree',
+    members: ['Anissa Deu Pree'],
+    headCount: 1,
+    code: 'STAR-1064',
+  },
+  {
     id: 'tyra-gardner',
     display: 'Ms Tyra Gardner',
     members: ['Tyra Gardner'],
@@ -649,6 +656,13 @@ const GUEST_LIST = [
     members: ['Jenn Miller'],
     headCount: 1,
     code: 'STAR-1090',
+  },
+  {
+    id: 'alfredo-huambachano',
+    display: 'Mr Alfredo Huambachano',
+    members: ['Alfredo Huambachano'],
+    headCount: 1,
+    code: 'STAR-1092',
   },
 ];
 
