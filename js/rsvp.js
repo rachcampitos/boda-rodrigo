@@ -1093,8 +1093,8 @@ const RSVP = (() => {
     const ORBIT_SPEED = (2 * Math.PI) / (22 * 60); // 22-sec orbit at 60fps, counter-clockwise
     const ORBIT_R     = isMobile ? 14 : 26;         // px barycenter → each star
     const MARGIN      = ORBIT_R + 10;
-    const R_SIZE      = isMobile ? 10 : 15;
-    const F_SIZE      = isMobile ? 10 : 15;
+    const R_SIZE      = isMobile ? 10 : 20;
+    const F_SIZE      = isMobile ? 10 : 20;
 
     let w = sfW, h = sfH;
     let angle = 0;
