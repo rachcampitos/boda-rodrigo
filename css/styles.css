@@ -1879,11 +1879,15 @@ h1, h2, h3 {
 }
 .rsvp-binary-star--rodrigo svg {
   fill: #C4956A;
-  filter: drop-shadow(0 0 5px rgba(196,149,106,0.75)) drop-shadow(0 0 10px rgba(196,149,106,0.3));
+  filter: drop-shadow(0 0 3px rgba(196,149,106,1))
+          drop-shadow(0 0 9px rgba(196,149,106,0.8))
+          drop-shadow(0 0 18px rgba(196,149,106,0.4));
 }
 .rsvp-binary-star--frankie svg {
   fill: #D4C8F0;
-  filter: drop-shadow(0 0 4px rgba(212,200,240,0.75)) drop-shadow(0 0 8px rgba(212,200,240,0.3));
+  filter: drop-shadow(0 0 3px rgba(212,200,240,1))
+          drop-shadow(0 0 9px rgba(212,200,240,0.8))
+          drop-shadow(0 0 16px rgba(212,200,240,0.4));
 }
 .rsvp-binary-star--frankie {
   animation-delay: 1.2s;
