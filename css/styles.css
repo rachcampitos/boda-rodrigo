@@ -1865,6 +1865,52 @@ h1, h2, h3 {
   animation: constellationLineDraw 0.5s ease forwards;
 }
 
+/* ---- Binary Stars — Rodrigo & Frankie ---- */
+.rsvp-binary-star {
+  position: absolute;
+  pointer-events: auto;
+  cursor: default;
+  z-index: 2;
+  animation: binaryBreath 3.5s ease-in-out infinite;
+}
+.rsvp-binary-star svg {
+  display: block;
+  transform-origin: center;
+}
+.rsvp-binary-star--rodrigo svg {
+  fill: #C4956A;
+  filter: drop-shadow(0 0 5px rgba(196,149,106,0.75)) drop-shadow(0 0 10px rgba(196,149,106,0.3));
+}
+.rsvp-binary-star--frankie svg {
+  fill: #D4C8F0;
+  filter: drop-shadow(0 0 4px rgba(212,200,240,0.75)) drop-shadow(0 0 8px rgba(212,200,240,0.3));
+}
+.rsvp-binary-star--frankie {
+  animation-delay: 1.2s;
+}
+.rsvp-binary-label {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #8B7BB8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding-bottom: 4px;
+}
+.rsvp-binary-star:hover .rsvp-binary-label,
+.rsvp-binary-star.label-visible .rsvp-binary-label {
+  opacity: 1;
+}
+@keyframes binaryBreath {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
 /* ---- Mobile Constellation Panel (below card on phones) ---- */
 .rsvp-constellation-panel {
   display: none;

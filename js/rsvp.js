@@ -1081,6 +1081,136 @@ const RSVP = (() => {
         starMap[guest.id] = { container: wrapper, stars: starEls, lines: lineEls, headCount: hc };
       }
     }
+
+    initBinaryStars(activeField, sfW, sfH, isMobile);
+  }
+
+  // ── Binary Stars — Rodrigo & Frankie ───────────────────────
+  function initBinaryStars(activeField, sfW, sfH, isMobile) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const TRAIL_COUNT = 8;
+    const ORBIT_SPEED = (2 * Math.PI) / (22 * 60); // 22-sec orbit at 60fps, counter-clockwise
+    const ORBIT_R     = isMobile ? 14 : 26;         // px barycenter → each star
+    const MARGIN      = ORBIT_R + 10;
+    const R_SIZE      = isMobile ? 10 : 15;
+    const F_SIZE      = isMobile ? 10 : 15;
+
+    let w = sfW, h = sfH;
+    let angle = 0;
+
+    // Lissajous drift — smooth parametric path, never bounces off edges
+    // Irrational frequency ratio (√2) ensures the path never exactly repeats
+    let t = Math.random() * Math.PI * 2;
+    const phaseX = Math.random() * Math.PI * 2;
+    const phaseY = Math.random() * Math.PI * 2;
+    const T_SPEED = 0.0007; // time increment per frame (~very slow drift)
+
+    function makeStar(cls, size, name) {
+      const wrap = document.createElement('div');
+      wrap.className = 'rsvp-binary-star ' + cls;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', size);
+      svg.setAttribute('height', size);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z');
+      svg.appendChild(path);
+      wrap.appendChild(svg);
+      const label = document.createElement('span');
+      label.className = 'rsvp-binary-label';
+      label.textContent = name;
+      wrap.appendChild(label);
+      activeField.appendChild(wrap);
+      return wrap;
+    }
+
+    function makeTrail(color, count) {
+      return Array.from({ length: count }, (_, i) => {
+        const d = document.createElement('div');
+        d.className = 'rsvp-binary-trail';
+        const sz = Math.max(0.8, 3 - i * 0.28);
+        d.style.cssText = `width:${sz}px;height:${sz}px;background:${color};border-radius:50%;position:absolute;pointer-events:none;opacity:0;z-index:1;`;
+        activeField.appendChild(d);
+        return d;
+      });
+    }
+
+    const rodrigo = makeStar('rsvp-binary-star--rodrigo', R_SIZE, 'Rodrigo');
+    const frankie  = makeStar('rsvp-binary-star--frankie', F_SIZE, 'Frankie');
+    const rTrail   = makeTrail('rgba(196,149,106,1)', TRAIL_COUNT);
+    const fTrail   = makeTrail('rgba(212,200,240,1)', TRAIL_COUNT);
+
+    let rHist = [], fHist = [], trailTick = 0, rafId;
+
+    function applyTrail(trail, hist) {
+      for (let i = 0; i < trail.length; i++) {
+        if (i < hist.length) {
+          const p = hist[hist.length - 1 - i];
+          const sz = parseFloat(trail[i].style.width) / 2;
+          trail[i].style.left = (p.x - sz) + 'px';
+          trail[i].style.top  = (p.y - sz) + 'px';
+          trail[i].style.opacity = ((TRAIL_COUNT - i) / (TRAIL_COUNT + 1) * 0.55).toFixed(2);
+        } else {
+          trail[i].style.opacity = '0';
+        }
+      }
+    }
+
+    function tick() {
+      angle -= ORBIT_SPEED; // counter-clockwise
+
+      // Lissajous path: amplitude keeps barycenter well within bounds
+      t += T_SPEED;
+      const ampX = (w / 2 - MARGIN - ORBIT_R) * 0.82;
+      const ampY = (h / 2 - MARGIN - ORBIT_R) * 0.82;
+      const bx = w / 2 + ampX * Math.sin(t + phaseX);
+      const by = h / 2 + ampY * Math.sin(t * Math.SQRT2 + phaseY);
+
+      const cx = Math.cos(angle) * ORBIT_R;
+      const cy = Math.sin(angle) * ORBIT_R;
+      const rx = bx + cx, ry = by + cy;
+      const fx = bx - cx, fy = by - cy;
+
+      rodrigo.style.left = (rx - R_SIZE / 2) + 'px';
+      rodrigo.style.top  = (ry - R_SIZE / 2) + 'px';
+      frankie.style.left  = (fx - F_SIZE / 2) + 'px';
+      frankie.style.top   = (fy - F_SIZE / 2) + 'px';
+
+      trailTick++;
+      if (trailTick % 3 === 0) {
+        rHist.push({ x: rx, y: ry });
+        fHist.push({ x: fx, y: fy });
+        if (rHist.length > TRAIL_COUNT) rHist.shift();
+        if (fHist.length > TRAIL_COUNT) fHist.shift();
+        applyTrail(rTrail, rHist);
+        applyTrail(fTrail, fHist);
+      }
+
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // Tap/click to reveal name label (2s then fades)
+    [rodrigo, frankie].forEach(el => {
+      el.addEventListener('click', () => {
+        el.classList.add('label-visible');
+        setTimeout(() => el.classList.remove('label-visible'), 2000);
+      });
+    });
+
+    // Pause animation when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelAnimationFrame(rafId);
+      else rafId = requestAnimationFrame(tick);
+    });
+
+    // Recalculate field size on resize
+    window.addEventListener('resize', () => {
+      w = activeField.offsetWidth || w;
+      h = activeField.offsetHeight || h;
+    });
+
+    rafId = requestAnimationFrame(tick);
   }
 
   // ── Load Previously Accepted Stars ─────────────────────
