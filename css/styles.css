@@ -1878,7 +1878,9 @@ h1, h2, h3 {
   transform-origin: center;
 }
 .rsvp-binary-star--rodrigo svg {
-  fill: #C4956A;
+  fill: #0a0a0a;
+  stroke: #C4956A;
+  stroke-width: 1.2px;
   filter: drop-shadow(0 0 3px rgba(196,149,106,1))
           drop-shadow(0 0 9px rgba(196,149,106,0.8))
           drop-shadow(0 0 18px rgba(196,149,106,0.4));
