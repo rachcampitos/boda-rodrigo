@@ -60,7 +60,6 @@ const RSVP = (() => {
   let hintShown = false;
   const starMap = {}; // groupId → { container, stars[], lines[], headCount }
   let binaryCancelFn = null;
-  let sfBreakpoint = null; // 'mobile' | 'desktop'
 
   function reinitStarfield() {
     if (binaryCancelFn) { binaryCancelFn(); binaryCancelFn = null; }
@@ -109,17 +108,11 @@ const RSVP = (() => {
       if (panelLabel) panelLabel.textContent = _t('rsvp.constellation.label');
     });
 
-    // Reinit starfield when mobile/desktop breakpoint flips (dev tools or window resize)
-    let sfResizeTimer = null;
-    window.addEventListener('resize', () => {
-      clearTimeout(sfResizeTimer);
-      sfResizeTimer = setTimeout(() => {
-        const nowMobile = window.innerWidth < 768;
-        if (sfBreakpoint !== null && (nowMobile ? 'mobile' : 'desktop') !== sfBreakpoint) {
-          reinitStarfield();
-        }
-      }, 250);
-    });
+    // Reinit starfield when mobile/desktop breakpoint flips.
+    // matchMedia fires exactly when the CSS threshold is crossed — more reliable
+    // than window.resize which can skip or fire with stale dimensions in dev tools.
+    const sfMQ = window.matchMedia('(max-width: 767px)');
+    sfMQ.addEventListener('change', () => reinitStarfield());
   }
 
   // ── Auto-detect code from URL param (?code=STAR-XXXX or ?code=XXXX) ──
@@ -908,7 +901,6 @@ const RSVP = (() => {
     if (!starfield || typeof GUEST_LIST === 'undefined') return;
 
     const isMobile = window.innerWidth < 768;
-    sfBreakpoint = isMobile ? 'mobile' : 'desktop';
 
     // On mobile, create a visible panel below the card (instead of absolute behind it)
     let activeField = starfield;
