@@ -59,6 +59,21 @@ const RSVP = (() => {
   let plusOneName = '';
   let hintShown = false;
   const starMap = {}; // groupId → { container, stars[], lines[], headCount }
+  let binaryCancelFn = null;
+  let sfBreakpoint = null; // 'mobile' | 'desktop'
+
+  function reinitStarfield() {
+    if (binaryCancelFn) { binaryCancelFn(); binaryCancelFn = null; }
+    // Clear desktop starfield
+    while (starfield && starfield.firstChild) starfield.removeChild(starfield.firstChild);
+    // Remove mobile panel
+    const panel = document.getElementById('rsvp-constellation-panel');
+    if (panel) panel.remove();
+    // Clear starMap
+    Object.keys(starMap).forEach(k => delete starMap[k]);
+    initStarfield();
+    loadAcceptedStars();
+  }
 
   function init() {
     initStarfield();
@@ -92,6 +107,18 @@ const RSVP = (() => {
       // Update constellation panel label (mobile)
       const panelLabel = document.querySelector('.rsvp-constellation-label');
       if (panelLabel) panelLabel.textContent = _t('rsvp.constellation.label');
+    });
+
+    // Reinit starfield when mobile/desktop breakpoint flips (dev tools or window resize)
+    let sfResizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(sfResizeTimer);
+      sfResizeTimer = setTimeout(() => {
+        const nowMobile = window.innerWidth < 768;
+        if (sfBreakpoint !== null && (nowMobile ? 'mobile' : 'desktop') !== sfBreakpoint) {
+          reinitStarfield();
+        }
+      }, 250);
     });
   }
 
@@ -881,6 +908,7 @@ const RSVP = (() => {
     if (!starfield || typeof GUEST_LIST === 'undefined') return;
 
     const isMobile = window.innerWidth < 768;
+    sfBreakpoint = isMobile ? 'mobile' : 'desktop';
 
     // On mobile, create a visible panel below the card (instead of absolute behind it)
     let activeField = starfield;
@@ -1082,12 +1110,12 @@ const RSVP = (() => {
       }
     }
 
-    initBinaryStars(activeField, sfW, sfH, isMobile);
+    binaryCancelFn = initBinaryStars(activeField, sfW, sfH, isMobile);
   }
 
   // ── Binary Stars — Rodrigo & Frankie ───────────────────────
   function initBinaryStars(activeField, sfW, sfH, isMobile) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
 
     const TRAIL_COUNT = 8;
     const ORBIT_SPEED = (2 * Math.PI) / (22 * 60); // 22-sec orbit at 60fps, counter-clockwise
@@ -1211,6 +1239,12 @@ const RSVP = (() => {
     });
 
     rafId = requestAnimationFrame(tick);
+
+    const allNodes = [rodrigo, frankie, ...rTrail, ...fTrail];
+    return function cancelBinaryStars() {
+      cancelAnimationFrame(rafId);
+      allNodes.forEach(el => { if (el && el.parentNode) el.parentNode.removeChild(el); });
+    };
   }
 
   // ── Load Previously Accepted Stars ─────────────────────
