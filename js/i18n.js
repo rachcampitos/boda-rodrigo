@@ -14,6 +14,7 @@
       'nav.travel':       'Travel',
       'nav.weddingParty': 'Wedding Party',
       'nav.gallery':      'Gallery',
+      'nav.moments':      'Moments',
       'nav.faqs':         'FAQs',
       'nav.rsvp':         'RSVP',
 
@@ -160,6 +161,7 @@
       'nav.travel':       'Cómo llegar',
       'nav.weddingParty': 'Wedding Party',
       'nav.gallery':      'Galería',
+      'nav.moments':      'Momentos',
       'nav.faqs':         'Preguntas',
       'nav.rsvp':         'RSVP',
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const multer = require('multer');
 
 // ── Config ──────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
@@ -32,7 +33,7 @@ const app = express();
 
 app.use(cors({
   origin: ALLOWED_ORIGINS,
-  methods: ['GET', 'POST', 'DELETE'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
 }));
 app.use(express.json());
 
@@ -179,6 +180,107 @@ app.delete('/api/rsvps/:id', async (req, res) => {
   } catch (err) {
     console.error('Delete RSVP error:', err);
     res.status(500).json({ message: 'Failed to delete RSVP' });
+  }
+});
+
+// ── Photos ──────────────────────────────────────────────
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 6 * 1024 * 1024 }, // 6 MB max
+  fileFilter: (_req, file, cb) => {
+    cb(null, file.mimetype.startsWith('image/'));
+  },
+});
+
+const photoSchema = new mongoose.Schema({
+  imageData: { type: Buffer, required: true },
+  mimeType:  { type: String, default: 'image/jpeg' },
+  guestName: { type: String, default: '' },
+  status:    { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  createdAt: { type: Date, default: Date.now },
+  reviewedAt: { type: Date },
+});
+
+const Photo = mongoose.model('Photo', photoSchema);
+
+// Upload a guest photo (public)
+app.post('/api/photos', upload.single('photo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'No photo uploaded' });
+  try {
+    const photo = await Photo.create({
+      imageData: req.file.buffer,
+      mimeType:  req.file.mimetype || 'image/jpeg',
+      guestName: (req.body.guestName || '').trim().slice(0, 60),
+    });
+    res.status(201).json({ id: photo._id, status: photo.status });
+  } catch (err) {
+    console.error('Photo upload error:', err);
+    res.status(500).json({ message: 'Upload failed' });
+  }
+});
+
+// Serve photo binary (public)
+app.get('/api/photos/:id/image', async (req, res) => {
+  try {
+    const photo = await Photo.findById(req.params.id).select('imageData mimeType status');
+    if (!photo) return res.status(404).json({ message: 'Not found' });
+    res.set('Content-Type', photo.mimeType || 'image/jpeg');
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(photo.imageData);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load image' });
+  }
+});
+
+// List pending photos (admin)
+app.get('/api/photos/pending', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const photos = await Photo.find({ status: 'pending' })
+      .select('-imageData').sort({ createdAt: 1 }).lean();
+    res.json(photos.map(p => ({
+      id: p._id, guestName: p.guestName, createdAt: p.createdAt,
+      imageUrl: `/api/photos/${p._id}/image`,
+    })));
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// List approved photos (public gallery)
+app.get('/api/photos/approved', async (_req, res) => {
+  try {
+    const photos = await Photo.find({ status: 'approved' })
+      .select('-imageData').sort({ reviewedAt: -1 }).lean();
+    res.json(photos.map(p => ({
+      id: p._id, guestName: p.guestName, approvedAt: p.reviewedAt,
+      imageUrl: `/api/photos/${p._id}/image`,
+    })));
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// Approve or reject a photo (admin)
+app.patch('/api/photos/:id/status', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  const { status } = req.body;
+  if (!['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Status must be "approved" or "rejected"' });
+  }
+  try {
+    const photo = await Photo.findByIdAndUpdate(
+      req.params.id,
+      { status, reviewedAt: new Date() },
+      { new: true }
+    ).select('-imageData');
+    if (!photo) return res.status(404).json({ message: 'Not found' });
+    res.json({ id: photo._id, status: photo.status });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
   }
 });
 

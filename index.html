@@ -41,6 +41,7 @@
         <li><a href="#travel" data-i18n="nav.travel">Travel</a></li>
         <li><a href="#wedding-party" data-i18n="nav.weddingParty">Wedding Party</a></li>
         <li><a href="#gallery" data-i18n="nav.gallery">Gallery</a></li>
+        <li id="nav-moments" style="display:none"><a href="#moments" data-i18n="nav.moments">Moments</a></li>
         <li><a href="#faqs" data-i18n="nav.faqs">FAQs</a></li>
         <li><a href="#rsvp" data-i18n="nav.rsvp">RSVP</a></li>
       </ul>
@@ -689,6 +690,26 @@
     </div>
   </section>
 
+  <!-- ============ WITNESSES TO WONDER — Guest Moments ============ -->
+  <section id="moments" class="section" style="display:none">
+    <div class="section-inner">
+      <h2 class="section-title reveal">Witnesses to Wonder</h2>
+      <p class="moments-subtitle reveal">Captured through your eyes</p>
+
+      <div class="moments-notify" id="moments-notify" role="status" aria-live="polite">
+        <span>&#10022;</span>
+        <span id="moments-notify-text">New moments added</span>
+      </div>
+
+      <div id="moments-container">
+        <div class="moments-empty">
+          <span class="moments-empty-icon">&#10022;</span>
+          <p class="moments-empty-text">Moments will appear here as the night unfolds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ FAQs ============ -->
   <section id="faqs" class="section">
     <div class="section-inner">
@@ -933,6 +954,7 @@
   <script src="js/countdown.js"></script>
   <script src="js/guests.js"></script>
   <script src="js/rsvp.js"></script>
+  <script src="js/moments.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Witnesses to Wonder · Frankie &amp; Rodrigo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Pinyon+Script&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #050505;
+      --copper:    #C4956A;
+      --copper-lt: #d4ad85;
+      --lavender:  #8B7BB8;
+      --silver:    #b8b8c0;
+      --ff-h:      'Cormorant Garamond', Georgia, serif;
+      --ff-s:      'Pinyon Script', cursive;
+      --ff-b:      'Raleway', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Screens ──────────────────────────────── */
+    .screen {
+      position: fixed; inset: 0;
+      width: 100vw; height: 100vh; height: 100dvh;
+      display: flex; flex-direction: column;
+      background: var(--bg);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease;
+      z-index: 1;
+    }
+    .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
+
+    /* ── CAMERA ───────────────────────────────── */
+    #screen-camera { background: #000; }
+
+    .viewfinder {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: filter 0.25s ease;
+    }
+
+    /* Vignette overlay (Ritual filter) */
+    .vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+      opacity: 0; transition: opacity 0.25s ease;
+      z-index: 5;
+    }
+    .vignette.on { opacity: 1; }
+
+    /* Corner ornaments */
+    .corner {
+      position: absolute;
+      width: 52px; height: 52px;
+      z-index: 10;
+    }
+    .corner-tl { top: 18px; left: 18px; }
+    .corner-tr { top: 18px; right: 18px; transform: scaleX(-1); }
+    .corner-bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
+    .corner-br { bottom: 18px; right: 18px; transform: scale(-1); }
+
+    /* Monogram watermark */
+    .cam-mono {
+      position: absolute;
+      bottom: 14px; left: 50%; transform: translateX(-50%);
+      font-family: var(--ff-s);
+      font-size: 20px;
+      color: rgba(196,149,106,0.28);
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 8;
+    }
+
+    /* Camera bottom bar */
+    .camera-bar {
+      flex-shrink: 0;
+      background: rgba(5,5,5,0.97);
+      display: flex; flex-direction: column; align-items: center;
+      gap: 18px;
+      padding: 16px 20px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Filter swatches */
+    .filters-row {
+      display: flex; gap: 14px;
+      overflow-x: auto; scrollbar-width: none;
+      width: 100%; justify-content: center;
+      padding: 4px 0;
+    }
+    .filters-row::-webkit-scrollbar { display: none; }
+
+    .filter-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      background: none; border: none; cursor: pointer;
+      flex-shrink: 0; outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .swatch {
+      width: 58px; height: 58px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .filter-btn.active .swatch {
+      border-color: var(--copper);
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(196,149,106,0.35);
+    }
+
+    .swatch.ritual   { background: radial-gradient(circle at 38% 38%, #caa87a, #6b3c20); }
+    .swatch.oracle   { background: radial-gradient(circle at 38% 38%, #d8d8d8, #383838); }
+    .swatch.dusk     { background: radial-gradient(circle at 38% 38%, #d4ad85, #3a2860); }
+    .swatch.luminous { background: radial-gradient(circle at 38% 38%, #f8f2e8, #ccc4b0); }
+
+    .filter-label {
+      font-family: var(--ff-b);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(184,184,192,0.65);
+      transition: color 0.2s;
+    }
+    .filter-btn.active .filter-label { color: var(--copper); }
+
+    /* Capture button */
+    .capture-btn {
+      width: 74px; height: 74px; border-radius: 50%;
+      background: none;
+      border: 2.5px solid var(--copper);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      -webkit-tap-highlight-color: transparent; outline: none;
+    }
+    .capture-btn:active {
+      transform: scale(0.9);
+      box-shadow: 0 0 18px rgba(196,149,106,0.4);
+    }
+    .capture-inner {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: #fff;
+      transition: transform 0.12s;
+    }
+    .capture-btn:active .capture-inner { transform: scale(0.88); }
+
+    /* ── PREVIEW ──────────────────────────────── */
+    #screen-preview { background: #000; position: relative; }
+
+    #img-preview {
+      flex: 1;
+      width: 100%; min-height: 0;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    .preview-bar {
+      flex-shrink: 0;
+      background: rgba(5,5,5,0.97);
+      display: flex; gap: 12px; align-items: center;
+      padding: 14px 20px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .btn-retake {
+      flex-shrink: 0;
+      padding: 15px 20px;
+      border: 1px solid rgba(196,149,106,0.38);
+      border-radius: 10px;
+      color: var(--copper);
+      font-family: var(--ff-b); font-size: 13px; letter-spacing: 0.06em;
+      background: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-send {
+      flex: 1;
+      padding: 16px 20px;
+      background: var(--copper); border: none;
+      border-radius: 10px;
+      color: #000;
+      font-family: var(--ff-b); font-size: 13px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-send:active { background: var(--copper-lt); }
+
+    /* Name bottom sheet */
+    .name-sheet {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: #111;
+      border-top: 1px solid rgba(196,149,106,0.28);
+      border-radius: 20px 20px 0 0;
+      padding: 0 24px 28px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+      transform: translateY(100%);
+      transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 30;
+    }
+    .name-sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.18); border-radius: 2px;
+      margin: 14px auto 24px;
+    }
+
+    .sheet-title {
+      font-family: var(--ff-h); font-size: 22px;
+      color: #fff; margin-bottom: 5px;
+    }
+    .sheet-hint {
+      font-family: var(--ff-b); font-size: 11px;
+      color: rgba(255,255,255,0.35); letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+
+    .name-input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(196,149,106,0.3);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: var(--ff-b); font-size: 16px; color: #fff;
+      outline: none; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .name-input::placeholder { color: rgba(255,255,255,0.28); }
+    .name-input:focus { border-color: var(--copper); }
+
+    .btn-confirm {
+      width: 100%; padding: 18px;
+      background: var(--copper); border: none; border-radius: 10px;
+      color: #000;
+      font-family: var(--ff-b); font-size: 14px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .btn-confirm:active { background: var(--copper-lt); }
+
+    /* ── UPLOADING ────────────────────────────── */
+    #screen-uploading { align-items: center; justify-content: center; gap: 22px; }
+
+    .spinner {
+      width: 46px; height: 46px;
+      border: 2px solid rgba(196,149,106,0.18);
+      border-top-color: var(--copper);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .uploading-text {
+      font-family: var(--ff-h); font-size: 18px;
+      color: rgba(255,255,255,0.6); font-style: italic;
+    }
+
+    /* ── CONFIRM ──────────────────────────────── */
+    #screen-confirm {
+      align-items: center; justify-content: center;
+      padding: 40px 32px;
+    }
+
+    .tarot-wrap {
+      perspective: 900px;
+      margin-bottom: 38px;
+    }
+
+    .tarot-card {
+      width: 176px; height: 272px;
+      transform-style: preserve-3d;
+      transition: transform 0.95s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .tarot-card.flipped { transform: rotateY(180deg); }
+
+    .t-face, .t-back {
+      position: absolute; inset: 0;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+
+    .t-back {
+      background: #0d0a14;
+      border: 1px solid rgba(196,149,106,0.45);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .t-back::before {
+      content: '';
+      position: absolute; inset: 8px;
+      border: 1px solid rgba(196,149,106,0.22);
+      border-radius: 7px;
+    }
+    .t-back-mono {
+      font-family: var(--ff-s); font-size: 30px;
+      color: var(--copper); opacity: 0.8;
+      text-align: center; line-height: 1.3; z-index: 1;
+    }
+
+    .t-face {
+      transform: rotateY(180deg);
+      background: #111;
+      border: 1px solid rgba(196,149,106,0.38);
+    }
+    .t-face img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .confirm-title {
+      font-family: var(--ff-h); font-size: 24px;
+      color: #fff; text-align: center; margin-bottom: 12px;
+    }
+    .confirm-sub {
+      font-family: var(--ff-b); font-size: 13px;
+      color: rgba(255,255,255,0.38);
+      text-align: center; letter-spacing: 0.05em; line-height: 1.75;
+      max-width: 260px;
+    }
+
+    .btn-again {
+      margin-top: 38px;
+      padding: 13px 32px;
+      border: 1px solid rgba(196,149,106,0.38);
+      border-radius: 8px;
+      color: var(--copper);
+      font-family: var(--ff-b); font-size: 12px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── ERROR ────────────────────────────────── */
+    #screen-error {
+      align-items: center; justify-content: center;
+      padding: 48px 32px; text-align: center; gap: 18px;
+    }
+    .err-icon { font-size: 52px; }
+    .err-title { font-family: var(--ff-h); font-size: 24px; color: #fff; }
+    .err-msg {
+      font-family: var(--ff-b); font-size: 14px;
+      color: rgba(255,255,255,0.45); line-height: 1.65; max-width: 280px;
+    }
+    .btn-reload {
+      margin-top: 8px;
+      padding: 14px 28px;
+      background: var(--copper); border: none; border-radius: 8px;
+      color: #000;
+      font-family: var(--ff-b); font-size: 13px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── CAMERA ── -->
+  <div id="screen-camera" class="screen active">
+    <div class="viewfinder">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="vignette" id="vignette"></div>
+
+      <!-- Corner ornaments (top-left; others rotate via CSS) -->
+      <svg class="corner corner-tl" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 2H14Q2 2 2 14V50" stroke="#C4956A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M40 2H14Q8 2 8 10V22" stroke="#C4956A" stroke-width="0.75" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="2" cy="2" r="2.2" fill="#C4956A"/>
+        <path d="M28 2Q28 9.5 21 7Q23 2 28 2Z" fill="#C4956A" opacity="0.55"/>
+      </svg>
+      <svg class="corner corner-tr" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 2H14Q2 2 2 14V50" stroke="#C4956A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M40 2H14Q8 2 8 10V22" stroke="#C4956A" stroke-width="0.75" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="2" cy="2" r="2.2" fill="#C4956A"/>
+        <path d="M28 2Q28 9.5 21 7Q23 2 28 2Z" fill="#C4956A" opacity="0.55"/>
+      </svg>
+      <svg class="corner corner-bl" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 2H14Q2 2 2 14V50" stroke="#C4956A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M40 2H14Q8 2 8 10V22" stroke="#C4956A" stroke-width="0.75" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="2" cy="2" r="2.2" fill="#C4956A"/>
+        <path d="M28 2Q28 9.5 21 7Q23 2 28 2Z" fill="#C4956A" opacity="0.55"/>
+      </svg>
+      <svg class="corner corner-br" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 2H14Q2 2 2 14V50" stroke="#C4956A" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M40 2H14Q8 2 8 10V22" stroke="#C4956A" stroke-width="0.75" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="2" cy="2" r="2.2" fill="#C4956A"/>
+        <path d="M28 2Q28 9.5 21 7Q23 2 28 2Z" fill="#C4956A" opacity="0.55"/>
+      </svg>
+
+      <div class="cam-mono">F &amp; R</div>
+    </div>
+
+    <div class="camera-bar">
+      <div class="filters-row" id="filters-row">
+        <button class="filter-btn active" data-filter="ritual">
+          <div class="swatch ritual"></div>
+          <span class="filter-label">Ritual</span>
+        </button>
+        <button class="filter-btn" data-filter="oracle">
+          <div class="swatch oracle"></div>
+          <span class="filter-label">Oracle</span>
+        </button>
+        <button class="filter-btn" data-filter="dusk">
+          <div class="swatch dusk"></div>
+          <span class="filter-label">Dusk</span>
+        </button>
+        <button class="filter-btn" data-filter="luminous">
+          <div class="swatch luminous"></div>
+          <span class="filter-label">Luminous</span>
+        </button>
+      </div>
+
+      <button class="capture-btn" id="btn-capture" aria-label="Take photo">
+        <div class="capture-inner"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PREVIEW ── -->
+  <div id="screen-preview" class="screen">
+    <img id="img-preview" src="" alt="Your captured moment">
+
+    <div class="name-sheet" id="name-sheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">Your name</p>
+      <p class="sheet-hint">Optional &mdash; so they know who to thank</p>
+      <input class="name-input" id="input-name" type="text"
+             placeholder="e.g. Uncle Marco" maxlength="50"
+             autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="btn-confirm" id="btn-confirm">Send my moment &rarr;</button>
+    </div>
+
+    <div class="preview-bar">
+      <button class="btn-retake" id="btn-retake">&larr; Retake</button>
+      <button class="btn-send" id="btn-send">Send your moment &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ── UPLOADING ── -->
+  <div id="screen-uploading" class="screen">
+    <div class="spinner"></div>
+    <p class="uploading-text">Sending your moment&hellip;</p>
+  </div>
+
+  <!-- ── CONFIRM ── -->
+  <div id="screen-confirm" class="screen">
+    <div class="tarot-wrap">
+      <div class="tarot-card" id="tarot-card">
+        <div class="t-back">
+          <p class="t-back-mono">F<br>&amp;<br>R</p>
+        </div>
+        <div class="t-face">
+          <img id="tarot-photo" src="" alt="">
+        </div>
+      </div>
+    </div>
+    <p class="confirm-title">Your moment has been received.</p>
+    <p class="confirm-sub">Frankie &amp; Rodrigo will reveal it<br>when the time is right.</p>
+    <button class="btn-again" id="btn-again">Take another photo</button>
+  </div>
+
+  <!-- ── ERROR ── -->
+  <div id="screen-error" class="screen">
+    <div class="err-icon">📷</div>
+    <p class="err-title">Camera not available</p>
+    <p class="err-msg" id="err-msg">Please allow camera access and reload the page.</p>
+    <button class="btn-reload" onclick="location.reload()">Reload</button>
+  </div>
+
+  <!-- Hidden capture canvas -->
+  <canvas id="canvas-capture" style="display:none;"></canvas>
+
+  <script>
+    const API_BASE = (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    )
+      ? 'http://localhost:3001/api'
+      : 'https://boda-rodrigo-production.up.railway.app/api';
+
+    const FILTERS = {
+      ritual:   'sepia(0.5) contrast(1.05) brightness(0.87) saturate(0.78)',
+      oracle:   'grayscale(1) contrast(1.15) brightness(1.05)',
+      dusk:     'sepia(0.12) hue-rotate(238deg) saturate(1.45) brightness(0.92)',
+      luminous: 'brightness(1.2) contrast(0.87) saturate(0.92)',
+    };
+
+    let currentFilter = 'ritual';
+    let capturedBlob   = null;
+    let capturedDataUrl = null;
+    let resetTimer      = null;
+
+    const video         = document.getElementById('video');
+    const canvas        = document.getElementById('canvas-capture');
+    const imgPreview    = document.getElementById('img-preview');
+    const vignette      = document.getElementById('vignette');
+    const nameSheet     = document.getElementById('name-sheet');
+    const nameInput     = document.getElementById('input-name');
+    const tarotCard     = document.getElementById('tarot-card');
+    const tarotPhoto    = document.getElementById('tarot-photo');
+
+    // ── Screens ──────────────────────────────────
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ── Camera init ──────────────────────────────
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+          },
+          audio: false,
+        });
+        video.srcObject = stream;
+        setFilter('ritual');
+      } catch (err) {
+        document.getElementById('err-msg').textContent =
+          err.name === 'NotAllowedError'
+            ? 'Camera access was denied. Please allow camera access in your browser settings and reload.'
+            : 'Could not access the camera. Try using Chrome or Safari and make sure you\'re on HTTPS.';
+        show('screen-error');
+      }
+    }
+
+    // ── Filter ───────────────────────────────────
+    function setFilter(name) {
+      currentFilter = name;
+      video.style.filter = FILTERS[name];
+      vignette.classList.toggle('on', name === 'ritual');
+      document.querySelectorAll('.filter-btn').forEach(btn =>
+        btn.classList.toggle('active', btn.dataset.filter === name)
+      );
+    }
+
+    document.getElementById('filters-row').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (btn) setFilter(btn.dataset.filter);
+    });
+
+    // ── Capture ───────────────────────────────────
+    document.getElementById('btn-capture').addEventListener('click', capture);
+
+    function capture() {
+      const vw = video.videoWidth  || 720;
+      const vh = video.videoHeight || 1280;
+      const scale = Math.min(1, 1080 / Math.max(vw, vh));
+      const w = Math.round(vw * scale);
+      const h = Math.round(vh * scale);
+
+      canvas.width  = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+
+      // Apply filter and draw
+      ctx.filter = FILTERS[currentFilter];
+      ctx.drawImage(video, 0, 0, w, h);
+      ctx.filter = 'none';
+
+      // Vignette overlay for Ritual
+      if (currentFilter === 'ritual') {
+        const g = ctx.createRadialGradient(w / 2, h / 2, h * 0.28, w / 2, h / 2, h * 0.72);
+        g.addColorStop(0, 'rgba(0,0,0,0)');
+        g.addColorStop(1, 'rgba(0,0,0,0.52)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      canvas.toBlob(blob => {
+        capturedBlob    = blob;
+        capturedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        imgPreview.src  = capturedDataUrl;
+        show('screen-preview');
+      }, 'image/jpeg', 0.82);
+    }
+
+    // ── Retake ───────────────────────────────────
+    document.getElementById('btn-retake').addEventListener('click', () => {
+      nameSheet.classList.remove('open');
+      capturedBlob = null;
+      show('screen-camera');
+    });
+
+    // ── Send (open name sheet) ────────────────────
+    document.getElementById('btn-send').addEventListener('click', () => {
+      nameSheet.classList.add('open');
+      setTimeout(() => nameInput.focus(), 420);
+    });
+
+    // ── Submit ────────────────────────────────────
+    document.getElementById('btn-confirm').addEventListener('click', submit);
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+
+    async function submit() {
+      if (!capturedBlob) return;
+
+      nameSheet.classList.remove('open');
+      show('screen-uploading');
+
+      const name = nameInput.value.trim();
+      const form = new FormData();
+      form.append('photo', capturedBlob, 'wedding-cam.jpg');
+      if (name) form.append('guestName', name);
+
+      try {
+        const res = await fetch(`${API_BASE}/photos`, { method: 'POST', body: form });
+        if (!res.ok) throw new Error('Upload failed');
+
+        tarotPhoto.src = capturedDataUrl;
+        tarotCard.classList.remove('flipped');
+        show('screen-confirm');
+        setTimeout(() => tarotCard.classList.add('flipped'), 480);
+
+        resetTimer = setTimeout(resetCam, 9000);
+      } catch {
+        show('screen-preview');
+        nameSheet.classList.add('open');
+        alert('Something went wrong. Please try again.');
+      }
+    }
+
+    // ── Reset ─────────────────────────────────────
+    document.getElementById('btn-again').addEventListener('click', resetCam);
+
+    function resetCam() {
+      clearTimeout(resetTimer);
+      resetTimer = null;
+      tarotCard.classList.remove('flipped');
+      nameInput.value = '';
+      capturedBlob    = null;
+      capturedDataUrl = null;
+      show('screen-camera');
+    }
+
+    // ── Start ─────────────────────────────────────
+    initCamera();
+  </script>
+</body>
+</html>

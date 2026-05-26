@@ -874,6 +874,165 @@
       }
       .star { animation: none !important; opacity: var(--o1) !important; }
     }
+
+    /* ========== WITNESSES TO WONDER — PHOTO REVIEW ========== */
+    .photos-section {
+      margin-bottom: 32px;
+    }
+
+    .photos-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .photos-title-row {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .photos-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem; font-weight: 500;
+      color: var(--lavender);
+    }
+    .photos-badge {
+      background: rgba(196,149,106,0.15);
+      border: 1px solid rgba(196,149,106,0.3);
+      color: var(--copper);
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    .photos-tabs {
+      display: flex; gap: 6px;
+    }
+    .photos-tab {
+      background: none;
+      border: 1px solid rgba(139,123,184,0.2);
+      color: var(--silver-muted);
+      font-family: inherit; font-size: 0.7rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 16px;
+      cursor: pointer;
+      transition: border-color 0.25s, color 0.25s, background 0.25s;
+    }
+    .photos-tab:hover { border-color: var(--lavender); color: var(--lavender-lt); }
+    .photos-tab.active {
+      background: rgba(139,123,184,0.15);
+      border-color: var(--lavender);
+      color: var(--lavender-lt);
+    }
+
+    .photos-stats {
+      display: flex; gap: 16px; padding: 12px 20px 16px;
+      font-size: 0.72rem; color: var(--silver-muted); letter-spacing: 0.06em;
+    }
+    .photos-stats span { color: var(--copper); font-weight: 600; }
+
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0 16px 16px;
+    }
+
+    .photo-card {
+      background: rgba(22,16,42,0.85);
+      border: 1px solid rgba(139,123,184,0.15);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s, opacity 0.3s;
+      opacity: 0; transform: translateY(10px);
+    }
+    .photo-card.visible { opacity: 1; transform: translateY(0); }
+    .photo-card.approved { border-color: rgba(212,168,83,0.35); }
+    .photo-card.exiting { opacity: 0; transform: scale(0.92); pointer-events: none; }
+
+    .photo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+    .photo-card.exiting:hover { transform: scale(0.92); }
+
+    .photo-thumb {
+      width: 100%; aspect-ratio: 3/4;
+      object-fit: cover; display: block;
+      background: #0a0612;
+    }
+
+    .photo-meta {
+      padding: 10px 12px 0;
+    }
+    .photo-guest {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .photo-guest.anon { color: var(--silver-muted); font-style: italic; }
+    .photo-time {
+      font-size: 0.65rem; color: var(--silver-muted);
+      letter-spacing: 0.05em; margin-top: 2px;
+    }
+
+    .photo-actions {
+      display: flex; gap: 8px;
+      padding: 10px 12px 12px;
+    }
+    .btn-approve, .btn-reject {
+      flex: 1; padding: 9px 0;
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: 0.7rem;
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-approve:active, .btn-reject:active { transform: scale(0.95); }
+    .btn-approve {
+      background: rgba(196,149,106,0.18);
+      border: 1px solid rgba(196,149,106,0.4);
+      color: var(--copper);
+    }
+    .btn-approve:hover { background: rgba(196,149,106,0.3); }
+    .btn-reject {
+      background: rgba(139,123,184,0.1);
+      border: 1px solid rgba(139,123,184,0.2);
+      color: var(--silver-muted);
+      flex: 0 0 auto; padding: 9px 14px;
+    }
+    .btn-reject:hover { background: rgba(139,123,184,0.18); color: var(--lavender-lt); }
+
+    .photo-approved-badge {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 10px 12px 12px;
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); opacity: 0.8;
+    }
+
+    .photos-empty {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--silver-muted);
+      font-style: italic; font-size: 0.9rem;
+      grid-column: 1 / -1;
+    }
+
+    .photos-refresh {
+      background: none;
+      border: 1px solid rgba(139,123,184,0.2);
+      color: var(--silver-muted);
+      font-family: inherit; font-size: 0.68rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 16px; cursor: pointer;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .photos-refresh:hover { border-color: var(--lavender); color: var(--lavender-lt); }
+
+    @media (max-width: 640px) {
+      .photos-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px 12px; }
+    }
+    @media (max-width: 360px) {
+      .photos-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -1000,6 +1159,30 @@
       </div>
       <div class="guest-list" id="guest-list">
         <p class="loading">Consulting the cosmos...</p>
+      </div>
+    </div>
+
+    <!-- Witnesses to Wonder — Photo Review -->
+    <div class="photos-section" id="photos-section">
+      <div class="photos-header">
+        <div class="photos-title-row">
+          <h3 class="photos-title">&#10022; Witnesses to Wonder</h3>
+          <span class="photos-badge" id="photos-pending-badge">0 pending</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="photos-tabs">
+            <button class="photos-tab active" data-ptab="pending">Pending</button>
+            <button class="photos-tab" data-ptab="approved">Approved</button>
+          </div>
+          <button class="photos-refresh" id="photos-refresh-btn">Refresh</button>
+        </div>
+      </div>
+      <div class="photos-stats">
+        <div>Pending: <span id="pstat-pending">—</span></div>
+        <div>Approved: <span id="pstat-approved">—</span></div>
+      </div>
+      <div class="photos-grid" id="photos-grid">
+        <p class="photos-empty">Consulting the cosmos&hellip;</p>
       </div>
     </div>
 
@@ -1392,6 +1575,177 @@
         if (days < 7) return `${days}d ago`;
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }
+
+      // ---- Photos (Witnesses to Wonder) ----
+      (function () {
+        const grid        = document.getElementById('photos-grid');
+        const pendingBadge = document.getElementById('photos-pending-badge');
+        const statPending = document.getElementById('pstat-pending');
+        const statApproved = document.getElementById('pstat-approved');
+        const tabs        = document.querySelectorAll('.photos-tab');
+        const refreshBtn  = document.getElementById('photos-refresh-btn');
+
+        let currentTab = 'pending';
+        let pendingCount = 0;
+        let approvedCount = 0;
+
+        function relativeTime(dateStr) {
+          const diff = Date.now() - new Date(dateStr).getTime();
+          const mins = Math.floor(diff / 60000);
+          const hours = Math.floor(diff / 3600000);
+          const days = Math.floor(diff / 86400000);
+          if (mins < 2) return 'just now';
+          if (mins < 60) return `${mins}m ago`;
+          if (hours < 24) return `${hours}h ago`;
+          return `${days}d ago`;
+        }
+
+        function renderCard(photo, tab) {
+          const card = document.createElement('div');
+          card.className = 'photo-card' + (tab === 'approved' ? ' approved' : '');
+          card.dataset.id = photo.id;
+
+          const img = document.createElement('img');
+          img.className = 'photo-thumb';
+          img.src = `${API_BASE}/photos/${photo.id}/image`;
+          img.alt = photo.guestName || 'Guest photo';
+          img.loading = 'lazy';
+
+          const meta = document.createElement('div');
+          meta.className = 'photo-meta';
+
+          const name = document.createElement('div');
+          name.className = 'photo-guest' + (photo.guestName ? '' : ' anon');
+          name.textContent = photo.guestName || 'Anonymous guest';
+
+          const time = document.createElement('div');
+          time.className = 'photo-time';
+          time.textContent = relativeTime(tab === 'approved' ? photo.approvedAt : photo.createdAt);
+
+          meta.appendChild(name);
+          meta.appendChild(time);
+
+          let actions;
+          if (tab === 'pending') {
+            actions = document.createElement('div');
+            actions.className = 'photo-actions';
+
+            const btnApprove = document.createElement('button');
+            btnApprove.className = 'btn-approve';
+            btnApprove.textContent = '✓ Approve';
+            btnApprove.addEventListener('click', () => updateStatus(photo.id, 'approved', card));
+
+            const btnReject = document.createElement('button');
+            btnReject.className = 'btn-reject';
+            btnReject.textContent = '✕';
+            btnReject.title = 'Reject';
+            btnReject.addEventListener('click', () => updateStatus(photo.id, 'rejected', card));
+
+            actions.appendChild(btnApprove);
+            actions.appendChild(btnReject);
+          } else {
+            actions = document.createElement('div');
+            actions.className = 'photo-approved-badge';
+            actions.innerHTML = '&#9733; Published';
+          }
+
+          card.appendChild(img);
+          card.appendChild(meta);
+          card.appendChild(actions);
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => card.classList.add('visible'));
+          });
+
+          return card;
+        }
+
+        async function loadPhotos(tab) {
+          if (!adminKey) return;
+          grid.innerHTML = '<p class="photos-empty">Consulting the cosmos&hellip;</p>';
+          try {
+            const endpoint = tab === 'pending' ? '/photos/pending' : '/photos/approved';
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            const photos = await res.json();
+
+            if (tab === 'pending') {
+              pendingCount = photos.length;
+              pendingBadge.textContent = `${pendingCount} pending`;
+              statPending.textContent = pendingCount;
+            } else {
+              approvedCount = photos.length;
+              statApproved.textContent = approvedCount;
+            }
+
+            grid.innerHTML = '';
+            if (!photos.length) {
+              grid.innerHTML = `<p class="photos-empty">${
+                tab === 'pending'
+                  ? 'No photos awaiting review.'
+                  : 'No approved photos yet.'
+              }</p>`;
+              return;
+            }
+            photos.forEach(p => grid.appendChild(renderCard(p, tab)));
+          } catch {
+            grid.innerHTML = '<p class="photos-empty">Could not load photos.</p>';
+          }
+        }
+
+        async function updateStatus(id, status, card) {
+          if (!adminKey) return;
+          card.classList.add('exiting');
+          try {
+            const res = await fetch(`${API_BASE}/photos/${id}/status`, {
+              method: 'PATCH',
+              headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status }),
+            });
+            if (!res.ok) throw new Error();
+            setTimeout(() => {
+              card.remove();
+              pendingCount = Math.max(0, pendingCount - 1);
+              pendingBadge.textContent = `${pendingCount} pending`;
+              statPending.textContent = pendingCount;
+              if (status === 'approved') {
+                approvedCount++;
+                statApproved.textContent = approvedCount;
+              }
+              if (!grid.querySelector('.photo-card')) {
+                grid.innerHTML = '<p class="photos-empty">No photos awaiting review.</p>';
+              }
+            }, 320);
+          } catch {
+            card.classList.remove('exiting');
+          }
+        }
+
+        // Tab switching
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentTab = tab.dataset.ptab;
+            loadPhotos(currentTab);
+          });
+        });
+
+        refreshBtn.addEventListener('click', () => loadPhotos(currentTab));
+
+        // Load when dashboard becomes visible (after login)
+        // Piggyback on the existing loadDashboard flow via a MutationObserver
+        const dash = document.getElementById('dashboard');
+        const observer = new MutationObserver(() => {
+          if (dash.classList.contains('visible') && adminKey) {
+            loadPhotos(currentTab);
+            observer.disconnect();
+          }
+        });
+        observer.observe(dash, { attributes: true, attributeFilter: ['class'] });
+      })();
 
     })();
   </script>

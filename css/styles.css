@@ -2315,3 +2315,127 @@ h1, h2, h3 {
   .section-inner { max-width: 1100px; }
   .oracle-grid { max-width: 1000px; gap: 24px; }
 }
+
+/* ========== WITNESSES TO WONDER — Guest Moments Gallery ========== */
+
+.moments-subtitle {
+  text-align: center;
+  color: var(--copper);
+  font-size: 0.88rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 52px;
+}
+
+.moments-notify {
+  position: sticky;
+  top: calc(var(--nav-height) + 10px);
+  z-index: 50;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(212, 168, 83, 0.1);
+  border: 1px solid rgba(212, 168, 83, 0.35);
+  border-radius: 24px;
+  padding: 10px 22px;
+  font-size: 0.78rem; letter-spacing: 0.09em;
+  color: var(--gold);
+  margin: 0 auto 28px;
+  max-width: 300px;
+  cursor: pointer;
+  opacity: 0; pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.moments-notify.visible { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+.moments-masonry {
+  column-count: 3;
+  column-gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.moments-empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--silver-muted);
+}
+.moments-empty-icon { font-size: 2.2rem; display: block; margin-bottom: 16px; opacity: 0.45; }
+.moments-empty-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-style: italic; color: var(--silver-muted);
+}
+
+.polaroid {
+  break-inside: avoid;
+  display: inline-block; width: 100%;
+  background: #fff;
+  padding: 8px 8px 38px;
+  border-radius: 2px;
+  box-shadow: 0 4px 22px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.4);
+  margin-bottom: 20px;
+  position: relative;
+  transform: rotate(var(--rot, 0deg));
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  will-change: transform;
+}
+.polaroid:hover {
+  transform: rotate(0deg) scale(1.04) !important;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.75), 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 5;
+}
+
+.polaroid-img-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #0a0612;
+}
+.polaroid-photo {
+  width: 100%; display: block;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.p-corner {
+  position: absolute;
+  width: 22px; height: 22px;
+  z-index: 5; pointer-events: none;
+}
+.p-corner-tl { top: 7px; left: 7px; }
+.p-corner-tr { top: 7px; right: 7px; transform: scaleX(-1); }
+.p-corner-bl { bottom: 7px; left: 7px; transform: scaleY(-1); }
+.p-corner-br { bottom: 7px; right: 7px; transform: scale(-1); }
+
+.polaroid-footer { padding: 0 2px; }
+
+.polaroid-brand {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 8.5px; font-weight: 500;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: #3e2c1a;
+  margin-top: 7px;
+}
+.polaroid-diamond { color: #C4956A; font-size: 7px; }
+
+.polaroid-guest {
+  text-align: center;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.07em;
+  color: #8B7BB8;
+  margin-top: 4px;
+}
+
+@keyframes polaroidIn {
+  from { opacity: 0; transform: rotate(var(--rot, 0deg)) translateY(18px) scale(0.95); }
+  to   { opacity: 1; transform: rotate(var(--rot, 0deg)) translateY(0) scale(1); }
+}
+.polaroid.reveal-in { animation: polaroidIn 0.5s ease forwards; }
+
+@media (max-width: 768px) {
+  .moments-masonry { column-count: 2; column-gap: 14px; }
+  .polaroid { margin-bottom: 14px; padding-bottom: 34px; }
+}
+@media (max-width: 440px) {
+  .moments-masonry { column-count: 1; max-width: 240px; }
+}
