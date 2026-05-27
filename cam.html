@@ -377,12 +377,59 @@
       letter-spacing: 0.1em; text-transform: uppercase;
       cursor: pointer;
     }
+
+    /* ── WELCOME ──────────────────────────────── */
+    #screen-welcome {
+      align-items: center; justify-content: center;
+      padding: 48px 36px; text-align: center; gap: 0;
+    }
+
+    .welcome-script {
+      font-family: var(--ff-s); font-size: 52px;
+      color: var(--copper);
+      line-height: 1.1; margin-bottom: 6px;
+    }
+    .welcome-date {
+      font-family: var(--ff-b); font-size: 11px;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--lavender); margin-bottom: 48px;
+    }
+    .welcome-msg {
+      font-family: var(--ff-h); font-size: 17px;
+      color: rgba(255,255,255,0.7); font-style: italic;
+      line-height: 1.6; margin-bottom: 52px; max-width: 260px;
+    }
+    .btn-open-cam {
+      padding: 18px 44px;
+      background: var(--copper); border: none; border-radius: 10px;
+      color: #000;
+      font-family: var(--ff-b); font-size: 14px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, transform 0.12s;
+    }
+    .btn-open-cam:active { background: var(--copper-lt); transform: scale(0.96); }
+    .welcome-sub {
+      margin-top: 20px;
+      font-family: var(--ff-b); font-size: 11px;
+      color: rgba(255,255,255,0.25); letter-spacing: 0.06em;
+    }
   </style>
 </head>
 <body>
 
+  <!-- ── WELCOME ── -->
+  <div id="screen-welcome" class="screen active">
+    <p class="welcome-script">Frankie &amp; Rodrigo</p>
+    <p class="welcome-date">October 15, 2026 &bull; Westbury Manor</p>
+    <p class="welcome-msg">Capture a moment from tonight and add it to our story.</p>
+    <button class="btn-open-cam" id="btn-open-cam">Open Camera</button>
+    <p class="welcome-sub">You may be asked to allow camera access</p>
+  </div>
+
   <!-- ── CAMERA ── -->
-  <div id="screen-camera" class="screen active">
+  <div id="screen-camera" class="screen">
     <div class="viewfinder">
       <video id="video" autoplay playsinline muted></video>
       <div class="vignette" id="vignette"></div>
@@ -531,6 +578,9 @@
       document.getElementById(id).classList.add('active');
     }
 
+    // ── Welcome → Camera ─────────────────────────
+    document.getElementById('btn-open-cam').addEventListener('click', initCamera);
+
     // ── Camera init ──────────────────────────────
     async function initCamera() {
       try {
@@ -544,6 +594,7 @@
         });
         video.srcObject = stream;
         setFilter('ritual');
+        show('screen-camera');
       } catch (err) {
         document.getElementById('err-msg').textContent =
           err.name === 'NotAllowedError'
@@ -663,7 +714,7 @@
     }
 
     // ── Start ─────────────────────────────────────
-    initCamera();
+    // Camera starts only after user taps "Open Camera" (see btn-open-cam listener above)
   </script>
 </body>
 </html>
