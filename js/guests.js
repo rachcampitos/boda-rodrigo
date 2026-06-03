@@ -644,10 +644,9 @@ const GUEST_LIST = [
   },
   {
     id: 'erika-villar',
-    display: 'Ms Erika Villar & Guest',
-    members: ['Erika Villar'],
-    headCount: 2,
-    plusOne: true,
+    display: 'Ms Erika Villar & Guests',
+    members: ['Erika Villar', 'Jimena Torres Benavides', 'Katherine Bocanegra Castro'],
+    headCount: 3,
     code: 'STAR-1089',
   },
   {

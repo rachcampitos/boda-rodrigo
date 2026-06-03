@@ -85,7 +85,7 @@
       'faqs.a7': 'We kindly request monetary gifts to help us start our new life together. While traditional registries can be wonderful, we’ve chosen to prioritize building our future over accumulating household items.',
 
       'faqs.q8': 'What is the dress code?',
-      'faqs.a8': 'Formal Attire',
+      'faqs.a8': 'Formal attire — cocktail or black tie welcome. As a kindness to the couple, we ask that guests reserve white and ivory for the bride.',
 
       'faqs.q9': 'Where is the after party?',
 
@@ -232,7 +232,7 @@
       'faqs.a7': 'Agradecemos los regalos en efectivo para ayudarnos a comenzar nuestra nueva vida juntos. Si bien los registros tradicionales pueden ser maravillosos, hemos optado por priorizar la construcción de nuestro futuro.',
 
       'faqs.q8': '¿Cuál es el código de vestimenta?',
-      'faqs.a8': 'Ropa formal',
+      'faqs.a8': 'Vestimenta formal — cocktail o etiqueta. Como cortesía a la pareja, pedimos que los invitados reserven el blanco y el marfil para la novia.',
 
       'faqs.q9': '¿Dónde es el after party?',
 
@@ -363,6 +363,12 @@
         (translations[lang]['faqs.a2.link'] || translations['en']['faqs.a2.link']) +
         '</a> ' +
         (translations[lang]['faqs.a2.end'] || translations['en']['faqs.a2.end']);
+    }
+
+    // Update FAQ answer 8 (dress code — no data-i18n to avoid overwrite)
+    const faq8answer = document.getElementById('faq-a8');
+    if (faq8answer) {
+      faq8answer.textContent = translations[lang]['faqs.a8'] || translations['en']['faqs.a8'];
     }
 
     // Update FAQ answer 4 (has inline link)
