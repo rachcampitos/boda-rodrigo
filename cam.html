@@ -79,6 +79,22 @@
     .corner-bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
     .corner-br { bottom: 18px; right: 18px; transform: scale(-1); }
 
+    /* Zoom badge */
+    .zoom-badge {
+      display: none;
+      position: absolute;
+      top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 20;
+      padding: 4px 12px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(196,149,106,0.5);
+      border-radius: 999px;
+      color: #C4956A;
+      font-family: var(--ff-b); font-size: 12px; letter-spacing: 0.1em;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     /* Monogram watermark */
     .cam-mono {
       position: absolute;
@@ -461,6 +477,7 @@
       </svg>
 
       <div class="cam-mono">F &amp; R</div>
+      <button class="zoom-badge" id="zoom-badge" aria-label="Reset zoom">1×</button>
     </div>
 
     <div class="camera-bar">
@@ -558,19 +575,48 @@
       luminous: 'brightness(1.2) contrast(0.87) saturate(0.92)',
     };
 
-    let currentFilter = 'ritual';
-    let capturedBlob   = null;
+    let currentFilter   = 'ritual';
+    let capturedBlob    = null;
     let capturedDataUrl = null;
     let resetTimer      = null;
+    let zoomLevel       = 1;
+    let pinchStartDist  = 0;
+    let pinchStartZoom  = 1;
 
     const video      = document.getElementById('video');
     const canvas     = document.getElementById('canvas-capture');
     const imgPreview = document.getElementById('img-preview');
-    const vignette      = document.getElementById('vignette');
-    const nameSheet     = document.getElementById('name-sheet');
-    const nameInput     = document.getElementById('input-name');
-    const tarotCard     = document.getElementById('tarot-card');
-    const tarotPhoto    = document.getElementById('tarot-photo');
+    const vignette   = document.getElementById('vignette');
+    const nameSheet  = document.getElementById('name-sheet');
+    const nameInput  = document.getElementById('input-name');
+    const tarotCard  = document.getElementById('tarot-card');
+    const tarotPhoto = document.getElementById('tarot-photo');
+    const zoomBadge  = document.getElementById('zoom-badge');
+    const viewfinder = document.querySelector('.viewfinder');
+
+    // Block page-level pinch zoom (iOS ignores user-scalable=no)
+    document.addEventListener('touchmove', e => {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+
+    // ── Corner ornament images (preloaded for canvas bake) ──
+    const CORNER_SVG = `<path d="M50 2H14Q2 2 2 14V50" stroke="#C4956A" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M40 2H14Q8 2 8 10V22" stroke="#C4956A" stroke-width="0.75" stroke-linecap="round" opacity="0.5" fill="none"/><circle cx="2" cy="2" r="2.2" fill="#C4956A"/><path d="M28 2Q28 9.5 21 7Q23 2 28 2Z" fill="#C4956A" opacity="0.55"/>`;
+    function makeSvgImg(transform) {
+      return new Promise(resolve => {
+        const inner = transform ? `<g transform="${transform}">${CORNER_SVG}</g>` : CORNER_SVG;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">${inner}</svg>`;
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      });
+    }
+    let cornerImgs = null;
+    Promise.all([
+      makeSvgImg(''),                            // TL
+      makeSvgImg('translate(52,0) scale(-1,1)'), // TR
+      makeSvgImg('translate(0,52) scale(1,-1)'), // BL
+      makeSvgImg('translate(52,52) scale(-1,-1)'), // BR
+    ]).then(imgs => { cornerImgs = imgs; });
 
     // ── Screens ──────────────────────────────────
     function show(id) {
@@ -603,6 +649,35 @@
         show('screen-error');
       }
     }
+
+    // ── Zoom ─────────────────────────────────────
+    function setZoom(z) {
+      zoomLevel = Math.max(1, Math.min(3, z));
+      video.style.transform = `scale(${zoomLevel})`;
+      video.style.transformOrigin = 'center';
+      zoomBadge.style.display = zoomLevel > 1.05 ? 'flex' : 'none';
+      zoomBadge.textContent = zoomLevel.toFixed(1) + '×';
+    }
+    zoomBadge.addEventListener('click', () => setZoom(1));
+
+    viewfinder.addEventListener('touchstart', e => {
+      if (e.touches.length === 2) {
+        pinchStartDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        pinchStartZoom = zoomLevel;
+      }
+    }, { passive: true });
+    viewfinder.addEventListener('touchmove', e => {
+      if (e.touches.length === 2) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        setZoom(pinchStartZoom * (dist / pinchStartDist));
+      }
+    }, { passive: true });
 
     // ── Filter ───────────────────────────────────
     function setFilter(name) {
@@ -688,25 +763,62 @@
     document.getElementById('btn-capture').addEventListener('click', capture);
 
     function capture() {
-      const vw = video.videoWidth  || 720;
-      const vh = video.videoHeight || 1280;
-      const scale = Math.min(1, 1080 / Math.max(vw, vh));
-      const w = Math.round(vw * scale);
-      const h = Math.round(vh * scale);
+      const actualVW = video.videoWidth  || 720;
+      const actualVH = video.videoHeight || 1280;
 
-      canvas.width  = w;
-      canvas.height = h;
+      // Portrait fix: rotate if stream is landscape but phone is portrait
+      const phoneIsPortrait  = window.innerWidth < window.innerHeight;
+      const streamIsLandscape = actualVW > actualVH;
+      const needsRotation = phoneIsPortrait && streamIsLandscape;
+
+      // Logical output dimensions (after rotation)
+      const logicalW = needsRotation ? actualVH : actualVW;
+      const logicalH = needsRotation ? actualVW : actualVH;
+
+      // Output canvas size (cap at 1080 on longer side)
+      const scale = Math.min(1, 1080 / Math.max(logicalW, logicalH));
+      const outW  = Math.round(logicalW * scale);
+      const outH  = Math.round(logicalH * scale);
+
+      // Zoom: center-crop source frame
+      const srcCropW = Math.round(actualVW / zoomLevel);
+      const srcCropH = Math.round(actualVH / zoomLevel);
+      const srcCropX = Math.round((actualVW - srcCropW) / 2);
+      const srcCropY = Math.round((actualVH - srcCropH) / 2);
+
+      canvas.width  = outW;
+      canvas.height = outH;
       const ctx = canvas.getContext('2d');
 
-      ctx.drawImage(video, 0, 0, w, h);
-      bakeFilter(ctx, w, h, currentFilter);
+      if (needsRotation) {
+        ctx.save();
+        ctx.translate(outW / 2, outH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, -outH / 2, -outW / 2, outH, outW);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, 0, 0, outW, outH);
+      }
 
+      bakeFilter(ctx, outW, outH, currentFilter);
+
+      // Vignette for Ritual
       if (currentFilter === 'ritual') {
-        const g = ctx.createRadialGradient(w / 2, h / 2, h * 0.28, w / 2, h / 2, h * 0.72);
+        const g = ctx.createRadialGradient(outW/2, outH/2, outH*0.28, outW/2, outH/2, outH*0.72);
         g.addColorStop(0, 'rgba(0,0,0,0)');
         g.addColorStop(1, 'rgba(0,0,0,0.52)');
         ctx.fillStyle = g;
-        ctx.fillRect(0, 0, w, h);
+        ctx.fillRect(0, 0, outW, outH);
+      }
+
+      // Bake corner ornaments
+      if (cornerImgs) {
+        const cs = Math.round(Math.min(outW, outH) * 0.095);
+        const co = Math.round(Math.min(outW, outH) * 0.03);
+        ctx.drawImage(cornerImgs[0], co, co, cs, cs);
+        ctx.drawImage(cornerImgs[1], outW - co - cs, co, cs, cs);
+        ctx.drawImage(cornerImgs[2], co, outH - co - cs, cs, cs);
+        ctx.drawImage(cornerImgs[3], outW - co - cs, outH - co - cs, cs, cs);
       }
 
       canvas.toBlob(blob => {
@@ -772,6 +884,7 @@
       nameInput.value = '';
       capturedBlob    = null;
       capturedDataUrl = null;
+      setZoom(1);
       show('screen-camera');
     }
 
