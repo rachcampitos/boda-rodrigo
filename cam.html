@@ -52,10 +52,12 @@
     }
 
     #video {
+      display: none; /* hidden stream source */
+    }
+    #canvas-viewfinder {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
-      transition: filter 0.25s ease;
     }
 
     /* Vignette overlay (Ritual filter) */
@@ -432,6 +434,7 @@
   <div id="screen-camera" class="screen">
     <div class="viewfinder">
       <video id="video" autoplay playsinline muted></video>
+      <canvas id="canvas-viewfinder"></canvas>
       <div class="vignette" id="vignette"></div>
 
       <!-- Corner ornaments (top-left; others rotate via CSS) -->
@@ -563,9 +566,12 @@
     let capturedDataUrl = null;
     let resetTimer      = null;
 
-    const video         = document.getElementById('video');
-    const canvas        = document.getElementById('canvas-capture');
-    const imgPreview    = document.getElementById('img-preview');
+    const video           = document.getElementById('video');
+    const canvasVF        = document.getElementById('canvas-viewfinder');
+    const ctxVF           = canvasVF.getContext('2d');
+    const canvas          = document.getElementById('canvas-capture');
+    const imgPreview      = document.getElementById('img-preview');
+    let   drawLoopId      = null;
     const vignette      = document.getElementById('vignette');
     const nameSheet     = document.getElementById('name-sheet');
     const nameInput     = document.getElementById('input-name');
@@ -593,6 +599,7 @@
           audio: false,
         });
         video.srcObject = stream;
+        video.addEventListener('loadedmetadata', startDrawLoop, { once: true });
         setFilter('ritual');
         show('screen-camera');
       } catch (err) {
@@ -604,10 +611,25 @@
       }
     }
 
+    // ── Draw loop (bakes filter into canvas frames) ───────
+    function startDrawLoop() {
+      if (drawLoopId) cancelAnimationFrame(drawLoopId);
+      const vw = video.videoWidth  || 720;
+      const vh = video.videoHeight || 1280;
+      canvasVF.width  = vw;
+      canvasVF.height = vh;
+      function loop() {
+        ctxVF.filter = FILTERS[currentFilter];
+        ctxVF.drawImage(video, 0, 0, vw, vh);
+        ctxVF.filter = 'none';
+        drawLoopId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
     // ── Filter ───────────────────────────────────
     function setFilter(name) {
       currentFilter = name;
-      video.style.filter = FILTERS[name];
       vignette.classList.toggle('on', name === 'ritual');
       document.querySelectorAll('.filter-btn').forEach(btn =>
         btn.classList.toggle('active', btn.dataset.filter === name)
@@ -623,8 +645,10 @@
     document.getElementById('btn-capture').addEventListener('click', capture);
 
     function capture() {
-      const vw = video.videoWidth  || 720;
-      const vh = video.videoHeight || 1280;
+      cancelAnimationFrame(drawLoopId);
+
+      const vw = canvasVF.width  || 720;
+      const vh = canvasVF.height || 1280;
       const scale = Math.min(1, 1080 / Math.max(vw, vh));
       const w = Math.round(vw * scale);
       const h = Math.round(vh * scale);
@@ -633,10 +657,8 @@
       canvas.height = h;
       const ctx = canvas.getContext('2d');
 
-      // Apply filter and draw
-      ctx.filter = FILTERS[currentFilter];
-      ctx.drawImage(video, 0, 0, w, h);
-      ctx.filter = 'none';
+      // Copy the already-filtered viewfinder frame
+      ctx.drawImage(canvasVF, 0, 0, w, h);
 
       // Vignette overlay for Ritual
       if (currentFilter === 'ritual') {
@@ -660,6 +682,7 @@
       nameSheet.classList.remove('open');
       capturedBlob = null;
       show('screen-camera');
+      startDrawLoop();
     });
 
     // ── Send (open name sheet) ────────────────────
