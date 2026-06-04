@@ -763,17 +763,37 @@
     document.getElementById('btn-capture').addEventListener('click', capture);
 
     function capture() {
-      const actualVW = video.videoWidth  || 720;
-      const actualVH = video.videoHeight || 1280;
+      const vw = video.videoWidth  || 720;
+      const vh = video.videoHeight || 1280;
 
-      // iOS Safari auto-corrects orientation in both display and drawImage — no manual rotation needed.
-      // Zoom: center-crop source frame
-      const srcCropW = Math.round(actualVW / zoomLevel);
-      const srcCropH = Math.round(actualVH / zoomLevel);
-      const srcCropX = Math.round((actualVW - srcCropW) / 2);
-      const srcCropY = Math.round((actualVH - srcCropH) / 2);
+      // Replicate object-fit:cover crop — capture only what the viewfinder shows
+      const vfW = viewfinder.clientWidth  || window.innerWidth;
+      const vfH = viewfinder.clientHeight || window.innerHeight * 0.6;
+      const videoAspect = vw / vh;
+      const vfAspect    = vfW / vfH;
 
-      // Output canvas size (cap at 1080 on longer side)
+      let baseCropW, baseCropH, baseCropX, baseCropY;
+      if (videoAspect > vfAspect) {
+        // Video wider than viewfinder → crop sides
+        baseCropH = vh;
+        baseCropW = Math.round(vh * vfAspect);
+        baseCropX = Math.round((vw - baseCropW) / 2);
+        baseCropY = 0;
+      } else {
+        // Video taller than viewfinder → crop top/bottom
+        baseCropW = vw;
+        baseCropH = Math.round(vw / vfAspect);
+        baseCropX = 0;
+        baseCropY = Math.round((vh - baseCropH) / 2);
+      }
+
+      // Apply zoom (shrink base crop from center)
+      const srcCropW = Math.round(baseCropW / zoomLevel);
+      const srcCropH = Math.round(baseCropH / zoomLevel);
+      const srcCropX = baseCropX + Math.round((baseCropW - srcCropW) / 2);
+      const srcCropY = baseCropY + Math.round((baseCropH - srcCropH) / 2);
+
+      // Output dimensions (cap at 1080 on longer side, preserve crop aspect ratio)
       const scale = Math.min(1, 1080 / Math.max(srcCropW, srcCropH));
       const outW  = Math.round(srcCropW * scale);
       const outH  = Math.round(srcCropH * scale);
