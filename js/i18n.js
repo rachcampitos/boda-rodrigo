@@ -85,7 +85,7 @@
       'faqs.a7': 'We kindly request monetary gifts to help us start our new life together. While traditional registries can be wonderful, we’ve chosen to prioritize building our future over accumulating household items.',
 
       'faqs.q8': 'What is the dress code?',
-      'faqs.a8': 'Formal attire — cocktail or black tie welcome. As a kindness to the couple, we ask that guests reserve white and ivory for Rodrigo & Frankie.',
+      'faqs.a8': 'Formal attire — cocktail or black tie welcome. We kindly ask that guests avoid wearing white or ivory.',
 
       'faqs.q9': 'Where is the after party?',
 
@@ -232,8 +232,7 @@
       'faqs.a7': 'Agradecemos los regalos en efectivo para ayudarnos a comenzar nuestra nueva vida juntos. Si bien los registros tradicionales pueden ser maravillosos, hemos optado por priorizar la construcción de nuestro futuro.',
 
       'faqs.q8': '¿Cuál es el código de vestimenta?',
-      'faqs.a8': 'Vestimenta formal — cocktail o etiqueta. Como cortesía a la pareja, pedimos que los invitados reserven el blanco y el marfil para Rodrigo y Frankie.',
-
+      'faqs.a8': 'Vestimenta formal — cocktail o etiqueta. Pedimos amablemente que los invitados eviten usar blanco o marfil.',
 
       'faqs.q9': '¿Dónde es el after party?',
 
