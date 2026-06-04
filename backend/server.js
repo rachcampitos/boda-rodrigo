@@ -284,6 +284,19 @@ app.patch('/api/photos/:id/status', async (req, res) => {
   }
 });
 
+// Delete a photo (admin)
+app.delete('/api/photos/:id', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const result = await Photo.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Photo deleted', id: req.params.id });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
 // ── Start ───────────────────────────────────────────────
 async function start() {
   try {
