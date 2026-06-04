@@ -766,39 +766,23 @@
       const actualVW = video.videoWidth  || 720;
       const actualVH = video.videoHeight || 1280;
 
-      // Portrait fix: rotate if stream is landscape but phone is portrait
-      const phoneIsPortrait  = window.innerWidth < window.innerHeight;
-      const streamIsLandscape = actualVW > actualVH;
-      const needsRotation = phoneIsPortrait && streamIsLandscape;
-
-      // Logical output dimensions (after rotation)
-      const logicalW = needsRotation ? actualVH : actualVW;
-      const logicalH = needsRotation ? actualVW : actualVH;
-
-      // Output canvas size (cap at 1080 on longer side)
-      const scale = Math.min(1, 1080 / Math.max(logicalW, logicalH));
-      const outW  = Math.round(logicalW * scale);
-      const outH  = Math.round(logicalH * scale);
-
+      // iOS Safari auto-corrects orientation in both display and drawImage — no manual rotation needed.
       // Zoom: center-crop source frame
       const srcCropW = Math.round(actualVW / zoomLevel);
       const srcCropH = Math.round(actualVH / zoomLevel);
       const srcCropX = Math.round((actualVW - srcCropW) / 2);
       const srcCropY = Math.round((actualVH - srcCropH) / 2);
 
+      // Output canvas size (cap at 1080 on longer side)
+      const scale = Math.min(1, 1080 / Math.max(srcCropW, srcCropH));
+      const outW  = Math.round(srcCropW * scale);
+      const outH  = Math.round(srcCropH * scale);
+
       canvas.width  = outW;
       canvas.height = outH;
       const ctx = canvas.getContext('2d');
 
-      if (needsRotation) {
-        ctx.save();
-        ctx.translate(outW / 2, outH / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, -outH / 2, -outW / 2, outH, outW);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, 0, 0, outW, outH);
-      }
+      ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, 0, 0, outW, outH);
 
       bakeFilter(ctx, outW, outH, currentFilter);
 
