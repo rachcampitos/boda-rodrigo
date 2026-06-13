@@ -663,6 +663,20 @@ const GUEST_LIST = [
     headCount: 1,
     code: 'STAR-1092',
   },
+  {
+    id: 'jessica-damour',
+    display: 'Ms Jessica Damour',
+    members: ['Jessica Damour'],
+    headCount: 1,
+    code: 'STAR-1093',
+  },
+  {
+    id: 'sharon-schroeder',
+    display: 'Ms Sharon Schroeder',
+    members: ['Sharon Schroeder'],
+    headCount: 1,
+    code: 'STAR-1094',
+  },
 ];
 
 // ── Lookup helper ────────────────────────────────────────
