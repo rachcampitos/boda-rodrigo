@@ -74,10 +74,15 @@
       width: 52px; height: 52px;
       z-index: 10;
     }
+    /* No horizontal mirroring on any corner — the ornament reads as a
+       monogram-ish flourish ("F & R"), and mirroring it made two of the
+       four corners visibly face left instead of right. Only flip
+       vertically for the bottom corners; every corner keeps the same
+       left-to-right orientation. */
     .corner-tl { top: 18px; left: 18px; }
-    .corner-tr { top: 18px; right: 18px; transform: scaleX(-1); }
+    .corner-tr { top: 18px; right: 18px; }
     .corner-bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
-    .corner-br { bottom: 18px; right: 18px; transform: scale(-1); }
+    .corner-br { bottom: 18px; right: 18px; transform: scaleY(-1); }
 
     /* Zoom badge */
     .zoom-badge {
@@ -95,6 +100,47 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Selfie flip hint — doubles as the "double-tap for selfie" tip and the
+       brief "front/back camera" confirmation shown after a flip. */
+    .flip-hint {
+      position: absolute;
+      top: 52px; left: 50%; transform: translateX(-50%);
+      z-index: 20;
+      padding: 6px 16px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(196,149,106,0.4);
+      border-radius: 999px;
+      color: var(--copper-lt);
+      font-family: var(--ff-b); font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .flip-hint.show { opacity: 1; }
+
+    /* Full-screen floating bar — both cameras (Rodrigo asked for the main
+       camera to match the selfie treatment exactly). The bottom bar no
+       longer reserves layout height; it floats over the video on a dark
+       gradient scrim, so the viewfinder/preview always fills the whole
+       screen edge-to-edge. .camera-bar and .preview-bar share this same
+       rule so the live view and the captured-photo preview stay in sync
+       with each other — neither one reserves space, so there's no crop
+       mismatch between them (see the earlier --bottom-bar-h note in git
+       history: that matched-height approach is superseded by this one). */
+    .camera-bar,
+    .preview-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      min-height: 0;
+      padding-top: 56px;
+      background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0) 100%);
+      z-index: 30;
+    }
+    /* Sits right where the floating bar now covers it */
+    .cam-mono { display: none; }
+
     /* Monogram watermark */
     .cam-mono {
       position: absolute;
@@ -107,11 +153,11 @@
       z-index: 8;
     }
 
-    /* Camera bottom bar */
+    /* Camera bottom bar — floats over the full-screen viewfinder, see the
+       shared floating-bar rule above (.camera-bar, .preview-bar). */
     .camera-bar {
-      flex-shrink: 0;
-      background: rgba(5,5,5,0.97);
       display: flex; flex-direction: column; align-items: center;
+      justify-content: center;
       gap: 18px;
       padding: 16px 20px;
       padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
@@ -187,14 +233,12 @@
     #img-preview {
       flex: 1;
       width: 100%; min-height: 0;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
       background: #000;
     }
 
     .preview-bar {
-      flex-shrink: 0;
-      background: rgba(5,5,5,0.97);
       display: flex; gap: 12px; align-items: center;
       padding: 14px 20px;
       padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
@@ -235,9 +279,14 @@
       padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
       transform: translateY(100%);
       transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
-      z-index: 30;
+      z-index: 40; /* above .preview-bar (30) — same z-index was a tie that
+                      .preview-bar won (later in DOM), so taps on "Send my
+                      moment" were hitting #btn-send underneath instead. */
     }
     .name-sheet.open { transform: translateY(0); }
+    /* Belt and suspenders: once the sheet is open, the bar behind it can't
+       be tapped at all, even where the two visually overlap. */
+    .name-sheet.open ~ .preview-bar { pointer-events: none; }
 
     .sheet-handle {
       width: 36px; height: 4px;
@@ -327,6 +376,16 @@
       background: #0d0a14;
       border: 1px solid rgba(196,149,106,0.45);
       display: flex; align-items: center; justify-content: center;
+      /* backface-visibility:hidden alone should keep this face from ever
+         showing once flipped, but its text-shadow glow can still bleed
+         through the rotation on some WebKit builds. Fading it out
+         explicitly, timed to finish before the card is halfway turned,
+         means the "F & R" is gone regardless of what the 3D render does. */
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    .tarot-card.flipped .t-back {
+      opacity: 0;
     }
     .t-back::before {
       content: '';
@@ -335,9 +394,10 @@
       border-radius: 7px;
     }
     .t-back-mono {
-      font-family: var(--ff-s); font-size: 30px;
-      color: var(--copper); opacity: 0.8;
-      text-align: center; line-height: 1.3; z-index: 1;
+      font-family: var(--ff-s); font-size: 42px;
+      color: var(--copper-lt); opacity: 1;
+      text-shadow: 0 0 18px rgba(196,149,106,0.55);
+      text-align: center; line-height: 1.25; z-index: 1;
     }
 
     .t-face {
@@ -394,6 +454,57 @@
       cursor: pointer;
     }
 
+    /* ── Shots counter ────────────────────────── */
+    .shots-counter {
+      font-family: var(--ff-b);
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      transition: color 0.25s ease;
+    }
+    .shots-counter.low { color: var(--copper); }
+
+    /* ── ROLL COMPLETE ────────────────────────── */
+    #screen-limit {
+      align-items: center; justify-content: center;
+      padding: 48px 36px; text-align: center; gap: 4px;
+    }
+
+    /* ── ROTATE OVERLAY (portrait-only experience) ── */
+    .rotate-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      z-index: 999;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 40px;
+      gap: 18px;
+    }
+    .rotate-icon {
+      font-size: 42px;
+      color: var(--copper);
+      animation: rotate-hint 1.8s ease-in-out infinite;
+    }
+    @keyframes rotate-hint {
+      0%, 100% { transform: rotate(0deg); }
+      50%      { transform: rotate(-90deg); }
+    }
+    .rotate-title {
+      font-family: var(--ff-h); font-size: 22px;
+      color: #fff;
+    }
+    .rotate-sub {
+      font-family: var(--ff-b); font-size: 13px;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.04em;
+      line-height: 1.65; max-width: 260px;
+    }
+    @media (orientation: landscape) {
+      .rotate-overlay { display: flex; }
+    }
+
     /* ── WELCOME ──────────────────────────────── */
     #screen-welcome {
       align-items: center; justify-content: center;
@@ -434,6 +545,13 @@
   </style>
 </head>
 <body>
+
+  <!-- ── ROTATE OVERLAY (shown via CSS when device is landscape) ── -->
+  <div class="rotate-overlay">
+    <div class="rotate-icon">&#8635;</div>
+    <p class="rotate-title">Please rotate your phone</p>
+    <p class="rotate-sub">This experience is designed for portrait mode &mdash; turn your phone back upright to keep capturing moments.</p>
+  </div>
 
   <!-- ── WELCOME ── -->
   <div id="screen-welcome" class="screen active">
@@ -478,11 +596,16 @@
 
       <div class="cam-mono">F &amp; R</div>
       <button class="zoom-badge" id="zoom-badge" aria-label="Reset zoom">1×</button>
+      <div class="flip-hint" id="flip-hint">double-tap for selfie</div>
     </div>
 
     <div class="camera-bar">
       <div class="filters-row" id="filters-row">
-        <button class="filter-btn active" data-filter="ritual">
+        <button class="filter-btn active" data-filter="luminous">
+          <div class="swatch luminous"></div>
+          <span class="filter-label">Crystal</span>
+        </button>
+        <button class="filter-btn" data-filter="ritual">
           <div class="swatch ritual"></div>
           <span class="filter-label">Ritual</span>
         </button>
@@ -492,13 +615,11 @@
         </button>
         <button class="filter-btn" data-filter="dusk">
           <div class="swatch dusk"></div>
-          <span class="filter-label">Dusk</span>
-        </button>
-        <button class="filter-btn" data-filter="luminous">
-          <div class="swatch luminous"></div>
-          <span class="filter-label">Luminous</span>
+          <span class="filter-label">Tarot</span>
         </button>
       </div>
+
+      <p class="shots-counter" id="shots-counter">20 moments left</p>
 
       <button class="capture-btn" id="btn-capture" aria-label="Take photo">
         <div class="capture-inner"></div>
@@ -557,6 +678,13 @@
     <button class="btn-reload" onclick="location.reload()">Reload</button>
   </div>
 
+  <!-- ── ROLL COMPLETE ── -->
+  <div id="screen-limit" class="screen">
+    <p class="welcome-script" style="font-size:40px;">Roll complete</p>
+    <p class="confirm-title" style="margin-top:20px;" id="limit-title">You've captured moments tonight.</p>
+    <p class="confirm-sub">Thank you for bearing witness. Frankie &amp; Rodrigo will reveal them when the time is right.</p>
+  </div>
+
   <!-- Hidden capture canvas -->
   <canvas id="canvas-capture" style="display:none;"></canvas>
 
@@ -582,17 +710,46 @@
     let zoomLevel       = 1;
     let pinchStartDist  = 0;
     let pinchStartZoom  = 1;
+    let currentFacing    = 'environment'; // 'environment' (back) or 'user' (selfie)
+    let switchingCamera  = false;
+    let multiTouchActive = false;
 
-    const video      = document.getElementById('video');
-    const canvas     = document.getElementById('canvas-capture');
-    const imgPreview = document.getElementById('img-preview');
-    const vignette   = document.getElementById('vignette');
-    const nameSheet  = document.getElementById('name-sheet');
-    const nameInput  = document.getElementById('input-name');
-    const tarotCard  = document.getElementById('tarot-card');
-    const tarotPhoto = document.getElementById('tarot-photo');
-    const zoomBadge  = document.getElementById('zoom-badge');
-    const viewfinder = document.querySelector('.viewfinder');
+    const video        = document.getElementById('video');
+    const canvas       = document.getElementById('canvas-capture');
+    const imgPreview   = document.getElementById('img-preview');
+    const vignette     = document.getElementById('vignette');
+    const nameSheet    = document.getElementById('name-sheet');
+    const nameInput    = document.getElementById('input-name');
+    const tarotCard    = document.getElementById('tarot-card');
+    const tarotPhoto   = document.getElementById('tarot-photo');
+    const zoomBadge    = document.getElementById('zoom-badge');
+    const flipHint     = document.getElementById('flip-hint');
+    const viewfinder   = document.querySelector('.viewfinder');
+    const shotsCounter = document.getElementById('shots-counter');
+
+    // ── Shots roll (disposable-camera style limit, per device) ──
+    const MAX_SHOTS = 20;
+    const SHOTS_KEY  = 'wtw_shots_used';
+
+    function getShotsUsed() {
+      return parseInt(localStorage.getItem(SHOTS_KEY) || '0', 10);
+    }
+    function shotsRemaining() {
+      return Math.max(0, MAX_SHOTS - getShotsUsed());
+    }
+    function incrementShots() {
+      localStorage.setItem(SHOTS_KEY, String(getShotsUsed() + 1));
+      updateShotsBadge();
+    }
+    function updateShotsBadge() {
+      const remaining = shotsRemaining();
+      shotsCounter.textContent = remaining === 1 ? '1 moment left' : `${remaining} moments left`;
+      shotsCounter.classList.toggle('low', remaining <= 3);
+    }
+    // Keeps "Roll complete" in sync with MAX_SHOTS so the copy can't drift
+    // out of date if the limit ever changes.
+    document.getElementById('limit-title').textContent =
+      `You've captured ${MAX_SHOTS} moments tonight.`;
 
     // Block page-level pinch zoom (iOS ignores user-scalable=no)
     document.addEventListener('touchmove', e => {
@@ -610,12 +767,15 @@
         img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       });
     }
+    // No horizontal mirroring — matches the live .corner-* CSS above, so
+    // the watermark reads facing the same way (right) in every corner of
+    // the saved photo, not flipped left on two of the four.
     let cornerImgs = null;
     Promise.all([
-      makeSvgImg(''),                            // TL
-      makeSvgImg('translate(52,0) scale(-1,1)'), // TR
+      makeSvgImg(''),                    // TL
+      makeSvgImg(''),                    // TR
       makeSvgImg('translate(0,52) scale(1,-1)'), // BL
-      makeSvgImg('translate(52,52) scale(-1,-1)'), // BR
+      makeSvgImg('translate(0,52) scale(1,-1)'), // BR
     ]).then(imgs => { cornerImgs = imgs; });
 
     // ── Screens ──────────────────────────────────
@@ -628,19 +788,47 @@
     document.getElementById('btn-open-cam').addEventListener('click', initCamera);
 
     // ── Camera init ──────────────────────────────
+    // Opens getUserMedia for the given facing mode and swaps it into <video>,
+    // stopping whatever stream was running first. Shared by initCamera()
+    // (first open) and switchCamera() (double-tap flip to selfie).
+    async function openStream(facing) {
+      // Both cameras were asking for a tall 9:16-ish "ideal" aspect, which
+      // pushes the browser to digitally crop in tighter to hit that shape
+      // instead of handing over the sensor's natural, wider frame — a
+      // side-by-side against the iPhone's own Camera app confirmed the
+      // main camera was still more zoomed in than it should be, on top of
+      // the same issue already fixed for the front camera. Neither
+      // constraint forces a tall aspect anymore; the sensor's natural
+      // (wider) frame comes through, and the portrait crop is still just
+      // a CSS object-fit:cover on <video> for the live view — capture()
+      // keeps grabbing the full received frame either way.
+      const videoConstraints = facing === 'user'
+        ? { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 1280 } }
+        : { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1440 } };
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: videoConstraints,
+        audio: false,
+      });
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(t => t.stop());
+      }
+      video.srcObject = stream;
+      currentFacing = facing;
+      applyVideoTransform();
+    }
+
     async function initCamera() {
+      if (shotsRemaining() <= 0) {
+        show('screen-limit');
+        return;
+      }
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1080 },
-            height: { ideal: 1920 },
-          },
-          audio: false,
-        });
-        video.srcObject = stream;
-        setFilter('ritual');
+        await openStream(currentFacing);
+        setFilter('luminous');
+        updateShotsBadge();
         show('screen-camera');
+        showFlipHint(baseFlipHintText());
       } catch (err) {
         document.getElementById('err-msg').textContent =
           err.name === 'NotAllowedError'
@@ -650,11 +838,54 @@
       }
     }
 
+    // ── Selfie flip (double-tap the viewfinder) ──
+    // Always visible on the camera screen (not a one-time tip), and always
+    // names the camera double-tap would switch TO — briefly swaps to a
+    // "front/back camera" confirmation on flip, then reverts to that.
+    let flipHintTimer = null;
+
+    function baseFlipHintText() {
+      return currentFacing === 'user' ? 'double-tap for main camera' : 'double-tap for selfie';
+    }
+
+    function showFlipHint(text, revertAfter) {
+      clearTimeout(flipHintTimer);
+      flipHint.textContent = text;
+      flipHint.classList.add('show');
+      if (revertAfter) {
+        flipHintTimer = setTimeout(() => {
+          flipHint.textContent = baseFlipHintText();
+        }, revertAfter);
+      }
+    }
+
+    async function switchCamera() {
+      if (switchingCamera) return;
+      switchingCamera = true;
+      const next = currentFacing === 'environment' ? 'user' : 'environment';
+      try {
+        await openStream(next);
+        setZoom(1); // fresh sensor — start unzoomed
+        showFlipHint(next === 'user' ? 'front camera' : 'back camera', 1100);
+      } catch (err) {
+        // No front camera (or it's busy) on this device — just stay put.
+      } finally {
+        switchingCamera = false;
+      }
+    }
+
     // ── Zoom ─────────────────────────────────────
+    // Keeps the live-preview mirror (selfie mode) in sync with pinch-zoom —
+    // both are just one CSS transform on <video>.
+    function applyVideoTransform() {
+      const mirror = currentFacing === 'user' ? ' scaleX(-1)' : '';
+      video.style.transform = `scale(${zoomLevel})${mirror}`;
+      video.style.transformOrigin = 'center';
+    }
+
     function setZoom(z) {
       zoomLevel = Math.max(1, Math.min(3, z));
-      video.style.transform = `scale(${zoomLevel})`;
-      video.style.transformOrigin = 'center';
+      applyVideoTransform();
       zoomBadge.style.display = zoomLevel > 1.05 ? 'flex' : 'none';
       zoomBadge.textContent = zoomLevel.toFixed(1) + '×';
     }
@@ -662,6 +893,7 @@
 
     viewfinder.addEventListener('touchstart', e => {
       if (e.touches.length === 2) {
+        multiTouchActive = true;
         pinchStartDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -676,6 +908,22 @@
           e.touches[0].clientY - e.touches[1].clientY
         );
         setZoom(pinchStartZoom * (dist / pinchStartDist));
+      }
+    }, { passive: true });
+
+    // Double-tap the viewfinder to flip between back and selfie camera.
+    // Guarded against pinch-zoom: a tap only counts once every finger has
+    // lifted and the gesture never involved a second touch point.
+    let lastTapTime = 0;
+    viewfinder.addEventListener('touchend', e => {
+      if (e.touches.length > 0) return;
+      if (multiTouchActive) { multiTouchActive = false; lastTapTime = 0; return; }
+      const now = Date.now();
+      if (now - lastTapTime < 350) {
+        lastTapTime = 0;
+        switchCamera();
+      } else {
+        lastTapTime = now;
       }
     }, { passive: true });
 
@@ -763,38 +1011,18 @@
     document.getElementById('btn-capture').addEventListener('click', capture);
 
     function capture() {
-      const vw = video.videoWidth  || 720;
-      const vh = video.videoHeight || 1280;
+      const vw = video.videoWidth  || 1920;
+      const vh = video.videoHeight || 1080;
 
-      // Replicate object-fit:cover crop — capture only what the viewfinder shows
-      const vfW = viewfinder.clientWidth  || window.innerWidth;
-      const vfH = viewfinder.clientHeight || window.innerHeight * 0.6;
-      const videoAspect = vw / vh;
-      const vfAspect    = vfW / vfH;
+      // Capture the full sensor frame (no viewfinder-aspect crop) for native-camera FOV.
+      // Zoom shrinks from center — at 1× the full frame is captured.
+      const srcCropW = Math.round(vw / zoomLevel);
+      const srcCropH = Math.round(vh / zoomLevel);
+      const srcCropX = Math.round((vw - srcCropW) / 2);
+      const srcCropY = Math.round((vh - srcCropH) / 2);
 
-      let baseCropW, baseCropH, baseCropX, baseCropY;
-      if (videoAspect > vfAspect) {
-        // Video wider than viewfinder → crop sides
-        baseCropH = vh;
-        baseCropW = Math.round(vh * vfAspect);
-        baseCropX = Math.round((vw - baseCropW) / 2);
-        baseCropY = 0;
-      } else {
-        // Video taller than viewfinder → crop top/bottom
-        baseCropW = vw;
-        baseCropH = Math.round(vw / vfAspect);
-        baseCropX = 0;
-        baseCropY = Math.round((vh - baseCropH) / 2);
-      }
-
-      // Apply zoom (shrink base crop from center)
-      const srcCropW = Math.round(baseCropW / zoomLevel);
-      const srcCropH = Math.round(baseCropH / zoomLevel);
-      const srcCropX = baseCropX + Math.round((baseCropW - srcCropW) / 2);
-      const srcCropY = baseCropY + Math.round((baseCropH - srcCropH) / 2);
-
-      // Output dimensions (cap at 1080 on longer side, preserve crop aspect ratio)
-      const scale = Math.min(1, 1080 / Math.max(srcCropW, srcCropH));
+      // Output dimensions (cap at 1920 on longer side)
+      const scale = Math.min(1, 1920 / Math.max(srcCropW, srcCropH));
       const outW  = Math.round(srcCropW * scale);
       const outH  = Math.round(srcCropH * scale);
 
@@ -802,7 +1030,22 @@
       canvas.height = outH;
       const ctx = canvas.getContext('2d');
 
+      // drawImage() always reads the RAW decoded video frame — it ignores
+      // any CSS transform on <video> (that's a display-only effect), so
+      // the earlier "just stop mirroring here, CSS already mirrors the
+      // live view" fix didn't do what it assumed. Confirmed on a real
+      // device: iOS/WebKit hands facingMode:'user' streams back already
+      // mirrored at the OS level, before any of our own code touches the
+      // frame. So the raw frame itself reads backwards for any real text
+      // in shot (the wedding's own "F & R" decor) — mirroring it again
+      // here is what cancels that out and gets it reading correctly.
+      ctx.save();
+      if (currentFacing === 'user') {
+        ctx.translate(outW, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, srcCropX, srcCropY, srcCropW, srcCropH, 0, 0, outW, outH);
+      ctx.restore();
 
       bakeFilter(ctx, outW, outH, currentFilter);
 
@@ -815,15 +1058,11 @@
         ctx.fillRect(0, 0, outW, outH);
       }
 
-      // Bake corner ornaments
-      if (cornerImgs) {
-        const cs = Math.round(Math.min(outW, outH) * 0.095);
-        const co = Math.round(Math.min(outW, outH) * 0.03);
-        ctx.drawImage(cornerImgs[0], co, co, cs, cs);
-        ctx.drawImage(cornerImgs[1], outW - co - cs, co, cs, cs);
-        ctx.drawImage(cornerImgs[2], co, outH - co - cs, cs, cs);
-        ctx.drawImage(cornerImgs[3], outW - co - cs, outH - co - cs, cs, cs);
-      }
+      // Corner ornaments are a live-viewfinder framing touch only — no
+      // longer baked into the saved photo. The tarot card's own "F & R"
+      // reveal (before the flip) already carries that motif; repeating it
+      // as a watermark on the photo itself read as backwards letters and
+      // wasn't wanted there.
 
       canvas.toBlob(blob => {
         capturedBlob    = blob;
@@ -865,6 +1104,8 @@
         const res = await fetch(`${API_BASE}/photos`, { method: 'POST', body: form });
         if (!res.ok) throw new Error('Upload failed');
 
+        incrementShots();
+
         tarotPhoto.src = capturedDataUrl;
         tarotCard.classList.remove('flipped');
         show('screen-confirm');
@@ -889,6 +1130,12 @@
       capturedBlob    = null;
       capturedDataUrl = null;
       setZoom(1);
+
+      if (shotsRemaining() <= 0) {
+        show('screen-limit');
+        return;
+      }
+      updateShotsBadge();
       show('screen-camera');
     }
 
