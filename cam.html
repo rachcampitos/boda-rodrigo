@@ -72,17 +72,25 @@
     .corner {
       position: absolute;
       width: 52px; height: 52px;
-      z-index: 10;
+      /* Above .camera-bar/.preview-bar (z-index: 30) — since those became
+         full-screen floating overlays, the bottom two corners were
+         sitting right under the bar's own area and getting covered by it. */
+      z-index: 32;
+      /* Inline SVG's default transform-origin isn't reliably "center"
+         across browsers the way a plain HTML element's is — without this,
+         scaleY(-1)/scale(-1,-1) below can mirror around the wrong point
+         (the corner ends up off in the wrong spot instead of just flipped
+         in place). Pin it explicitly so the mirrors below are predictable. */
+      transform-origin: center;
     }
-    /* No horizontal mirroring on any corner — the ornament reads as a
-       monogram-ish flourish ("F & R"), and mirroring it made two of the
-       four corners visibly face left instead of right. Only flip
-       vertically for the bottom corners; every corner keeps the same
-       left-to-right orientation. */
+    /* Each corner mirrors to hug ITS OWN corner (like a picture frame) —
+       the earlier "F & R" reading-direction concern is now handled by the
+       dedicated .cam-mono/.cam-date text above/below, so these are free
+       to go back to proper per-corner mirroring. */
     .corner-tl { top: 18px; left: 18px; }
-    .corner-tr { top: 18px; right: 18px; }
+    .corner-tr { top: 18px; right: 18px; transform: scaleX(-1); }
     .corner-bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
-    .corner-br { bottom: 18px; right: 18px; transform: scaleY(-1); }
+    .corner-br { bottom: 18px; right: 18px; transform: scale(-1, -1); }
 
     /* Zoom badge */
     .zoom-badge {
@@ -138,19 +146,31 @@
       background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0) 100%);
       z-index: 30;
     }
-    /* Sits right where the floating bar now covers it */
-    .cam-mono { display: none; }
-
-    /* Monogram watermark */
+    /* Monogram + date, sitting in the gap between the corner ornaments —
+       top-center between TL/TR, bottom-center between BL/BR. Same
+       z-index as .corner so they stay above the floating bar too. */
     .cam-mono {
       position: absolute;
-      bottom: 14px; left: 50%; transform: translateX(-50%);
+      top: 30px; left: 50%; transform: translateX(-50%);
       font-family: var(--ff-s);
-      font-size: 20px;
-      color: rgba(196,149,106,0.28);
+      font-size: 26px;
+      color: var(--copper-lt);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
       pointer-events: none;
       white-space: nowrap;
-      z-index: 8;
+      z-index: 32;
+    }
+    .cam-date {
+      position: absolute;
+      bottom: 8px; left: 50%; transform: translateX(-50%);
+      font-family: var(--ff-b);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--copper-lt);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 32;
     }
 
     /* Camera bottom bar — floats over the full-screen viewfinder, see the
@@ -233,7 +253,13 @@
     #img-preview {
       flex: 1;
       width: 100%; min-height: 0;
-      object-fit: cover;
+      /* contain, not cover — capture() grabs the full sensor frame (wider
+         than the portrait viewfinder, on purpose, for native-camera FOV),
+         and the corner frame + "F & R" / date are baked near its true
+         edges. object-fit:cover was cropping the photo to fill this
+         narrower box, cutting the frame off; contain always shows the
+         whole photo (frame included), just letterboxed on a dark bg. */
+      object-fit: contain;
       display: block;
       background: #000;
     }
@@ -407,7 +433,9 @@
     }
     .t-face img {
       width: 100%; height: 100%;
-      object-fit: cover;
+      /* Same reasoning as #img-preview — show the whole captured photo,
+         frame included, instead of cropping it to fill the card shape. */
+      object-fit: contain;
     }
 
     .confirm-title {
@@ -595,6 +623,7 @@
       </svg>
 
       <div class="cam-mono">F &amp; R</div>
+      <div class="cam-date">10.15.26</div>
       <button class="zoom-badge" id="zoom-badge" aria-label="Reset zoom">1×</button>
       <div class="flip-hint" id="flip-hint">double-tap for selfie</div>
     </div>
@@ -767,15 +796,15 @@
         img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       });
     }
-    // No horizontal mirroring — matches the live .corner-* CSS above, so
-    // the watermark reads facing the same way (right) in every corner of
-    // the saved photo, not flipped left on two of the four.
+    // Mirrored per corner to hug each one — matches the live .corner-*
+    // CSS above (the "F & R" reading-direction job now belongs to the
+    // dedicated .cam-mono/.cam-date text, baked in separately below).
     let cornerImgs = null;
     Promise.all([
-      makeSvgImg(''),                    // TL
-      makeSvgImg(''),                    // TR
+      makeSvgImg(''),                            // TL
+      makeSvgImg('translate(52,0) scale(-1,1)'), // TR
       makeSvgImg('translate(0,52) scale(1,-1)'), // BL
-      makeSvgImg('translate(0,52) scale(1,-1)'), // BR
+      makeSvgImg('translate(52,52) scale(-1,-1)'), // BR
     ]).then(imgs => { cornerImgs = imgs; });
 
     // ── Screens ──────────────────────────────────
@@ -1058,11 +1087,38 @@
         ctx.fillRect(0, 0, outW, outH);
       }
 
-      // Corner ornaments are a live-viewfinder framing touch only — no
-      // longer baked into the saved photo. The tarot card's own "F & R"
-      // reveal (before the flip) already carries that motif; repeating it
-      // as a watermark on the photo itself read as backwards letters and
-      // wasn't wanted there.
+      // Bake corner ornaments — the gold frame is meant to stay on the
+      // final photo. What actually needed fixing was orientation (two of
+      // the four used to mirror horizontally and read as backwards
+      // letters, see makeSvgImg() calls above) — already corrected there.
+      let cs = 0, co = 0;
+      if (cornerImgs) {
+        cs = Math.round(Math.min(outW, outH) * 0.095);
+        co = Math.round(Math.min(outW, outH) * 0.03);
+        ctx.drawImage(cornerImgs[0], co, co, cs, cs);
+        ctx.drawImage(cornerImgs[1], outW - co - cs, co, cs, cs);
+        ctx.drawImage(cornerImgs[2], co, outH - co - cs, cs, cs);
+        ctx.drawImage(cornerImgs[3], outW - co - cs, outH - co - cs, cs, cs);
+      }
+
+      // "F & R" top-center, wedding date bottom-center — same spots as the
+      // live .cam-mono / .cam-date overlay, baked into the saved photo.
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#C4956A';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = Math.round(outW * 0.006);
+      const monoSize = Math.round(Math.min(outW, outH) * 0.062);
+      ctx.font = `${monoSize}px 'Pinyon Script', cursive`;
+      ctx.fillText('F & R', outW / 2, co + cs / 2);
+      const dateSize = Math.round(Math.min(outW, outH) * 0.026);
+      ctx.font = `600 ${dateSize}px 'Raleway', sans-serif`;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = `${Math.round(dateSize * 0.15)}px`;
+      // Sits below the corner band (not centered in it, like the mono
+      // above) so it clears the capture button, matching the live .cam-date.
+      ctx.fillText('10.15.26', outW / 2, outH - Math.round(Math.min(outW, outH) * 0.018));
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      ctx.shadowBlur = 0;
 
       canvas.toBlob(blob => {
         capturedBlob    = blob;
