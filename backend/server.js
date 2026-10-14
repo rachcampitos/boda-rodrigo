@@ -10,6 +10,10 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:8000', 'http://localhost:8080', 'http://localhost:3000', 'http://127.0.0.1:8000'];
 const ADMIN_KEY = process.env.ADMIN_KEY || 'frankie-rodrigo-2026';
+const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID || '0e91e788ed10356e3800cb018e7ec41e';
+const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN || '';
+const CF_LIVE_INPUT_ID = process.env.CF_LIVE_INPUT_ID || 'c7c1bf587282e31d584691b2973bca7d';
+const CF_CUSTOMER_CODE = process.env.CF_CUSTOMER_CODE || '0plszfdakt07dwjq';
 
 // ── Mongoose Model ──────────────────────────────────────
 const rsvpSchema = new mongoose.Schema({
@@ -294,6 +298,63 @@ app.delete('/api/photos/:id', async (req, res) => {
     res.json({ message: 'Photo deleted', id: req.params.id });
   } catch (err) {
     res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// ── Live stream recordings (Cloudflare Stream) ──────────
+
+async function cfStream(path, method = 'GET') {
+  const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${CF_STREAM_TOKEN}` },
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) throw new Error(`Cloudflare Stream ${res.status}`);
+  return data.result;
+}
+
+function mapDownload(result) {
+  const d = (result && result.default) || {};
+  return { status: d.status || 'none', percent: Math.round(d.percentComplete || 0), url: d.url || null };
+}
+
+// List recordings of the wedding live input (admin)
+app.get('/api/recordings', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  if (!CF_STREAM_TOKEN) return res.status(503).json({ message: 'Stream not configured' });
+  try {
+    const videos = await cfStream(`/live_inputs/${CF_LIVE_INPUT_ID}/videos`);
+    res.json(videos
+      .sort((a, b) => new Date(b.created) - new Date(a.created))
+      .map(v => ({
+        id: v.uid,
+        createdAt: v.created,
+        duration: v.duration,
+        live: v.status && v.status.state === 'live-inprogress',
+        ready: !!v.readyToStream,
+        thumbnail: `https://customer-${CF_CUSTOMER_CODE}.cloudflarestream.com/${v.uid}/thumbnails/thumbnail.jpg?height=360`,
+        playerUrl: `https://customer-${CF_CUSTOMER_CODE}.cloudflarestream.com/${v.uid}/iframe`,
+      })));
+  } catch (err) {
+    res.status(502).json({ message: 'Failed to load recordings' });
+  }
+});
+
+// Get or create the MP4 download of a recording (admin)
+app.get('/api/recordings/:uid/download', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  if (!CF_STREAM_TOKEN) return res.status(503).json({ message: 'Stream not configured' });
+  if (!/^[a-f0-9]{32}$/.test(req.params.uid)) return res.status(400).json({ message: 'Invalid id' });
+  try {
+    let download = mapDownload(await cfStream(`/${req.params.uid}/downloads`));
+    if (download.status === 'none') {
+      download = mapDownload(await cfStream(`/${req.params.uid}/downloads`, 'POST'));
+    }
+    res.json(download);
+  } catch (err) {
+    res.status(502).json({ message: 'Failed to prepare download' });
   }
 });
 

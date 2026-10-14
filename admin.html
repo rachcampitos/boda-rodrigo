@@ -875,6 +875,70 @@
       .star { animation: none !important; opacity: var(--o1) !important; }
     }
 
+    /* ========== LIVE STREAM RECORDINGS ========== */
+    .rec-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 0 16px 16px;
+    }
+    .rec-card {
+      background: rgba(22,16,42,0.85);
+      border: 1px solid rgba(139,123,184,0.15);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .rec-player {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0a0612;
+    }
+    .rec-player img, .rec-player iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; border: 0; display: block;
+    }
+    .rec-play {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(5,5,5,0.35);
+      border: none; cursor: pointer;
+      color: #fff; font-size: 2rem;
+    }
+    .rec-live {
+      position: absolute; top: 10px; left: 10px;
+      background: #dc2626; color: #fff;
+      font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .rec-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 10px 12px 12px;
+    }
+    .rec-date {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem; color: #fff;
+    }
+    .rec-duration {
+      font-size: 0.65rem; color: var(--silver-muted); letter-spacing: 0.05em;
+    }
+    .rec-download {
+      background: rgba(196,149,106,0.18);
+      border: 1px solid rgba(196,149,106,0.4);
+      color: var(--copper);
+      font-family: inherit; font-size: 0.66rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 7px 12px; border-radius: 8px; cursor: pointer;
+      white-space: nowrap;
+    }
+    a.rec-download { display: inline-block; }
+    .rec-download:hover { background: rgba(196,149,106,0.3); }
+    .rec-download:disabled { opacity: 0.6; cursor: wait; }
+
+    @media (max-width: 640px) {
+      .rec-list { grid-template-columns: 1fr; padding: 0 12px 12px; }
+    }
+
     /* ========== WITNESSES TO WONDER — PHOTO REVIEW ========== */
     .photos-section {
       margin-bottom: 32px;
@@ -1182,6 +1246,23 @@
         <div>Approved: <span id="pstat-approved">—</span></div>
       </div>
       <div class="photos-grid" id="photos-grid">
+        <p class="photos-empty">Consulting the cosmos&hellip;</p>
+      </div>
+    </div>
+
+    <!-- Live Stream Recordings -->
+    <div class="photos-section" id="recordings-section">
+      <div class="photos-header">
+        <div class="photos-title-row">
+          <h3 class="photos-title">&#10022; Live Stream Recordings</h3>
+          <span class="photos-badge" id="rec-badge">0 videos</span>
+        </div>
+        <button class="photos-refresh" id="rec-refresh-btn">Refresh</button>
+      </div>
+      <div class="photos-stats">
+        <div>Recordings of the live broadcast. Play them here or download the MP4.</div>
+      </div>
+      <div class="rec-list" id="rec-list">
         <p class="photos-empty">Consulting the cosmos&hellip;</p>
       </div>
     </div>
@@ -1741,6 +1822,149 @@
         const observer = new MutationObserver(() => {
           if (dash.classList.contains('visible') && adminKey) {
             loadPhotos(currentTab);
+            observer.disconnect();
+          }
+        });
+        observer.observe(dash, { attributes: true, attributeFilter: ['class'] });
+      })();
+
+
+      // ── Live Stream Recordings ───────────────────────────
+      (function () {
+        const list = document.getElementById('rec-list');
+        const badge = document.getElementById('rec-badge');
+        const refreshBtn = document.getElementById('rec-refresh-btn');
+
+        function formatDuration(secs) {
+          if (!secs || secs < 0) return '';
+          const h = Math.floor(secs / 3600);
+          const m = Math.floor((secs % 3600) / 60);
+          const s = Math.floor(secs % 60);
+          return h ? `${h}h ${m}m` : `${m}m ${String(s).padStart(2, '0')}s`;
+        }
+
+        function formatDate(dateStr) {
+          return new Date(dateStr).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+          });
+        }
+
+        async function download(rec, btn) {
+          btn.disabled = true;
+          btn.textContent = 'Preparing...';
+          try {
+            for (let i = 0; i < 120; i++) {
+              const res = await fetch(`${API_BASE}/recordings/${rec.id}/download`, {
+                headers: { 'x-admin-key': adminKey },
+              });
+              if (!res.ok) throw new Error();
+              const d = await res.json();
+              if (d.status === 'ready' && d.url) {
+                // Browsers block opening a tab after an async wait, so swap the button for a real link
+                const a = document.createElement('a');
+                a.className = 'rec-download';
+                a.href = d.url;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.textContent = 'Save MP4';
+                btn.replaceWith(a);
+                return;
+              }
+              if (d.status === 'error') throw new Error();
+              btn.textContent = `Preparing ${d.percent || 0}%`;
+              await new Promise(r => setTimeout(r, 5000));
+            }
+            throw new Error();
+          } catch {
+            btn.textContent = 'Try again';
+            btn.disabled = false;
+          }
+        }
+
+        function renderCard(rec) {
+          const card = document.createElement('div');
+          card.className = 'rec-card';
+
+          const player = document.createElement('div');
+          player.className = 'rec-player';
+          const thumb = document.createElement('img');
+          thumb.src = rec.thumbnail;
+          thumb.alt = '';
+          thumb.loading = 'lazy';
+          player.appendChild(thumb);
+
+          if (rec.live) {
+            const live = document.createElement('span');
+            live.className = 'rec-live';
+            live.textContent = 'LIVE NOW';
+            player.appendChild(live);
+          }
+
+          const play = document.createElement('button');
+          play.className = 'rec-play';
+          play.setAttribute('aria-label', 'Play recording');
+          play.innerHTML = '&#9654;';
+          play.addEventListener('click', () => {
+            const iframe = document.createElement('iframe');
+            iframe.src = `${rec.playerUrl}?autoplay=true`;
+            iframe.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;';
+            iframe.allowFullscreen = true;
+            player.innerHTML = '';
+            player.appendChild(iframe);
+          });
+          player.appendChild(play);
+
+          const meta = document.createElement('div');
+          meta.className = 'rec-meta';
+          const info = document.createElement('div');
+          const date = document.createElement('div');
+          date.className = 'rec-date';
+          date.textContent = formatDate(rec.createdAt);
+          const dur = document.createElement('div');
+          dur.className = 'rec-duration';
+          dur.textContent = rec.live ? 'Broadcasting...' : formatDuration(rec.duration);
+          info.append(date, dur);
+          meta.appendChild(info);
+
+          if (!rec.live && rec.ready) {
+            const btn = document.createElement('button');
+            btn.className = 'rec-download';
+            btn.textContent = 'Download MP4';
+            btn.addEventListener('click', () => download(rec, btn));
+            meta.appendChild(btn);
+          }
+
+          card.append(player, meta);
+          return card;
+        }
+
+        async function loadRecordings() {
+          if (!adminKey) return;
+          list.innerHTML = '<p class="photos-empty">Consulting the cosmos&hellip;</p>';
+          try {
+            const res = await fetch(`${API_BASE}/recordings`, {
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            const recs = await res.json();
+            badge.textContent = `${recs.length} video${recs.length === 1 ? '' : 's'}`;
+            list.innerHTML = '';
+            if (!recs.length) {
+              list.innerHTML = '<p class="photos-empty">No recordings yet. They will appear here after the broadcast.</p>';
+              return;
+            }
+            recs.forEach(r => list.appendChild(renderCard(r)));
+          } catch {
+            list.innerHTML = '<p class="photos-empty">Could not load recordings.</p>';
+          }
+        }
+
+        refreshBtn.addEventListener('click', loadRecordings);
+
+        const dash = document.getElementById('dashboard');
+        const observer = new MutationObserver(() => {
+          if (dash.classList.contains('visible') && adminKey) {
+            loadRecordings();
             observer.disconnect();
           }
         });
