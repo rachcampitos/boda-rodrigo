@@ -41,6 +41,7 @@
         <li><a href="#travel" data-i18n="nav.travel">Travel</a></li>
         <li><a href="#wedding-party" data-i18n="nav.weddingParty">Wedding Party</a></li>
         <li><a href="#gallery" data-i18n="nav.gallery">Gallery</a></li>
+        <li id="nav-live" style="display:none"><a href="#live" data-i18n="nav.live">Watch Live</a></li>
         <li id="nav-moments" style="display:none"><a href="#moments" data-i18n="nav.moments">Moments</a></li>
         <li><a href="#faqs" data-i18n="nav.faqs">FAQs</a></li>
         <li><a href="#rsvp" data-i18n="nav.rsvp">RSVP</a></li>
@@ -286,6 +287,24 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ WATCH LIVE — Cloudflare Stream ============ -->
+  <section id="live" class="section section--alt" style="display:none">
+    <div class="section-inner">
+      <h2 class="section-title reveal" data-i18n="live.title">Watch Live</h2>
+      <p class="live-subtitle reveal" data-i18n="live.subtitle">For those with us in spirit</p>
+
+      <div class="live-frame reveal">
+        <span class="live-corner live-corner-tl" aria-hidden="true"></span>
+        <span class="live-corner live-corner-tr" aria-hidden="true"></span>
+        <span class="live-corner live-corner-bl" aria-hidden="true"></span>
+        <span class="live-corner live-corner-br" aria-hidden="true"></span>
+        <div class="live-player" id="live-player"></div>
+      </div>
+
+      <p class="live-note reveal" data-i18n="live.note">The ceremony begins at 5:00 PM (New York time). If the video hasn't started yet, the stream will appear here shortly. The recording will remain here after the celebration.</p>
     </div>
   </section>
 
@@ -959,6 +978,7 @@
   <script src="js/guests.js"></script>
   <script src="js/rsvp.js"></script>
   <script src="js/moments.js"></script>
+  <script src="js/live.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

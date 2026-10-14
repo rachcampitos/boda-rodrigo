@@ -15,6 +15,7 @@
       'nav.weddingParty': 'Wedding Party',
       'nav.gallery':      'Gallery',
       'nav.moments':      'Moments',
+      'nav.live':         'Watch Live',
       'nav.faqs':         'FAQs',
       'nav.rsvp':         'RSVP',
 
@@ -57,6 +58,11 @@
       'travel.btn.map':        'Map',
 
       // FAQs section
+      // Watch Live section
+      'live.title':    'Watch Live',
+      'live.subtitle': 'For those with us in spirit',
+      'live.note':     'The ceremony begins at 5:00 PM (New York time). If the video hasn\u2019t started yet, the stream will appear here shortly. The recording will remain here after the celebration.',
+
       'faqs.title': 'FAQs',
 
       'faqs.q1': 'When? Where? What Time?',
@@ -162,6 +168,7 @@
       'nav.weddingParty': 'Wedding Party',
       'nav.gallery':      'Galería',
       'nav.moments':      'Momentos',
+      'nav.live':         'En vivo',
       'nav.faqs':         'Preguntas',
       'nav.rsvp':         'RSVP',
 
@@ -202,6 +209,11 @@
       'travel.details.closing': '¡No podemos esperar para vivir una noche mágica con nuestra gente favorita!',
       'travel.btn.book':       'Reservar habitación',
       'travel.btn.map':        'Mapa',
+
+      // Sección En vivo
+      'live.title':    'En vivo',
+      'live.subtitle': 'Para quienes nos acompañan a la distancia',
+      'live.note':     'La ceremonia comienza a las 5:00 PM (hora de Nueva York), 4:00 PM en Perú. Si el video aún no empieza, la transmisión aparecerá aquí en unos momentos. La grabación quedará disponible aquí después de la celebración.',
 
       // Sección FAQs
       'faqs.title': 'Preguntas frecuentes',
