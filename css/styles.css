@@ -2252,7 +2252,12 @@ h1, h2, h3 {
     transition: max-height 0.4s ease, padding 0.4s ease;
   }
   .nav-links.open {
-    max-height: 400px;
+    /* Fit the screen and scroll inside when there are more items than fit */
+    max-height: calc(100vh - var(--nav-height));
+    max-height: calc(100dvh - var(--nav-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 16px 0;
   }
   .nav-links li { width: 100%; text-align: center; }
