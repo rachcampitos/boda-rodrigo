@@ -378,6 +378,8 @@ async function cfStream(path, method = 'GET') {
     headers: { Authorization: `Bearer ${CF_STREAM_TOKEN}` },
   });
   const data = await res.json().catch(() => ({}));
+  // DELETE answers 200 with an empty body
+  if (method === 'DELETE' && res.ok) return null;
   if (!res.ok || !data.success) {
     const detail = (data.errors || []).map(e => e.message).join('; ');
     throw new Error(`Cloudflare Stream ${method} ${path} ${res.status} ${detail}`);
@@ -434,6 +436,29 @@ app.get('/api/live', async (_req, res) => {
   } catch (err) {
     console.error('Live status failed:', err.message);
     res.json({ live: false, recordings: [] });
+  }
+});
+
+// Delete a recording of the wedding live input (admin)
+app.delete('/api/recordings/:uid', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  if (!CF_STREAM_TOKEN) return res.status(503).json({ message: 'Stream not configured' });
+  if (!/^[a-f0-9]{32}$/.test(req.params.uid)) return res.status(400).json({ message: 'Invalid id' });
+  try {
+    // Only allow deleting recordings of this live input, never other videos in the account
+    const videos = await cfStream(`/live_inputs/${CF_LIVE_INPUT_ID}/videos`);
+    const video = videos.find(v => v.uid === req.params.uid);
+    if (!video) return res.status(404).json({ message: 'Not found' });
+    if (video.status && video.status.state === 'live-inprogress') {
+      return res.status(409).json({ message: 'Still broadcasting' });
+    }
+    await cfStream(`/${req.params.uid}`, 'DELETE');
+    liveCache = { at: 0, data: null };
+    res.json({ message: 'Recording deleted', id: req.params.uid });
+  } catch (err) {
+    console.error('Recording delete failed:', err.message);
+    res.status(502).json({ message: 'Failed to delete recording' });
   }
 });
 

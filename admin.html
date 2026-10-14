@@ -934,6 +934,16 @@
     a.rec-download { display: inline-block; }
     .rec-download:hover { background: rgba(196,149,106,0.3); }
     .rec-download:disabled { opacity: 0.6; cursor: wait; }
+    .rec-actions { display: flex; gap: 8px; align-items: center; }
+    .rec-delete {
+      background: rgba(139,123,184,0.1);
+      border: 1px solid rgba(139,123,184,0.2);
+      color: var(--silver-muted);
+      font-family: inherit; font-size: 0.75rem;
+      padding: 7px 11px; border-radius: 8px; cursor: pointer;
+    }
+    .rec-delete:hover { border-color: #dc2626; color: #f87171; background: rgba(220,38,38,0.1); }
+    .rec-delete:disabled { opacity: 0.5; cursor: wait; }
 
     @media (max-width: 640px) {
       .rec-list { grid-template-columns: 1fr; padding: 0 12px 12px; }
@@ -1929,6 +1939,30 @@
           }
         }
 
+        async function removeRecording(rec, card, btn) {
+          const when = formatDate(rec.createdAt);
+          if (!confirm(`Delete the recording from ${when}? This cannot be undone.`)) return;
+          // Long recordings are probably the wedding itself: ask twice
+          if (rec.duration > 600 && !confirm('This recording is longer than 10 minutes. Are you completely sure? Download the MP4 first if you want to keep it.')) return;
+          btn.disabled = true;
+          try {
+            const res = await fetch(`${API_BASE}/recordings/${rec.id}`, {
+              method: 'DELETE',
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            card.remove();
+            const left = list.querySelectorAll('.rec-card').length;
+            badge.textContent = `${left} video${left === 1 ? '' : 's'}`;
+            if (!left) {
+              list.innerHTML = '<p class="photos-empty">No recordings yet. They will appear here after the broadcast.</p>';
+            }
+          } catch {
+            btn.disabled = false;
+            alert('Could not delete the recording. Please try again.');
+          }
+        }
+
         function renderCard(rec) {
           const card = document.createElement('div');
           card.className = 'rec-card';
@@ -1974,12 +2008,24 @@
           info.append(date, dur);
           meta.appendChild(info);
 
-          if (!rec.live && rec.ready) {
-            const btn = document.createElement('button');
-            btn.className = 'rec-download';
-            btn.textContent = 'Download MP4';
-            btn.addEventListener('click', () => download(rec, btn));
-            meta.appendChild(btn);
+          if (!rec.live) {
+            const actions = document.createElement('div');
+            actions.className = 'rec-actions';
+            if (rec.ready) {
+              const btn = document.createElement('button');
+              btn.className = 'rec-download';
+              btn.textContent = 'Download MP4';
+              btn.addEventListener('click', () => download(rec, btn));
+              actions.appendChild(btn);
+            }
+            const del = document.createElement('button');
+            del.className = 'rec-delete';
+            del.textContent = '✕';
+            del.title = 'Delete recording';
+            del.setAttribute('aria-label', 'Delete recording');
+            del.addEventListener('click', () => removeRecording(rec, card, del));
+            actions.appendChild(del);
+            meta.appendChild(actions);
           }
 
           card.append(player, meta);
