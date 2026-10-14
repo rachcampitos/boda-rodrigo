@@ -2517,6 +2517,28 @@ h1, h2, h3 {
 .live-corner-bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
 .live-corner-br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
 
+.live-parts {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  margin-top: 20px;
+}
+.live-parts:empty { display: none; }
+.live-part {
+  background: none;
+  border: 1px solid rgba(196, 149, 106, 0.35);
+  color: var(--silver);
+  font-family: var(--ff-body); font-size: 0.75rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 8px 18px; border-radius: 20px;
+  cursor: pointer;
+  transition: border-color 0.25s, color 0.25s, background 0.25s;
+}
+.live-part:hover { border-color: var(--copper); color: var(--copper-lt); }
+.live-part.active {
+  background: rgba(196, 149, 106, 0.15);
+  border-color: var(--copper);
+  color: var(--copper-lt);
+}
+
 .live-note {
   max-width: 620px;
   margin: 28px auto 0;

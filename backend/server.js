@@ -16,6 +16,8 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID || '0e91e788ed10356e3800cb018e7e
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN || '';
 const CF_LIVE_INPUT_ID = process.env.CF_LIVE_INPUT_ID || 'c7c1bf587282e31d584691b2973bca7d';
 const CF_CUSTOMER_CODE = process.env.CF_CUSTOMER_CODE || '0plszfdakt07dwjq';
+// Recordings before this moment are tests and never shown to guests (noon in New York on the wedding day)
+const WEDDING_STREAM_FROM = new Date(process.env.WEDDING_STREAM_FROM || '2026-10-15T16:00:00Z');
 
 // ── Mongoose Model ──────────────────────────────────────
 const rsvpSchema = new mongoose.Schema({
@@ -408,6 +410,30 @@ app.get('/api/recordings', async (req, res) => {
       })));
   } catch (err) {
     res.status(502).json({ message: 'Failed to load recordings' });
+  }
+});
+
+// Public live status for the Watch Live section: is it on air, and which wedding recordings exist
+let liveCache = { at: 0, data: null };
+app.get('/api/live', async (_req, res) => {
+  if (Date.now() - liveCache.at < 15000 && liveCache.data) return res.json(liveCache.data);
+  try {
+    const lifecycle = await fetch(`https://customer-${CF_CUSTOMER_CODE}.cloudflarestream.com/${CF_LIVE_INPUT_ID}/lifecycle`)
+      .then(r => r.json());
+    let recordings = [];
+    if (CF_STREAM_TOKEN) {
+      const videos = await cfStream(`/live_inputs/${CF_LIVE_INPUT_ID}/videos`);
+      recordings = videos
+        .filter(v => new Date(v.created) >= WEDDING_STREAM_FROM)
+        .filter(v => v.readyToStream && !(v.status && v.status.state === 'live-inprogress'))
+        .sort((a, b) => new Date(a.created) - new Date(b.created))
+        .map(v => ({ id: v.uid, duration: v.duration, createdAt: v.created }));
+    }
+    liveCache = { at: Date.now(), data: { live: !!lifecycle.live, recordings } };
+    res.json(liveCache.data);
+  } catch (err) {
+    console.error('Live status failed:', err.message);
+    res.json({ live: false, recordings: [] });
   }
 });
 
