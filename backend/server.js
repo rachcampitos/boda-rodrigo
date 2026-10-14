@@ -308,8 +308,11 @@ async function cfStream(path, method = 'GET') {
     method,
     headers: { Authorization: `Bearer ${CF_STREAM_TOKEN}` },
   });
-  const data = await res.json();
-  if (!res.ok || !data.success) throw new Error(`Cloudflare Stream ${res.status}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    const detail = (data.errors || []).map(e => e.message).join('; ');
+    throw new Error(`Cloudflare Stream ${method} ${path} ${res.status} ${detail}`);
+  }
   return data.result;
 }
 
@@ -348,12 +351,14 @@ app.get('/api/recordings/:uid/download', async (req, res) => {
   if (!CF_STREAM_TOKEN) return res.status(503).json({ message: 'Stream not configured' });
   if (!/^[a-f0-9]{32}$/.test(req.params.uid)) return res.status(400).json({ message: 'Invalid id' });
   try {
-    let download = mapDownload(await cfStream(`/${req.params.uid}/downloads`));
+    // GET fails while no download exists yet, so fall back to creating it
+    let download = mapDownload(await cfStream(`/${req.params.uid}/downloads`).catch(() => null));
     if (download.status === 'none') {
       download = mapDownload(await cfStream(`/${req.params.uid}/downloads`, 'POST'));
     }
     res.json(download);
   } catch (err) {
+    console.error('Recording download failed:', err.message);
     res.status(502).json({ message: 'Failed to prepare download' });
   }
 });
