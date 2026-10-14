@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
+const crypto = require('crypto');
+const archiver = require('archiver');
 
 // ── Config ──────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
@@ -208,6 +210,22 @@ const photoSchema = new mongoose.Schema({
 
 const Photo = mongoose.model('Photo', photoSchema);
 
+// File name like 2026-10-15_2134_Maria.jpg (New York time, where the wedding is)
+function photoFileName(photo) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+  }).formatToParts(photo.createdAt || new Date()).map(p => [p.type, p.value]));
+  const name = (photo.guestName || 'Guest')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'Guest';
+  const ext = (photo.mimeType || '').includes('png') ? 'png' : 'jpg';
+  return `${parts.year}-${parts.month}-${parts.day}_${parts.hour}${parts.minute}${parts.second}_${name}.${ext}`;
+}
+
+// Short-lived tokens so the ZIP can be a plain link without putting the admin key in the URL
+const zipTokens = new Map();
+
 // Upload a guest photo (public)
 app.post('/api/photos', upload.single('photo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'No photo uploaded' });
@@ -227,10 +245,13 @@ app.post('/api/photos', upload.single('photo'), async (req, res) => {
 // Serve photo binary (public)
 app.get('/api/photos/:id/image', async (req, res) => {
   try {
-    const photo = await Photo.findById(req.params.id).select('imageData mimeType status');
+    const photo = await Photo.findById(req.params.id).select('imageData mimeType status guestName createdAt');
     if (!photo) return res.status(404).json({ message: 'Not found' });
     res.set('Content-Type', photo.mimeType || 'image/jpeg');
     res.set('Cache-Control', 'public, max-age=86400');
+    if (req.query.download) {
+      res.set('Content-Disposition', `attachment; filename="${photoFileName(photo)}"`);
+    }
     res.send(photo.imageData);
   } catch (err) {
     res.status(500).json({ message: 'Failed to load image' });
@@ -250,6 +271,52 @@ app.get('/api/photos/pending', async (req, res) => {
     })));
   } catch (err) {
     res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// Create a one-time token to download all approved photos (admin)
+app.post('/api/photos/approved/zip-token', (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  const now = Date.now();
+  for (const [t, exp] of zipTokens) if (exp < now) zipTokens.delete(t);
+  const token = crypto.randomBytes(24).toString('hex');
+  zipTokens.set(token, now + 5 * 60 * 1000);
+  res.json({ token });
+});
+
+// Download all approved photos as a ZIP (token from zip-token)
+app.get('/api/photos/approved/zip', async (req, res) => {
+  const exp = zipTokens.get(req.query.token);
+  zipTokens.delete(req.query.token);
+  if (!exp || exp < Date.now()) return res.status(401).json({ message: 'Link expired' });
+
+  res.set('Content-Type', 'application/zip');
+  res.set('Content-Disposition', 'attachment; filename="frankie-rodrigo-photos.zip"');
+
+  // JPEGs are already compressed, so store them as-is
+  const zip = archiver('zip', { store: true });
+  zip.on('error', err => {
+    console.error('ZIP failed:', err.message);
+    res.destroy(err);
+  });
+  zip.pipe(res);
+
+  try {
+    const used = new Set();
+    const cursor = Photo.find({ status: 'approved' })
+      .select('imageData mimeType guestName createdAt').sort({ createdAt: 1 }).cursor();
+    for await (const photo of cursor) {
+      let name = photoFileName(photo);
+      for (let i = 2; used.has(name); i++) name = photoFileName(photo).replace(/(\.\w+)$/, `_${i}$1`);
+      used.add(name);
+      zip.append(photo.imageData, { name, date: photo.createdAt });
+    }
+    await zip.finalize();
+  } catch (err) {
+    console.error('ZIP failed:', err.message);
+    zip.abort();
+    res.destroy(err);
   }
 });
 

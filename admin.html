@@ -1090,6 +1090,23 @@
       transition: border-color 0.3s, color 0.3s;
     }
     .photos-refresh:hover { border-color: var(--lavender); color: var(--lavender-lt); }
+    .photos-zip { border-color: rgba(196,149,106,0.4); color: var(--copper); }
+    .photos-zip:hover { border-color: var(--copper); color: var(--copper-lt); }
+    .photos-zip:disabled { opacity: 0.6; cursor: wait; }
+
+    .photo-download {
+      display: block;
+      margin: 0 12px 12px;
+      padding: 7px 0;
+      text-align: center;
+      border: 1px solid rgba(196,149,106,0.3);
+      border-radius: 8px;
+      color: var(--copper);
+      font-size: 0.64rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      text-decoration: none;
+    }
+    .photo-download:hover { background: rgba(196,149,106,0.15); }
 
     @media (max-width: 640px) {
       .photos-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px 12px; }
@@ -1238,6 +1255,7 @@
             <button class="photos-tab active" data-ptab="pending">Pending</button>
             <button class="photos-tab" data-ptab="approved">Approved</button>
           </div>
+          <button class="photos-refresh photos-zip" id="photos-zip-btn" hidden>Download all</button>
           <button class="photos-refresh" id="photos-refresh-btn">Refresh</button>
         </div>
       </div>
@@ -1665,6 +1683,7 @@
         const statApproved = document.getElementById('pstat-approved');
         const tabs        = document.querySelectorAll('.photos-tab');
         const refreshBtn  = document.getElementById('photos-refresh-btn');
+        const zipBtn      = document.getElementById('photos-zip-btn');
 
         let currentTab = 'pending';
         let pendingCount = 0;
@@ -1734,6 +1753,14 @@
           card.appendChild(meta);
           card.appendChild(actions);
 
+          if (tab === 'approved') {
+            const dl = document.createElement('a');
+            dl.className = 'photo-download';
+            dl.href = `${API_BASE}/photos/${photo.id}/image?download=1`;
+            dl.textContent = 'Download';
+            card.appendChild(dl);
+          }
+
           requestAnimationFrame(() => {
             requestAnimationFrame(() => card.classList.add('visible'));
           });
@@ -1760,6 +1787,7 @@
               approvedCount = photos.length;
               statApproved.textContent = approvedCount;
             }
+            zipBtn.hidden = !(tab === 'approved' && photos.length);
 
             grid.innerHTML = '';
             if (!photos.length) {
@@ -1815,6 +1843,26 @@
         });
 
         refreshBtn.addEventListener('click', () => loadPhotos(currentTab));
+
+        // Download all approved photos as one ZIP
+        zipBtn.addEventListener('click', async () => {
+          if (!adminKey) return;
+          zipBtn.disabled = true;
+          zipBtn.textContent = 'Preparing...';
+          try {
+            const res = await fetch(`${API_BASE}/photos/approved/zip-token`, {
+              method: 'POST',
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            const { token } = await res.json();
+            window.location.href = `${API_BASE}/photos/approved/zip?token=${token}`;
+            zipBtn.textContent = 'Download all';
+          } catch {
+            zipBtn.textContent = 'Try again';
+          }
+          zipBtn.disabled = false;
+        });
 
         // Load when dashboard becomes visible (after login)
         // Piggyback on the existing loadDashboard flow via a MutationObserver
