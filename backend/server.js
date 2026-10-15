@@ -16,8 +16,8 @@ const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID || '0e91e788ed10356e3800cb018e7e
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN || '';
 const CF_LIVE_INPUT_ID = process.env.CF_LIVE_INPUT_ID || 'c7c1bf587282e31d584691b2973bca7d';
 const CF_CUSTOMER_CODE = process.env.CF_CUSTOMER_CODE || '0plszfdakt07dwjq';
-// Recordings before this moment are tests and never shown to guests (noon in New York on the wedding day)
-const WEDDING_STREAM_FROM = new Date(process.env.WEDDING_STREAM_FROM || '2026-10-15T16:00:00Z');
+// Recordings started before this moment are tests and never shown to guests (3 PM in New York on the wedding day)
+const WEDDING_STREAM_FROM = new Date(process.env.WEDDING_STREAM_FROM || '2026-10-15T19:00:00Z');
 
 // ── Mongoose Model ──────────────────────────────────────
 const rsvpSchema = new mongoose.Schema({
