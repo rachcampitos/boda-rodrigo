@@ -110,9 +110,16 @@
 
   function renderChat(messages) {
     const signature = messages.map(m => m.id).join(',');
-    if (signature === chatSignature) return;
+    if (signature === chatSignature) return renderOverlay(messages);
     chatSignature = signature;
-    if (!messages.length) return;
+    if (!messages.length) {
+      const empty = document.createElement('p');
+      empty.className = 'live-chat-empty';
+      empty.dataset.i18n = 'live.chat.empty';
+      empty.textContent = window.currentLang === 'es' ? 'Sea el primero en dejar un mensaje' : 'Be the first to leave a message';
+      chatList.replaceChildren(empty);
+      return renderOverlay(messages);
+    }
     const nearBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 60;
     chatList.replaceChildren(...messages.map(m => {
       const row = document.createElement('p');
@@ -127,6 +134,123 @@
     }));
     if (nearBottom || !chatList.dataset.loaded) chatList.scrollTop = chatList.scrollHeight;
     chatList.dataset.loaded = '1';
+    renderOverlay(messages);
+  }
+
+  // ── TV mode: video full screen with the newest messages on top, like streamers do ──
+  const frame = document.querySelector('#live .live-frame');
+  const overlay = document.createElement('div');
+  overlay.className = 'live-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+  const OVERLAY_MAX = 4;
+  const OVERLAY_SECONDS = 60;
+  const firstSeen = new Map();
+  let firstLoad = true;
+
+  // Messages fade out a minute after they show up on this screen; older ones never appear
+  function renderOverlay(messages) {
+    const now = Date.now();
+    messages.forEach(m => {
+      if (!firstSeen.has(m.id)) firstSeen.set(m.id, firstLoad ? 0 : now);
+    });
+    firstLoad = false;
+    const fresh = messages
+      .filter(m => now - firstSeen.get(m.id) < OVERLAY_SECONDS * 1000)
+      .slice(-OVERLAY_MAX);
+    // Reuse each message's node so the fade-out transition can play
+    const nodes = new Map([...overlay.children].map(n => [n.dataset.id, n]));
+    overlay.replaceChildren(...fresh.map(m => {
+      let row = nodes.get(String(m.id));
+      if (!row) {
+        row = document.createElement('p');
+        row.className = 'live-overlay-msg';
+        row.dataset.id = m.id;
+        const name = document.createElement('strong');
+        name.textContent = m.name;
+        name.style.color = nameColor(m.name);
+        row.append(name, document.createTextNode(m.text));
+      }
+      // Fade out smoothly over the last seconds instead of vanishing at once
+      row.classList.toggle('fading', now - firstSeen.get(m.id) > (OVERLAY_SECONDS - 5) * 1000);
+      return row;
+    }));
+  }
+
+  if (frame) {
+    frame.appendChild(overlay);
+
+    const tvBtn = document.createElement('button');
+    tvBtn.type = 'button';
+    tvBtn.className = 'live-tv-btn';
+    const tvClose = document.createElement('button');
+    tvClose.type = 'button';
+    tvClose.className = 'live-tv-close';
+    tvClose.innerHTML = '&#10005;';
+    frame.appendChild(tvClose);
+    const tvToggle = document.createElement('button');
+    tvToggle.type = 'button';
+    tvToggle.className = 'live-tv-toggle';
+    frame.appendChild(tvToggle);
+    const tvHint = document.createElement('p');
+    tvHint.className = 'live-tv-hint';
+    frame.insertAdjacentElement('afterend', tvHint);
+    frame.insertAdjacentElement('afterend', tvBtn);
+
+    // Some people will want only the video during the vows: remember their choice
+    const QUIET_KEY = 'live_tv_quiet';
+    try { if (localStorage.getItem(QUIET_KEY)) frame.classList.add('live-tv-quiet'); } catch (e) {}
+    tvToggle.addEventListener('click', () => {
+      const quiet = frame.classList.toggle('live-tv-quiet');
+      try { quiet ? localStorage.setItem(QUIET_KEY, '1') : localStorage.removeItem(QUIET_KEY); } catch (e) {}
+      labelTvBtn();
+    });
+
+    function labelTvBtn() {
+      tvBtn.textContent = window.currentLang === 'es'
+        ? 'Pantalla completa con mensajes'
+        : 'Full screen with messages';
+      tvClose.setAttribute('aria-label', window.currentLang === 'es' ? 'Salir de pantalla completa' : 'Exit full screen');
+      const quiet = frame.classList.contains('live-tv-quiet');
+      tvToggle.textContent = window.currentLang === 'es'
+        ? (quiet ? 'Mostrar mensajes' : 'Ocultar mensajes')
+        : (quiet ? 'Show messages' : 'Hide messages');
+      tvHint.textContent = window.currentLang === 'es'
+        ? 'Para verlo en la TV con los mensajes, use Duplicar pantalla, no el ícono de AirPlay del video.'
+        : 'To watch on TV with the messages, use Screen Mirroring, not the AirPlay icon on the video.';
+    }
+    labelTvBtn();
+    document.addEventListener('langchange', labelTvBtn);
+
+    const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+
+    function exitTv() {
+      frame.classList.remove('live-tv');
+      document.body.classList.remove('live-tv-open');
+      if (fsElement()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+
+    // Real full screen where the browser allows it; on iPhone, a fixed layer that fills the screen
+    tvBtn.addEventListener('click', () => {
+      frame.classList.add('live-tv');
+      document.body.classList.add('live-tv-open');
+      const request = frame.requestFullscreen || frame.webkitRequestFullscreen;
+      if (request) {
+        try {
+          const p = request.call(frame);
+          if (p && p.catch) p.catch(() => {});
+        } catch (e) {}
+      }
+      loadChat();
+    });
+    tvClose.addEventListener('click', exitTv);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && frame.classList.contains('live-tv')) exitTv();
+    });
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+      document.addEventListener(ev, () => {
+        if (!fsElement() && frame.classList.contains('live-tv')) exitTv();
+      })
+    );
   }
 
   async function loadChat() {
