@@ -203,6 +203,23 @@
     tvToggle.type = 'button';
     tvToggle.className = 'live-tv-toggle';
     frame.appendChild(tvToggle);
+    // Write without leaving full screen; the name field only shows until the guest has one
+    const tvForm = document.createElement('form');
+    tvForm.className = 'live-tv-form';
+    tvForm.autocomplete = 'off';
+    const tvName = document.createElement('input');
+    tvName.type = 'text'; tvName.className = 'live-tv-name'; tvName.maxLength = 40;
+    const tvText = document.createElement('input');
+    tvText.type = 'text'; tvText.className = 'live-tv-text'; tvText.maxLength = 300;
+    const tvSend = document.createElement('button');
+    tvSend.type = 'submit'; tvSend.className = 'live-tv-send';
+    tvForm.append(tvName, tvText, tvSend);
+    frame.appendChild(tvForm);
+    try { tvName.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+    tvName.hidden = !!tvName.value;
+    tvForm.addEventListener('chat-sent', () => { tvName.hidden = true; });
+    wireForm(tvForm, tvName, tvText);
+
     const tvHint = document.createElement('p');
     tvHint.className = 'live-tv-hint';
     frame.insertAdjacentElement('afterend', tvHint);
@@ -226,6 +243,9 @@
       tvToggle.textContent = window.currentLang === 'es'
         ? (quiet ? 'Mostrar mensajes' : 'Ocultar mensajes')
         : (quiet ? 'Show messages' : 'Hide messages');
+      tvName.placeholder = window.currentLang === 'es' ? 'Su nombre' : 'Your name';
+      tvText.placeholder = window.currentLang === 'es' ? 'Escriba un mensaje...' : 'Write a message...';
+      tvSend.textContent = window.currentLang === 'es' ? 'Enviar' : 'Send';
       tvHint.textContent = window.currentLang === 'es'
         ? 'Para verlo en la TV con los mensajes, use Duplicar pantalla, no el ícono de AirPlay del video.'
         : 'To watch on TV with the messages, use Screen Mirroring, not the AirPlay icon on the video.';
@@ -276,14 +296,15 @@
     } catch (e) {}
   }
 
-  if (chatList && chatForm) {
-    chatForm.addEventListener('submit', async (e) => {
+  // Shared by the chat box and the full screen form
+  function wireForm(form, nameEl, textEl) {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = chatName.value.trim();
-      const text = chatText.value.trim();
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
       if (!name || !text) return;
-      const btn = chatForm.querySelector('button');
-      const oldError = chatForm.querySelector('.live-chat-error');
+      const btn = form.querySelector('button');
+      const oldError = form.querySelector('.live-chat-error');
       if (oldError) oldError.remove();
       btn.disabled = true;
       try {
@@ -294,7 +315,9 @@
         });
         if (!res.ok) throw new Error();
         try { localStorage.setItem(NAME_KEY, name); } catch (err) {}
-        chatText.value = '';
+        document.querySelectorAll('.live-chat-name, .live-tv-name').forEach(el => { el.value = name; });
+        form.dispatchEvent(new CustomEvent('chat-sent'));
+        textEl.value = '';
         chatList.dataset.loaded = '';
         await loadChat();
       } catch (err) {
@@ -303,11 +326,15 @@
         msg.textContent = window.currentLang === 'es'
           ? 'No se pudo enviar, intente de nuevo'
           : 'Could not send, please try again';
-        chatForm.appendChild(msg);
+        form.appendChild(msg);
       } finally {
         btn.disabled = false;
       }
     });
+  }
+
+  if (chatList && chatForm) {
+    wireForm(chatForm, chatName, chatText);
 
     loadChat();
     setInterval(loadChat, 5000);
