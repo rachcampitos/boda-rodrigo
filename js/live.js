@@ -159,7 +159,17 @@
       .slice(-OVERLAY_MAX);
     // Reuse each message's node so the fade-out transition can play
     const nodes = new Map([...overlay.children].map(n => [n.dataset.id, n]));
-    overlay.replaceChildren(...fresh.map(m => {
+    const keep = new Set(fresh.map(m => String(m.id)));
+    // Messages pushed out by newer ones float up and fade before they are removed
+    const leaving = [...overlay.children].filter(n => !keep.has(n.dataset.id));
+    leaving.forEach(n => {
+      if (n.classList.contains('leaving')) return;
+      n.style.height = n.offsetHeight + 'px';
+      n.offsetHeight;
+      n.classList.add('leaving');
+      setTimeout(() => n.remove(), 700);
+    });
+    overlay.replaceChildren(...leaving, ...fresh.map(m => {
       let row = nodes.get(String(m.id));
       if (!row) {
         row = document.createElement('p');
