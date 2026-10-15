@@ -203,6 +203,13 @@
     tvToggle.type = 'button';
     tvToggle.className = 'live-tv-toggle';
     frame.appendChild(tvToggle);
+    // Shortcut on the video itself, since most guests look at the player and not below it
+    const tvCorner = document.createElement('button');
+    tvCorner.type = 'button';
+    tvCorner.className = 'live-tv-corner';
+    tvCorner.addEventListener('click', () => enterTv(true));
+    frame.appendChild(tvCorner);
+
     // Write without leaving full screen; the name field only shows until the guest has one
     const tvForm = document.createElement('form');
     tvForm.className = 'live-tv-form';
@@ -240,6 +247,7 @@
         : 'Full screen with messages';
       tvClose.setAttribute('aria-label', window.currentLang === 'es' ? 'Salir de pantalla completa' : 'Exit full screen');
       const quiet = frame.classList.contains('live-tv-quiet');
+      tvCorner.textContent = window.currentLang === 'es' ? '\u26F6 Con mensajes' : '\u26F6 With messages';
       tvToggle.textContent = window.currentLang === 'es'
         ? (quiet ? 'Mostrar mensajes' : 'Ocultar mensajes')
         : (quiet ? 'Show messages' : 'Hide messages');
@@ -258,15 +266,16 @@
     function exitTv() {
       frame.classList.remove('live-tv');
       document.body.classList.remove('live-tv-open');
+      delete frame.dataset.auto;
       if (fsElement()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
     }
 
     // Real full screen where the browser allows it; on iPhone, a fixed layer that fills the screen
-    tvBtn.addEventListener('click', () => {
+    function enterTv(useFullscreen) {
       frame.classList.add('live-tv');
       document.body.classList.add('live-tv-open');
       const request = frame.requestFullscreen || frame.webkitRequestFullscreen;
-      if (request) {
+      if (useFullscreen && request) {
         try {
           const p = request.call(frame);
           if (p && p.catch) p.catch(() => {});
@@ -277,7 +286,30 @@
       lastMessages.slice(-3).forEach(m => firstSeen.set(m.id, now));
       renderOverlay(lastMessages);
       loadChat();
-    });
+    }
+
+    tvBtn.addEventListener('click', () => enterTv(true));
+
+    // Phones: turning the phone sideways while watching opens full screen with messages, like YouTube
+    const landscape = window.matchMedia('(orientation: landscape) and (max-height: 520px) and (pointer: coarse)');
+    let liveInView = false;
+    new IntersectionObserver(entries => {
+      liveInView = entries[0].isIntersecting;
+    }, { threshold: 0.3 }).observe(frame);
+    function onRotate() {
+      if (landscape.matches) {
+        if (liveInView && !frame.classList.contains('live-tv')) {
+          enterTv(false);
+          frame.dataset.auto = '1';
+        }
+      } else if (frame.dataset.auto) {
+        exitTv();
+        frame.scrollIntoView({ block: 'center' });
+      }
+    }
+    if (landscape.addEventListener) landscape.addEventListener('change', onRotate);
+    else if (landscape.addListener) landscape.addListener(onRotate);
+
     tvClose.addEventListener('click', exitTv);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && frame.classList.contains('live-tv')) exitTv();
