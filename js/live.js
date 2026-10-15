@@ -25,6 +25,7 @@
   section.style.display = '';
   if (navItem) navItem.style.display = '';
 
+  const RECORDING_GRACE_MS = 90 * 60 * 1000;
   let currentVideo = null;
   let recordings = [];
 
@@ -63,7 +64,12 @@
       if (!res.ok) throw new Error();
       const data = await res.json();
       recordings = data.recordings || [];
-      if (data.live || !recordings.length) {
+      // A short cut during the party must not send guests to the recording: keep the live player
+      // until the broadcast has been off for a while, then offer the recordings
+      const lastEnd = Math.max(0, ...recordings.map(r =>
+        Date.parse(r.createdAt) + Math.max(0, r.duration || 0) * 1000));
+      const pausedBriefly = Date.now() - lastEnd < RECORDING_GRACE_MS;
+      if (data.live || !recordings.length || pausedBriefly) {
         show(LIVE_INPUT_ID);
       } else {
         // Keep the part the guest is watching; otherwise start from the first one
