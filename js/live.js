@@ -218,6 +218,28 @@
     tvToggle.type = 'button';
     tvToggle.className = 'live-tv-toggle';
     frame.appendChild(tvToggle);
+
+    // All messages, scrollable, without leaving full screen: the chat box moves into the frame
+    // (only the frame is visible in real full screen) and goes back to its place afterwards
+    const tvHistory = document.createElement('button');
+    tvHistory.type = 'button';
+    tvHistory.className = 'live-tv-history-btn';
+    frame.appendChild(tvHistory);
+    const chatBox = document.getElementById('live-chat');
+    const chatHome = chatBox ? { parent: chatBox.parentNode, next: chatBox.nextSibling } : null;
+    function setHistory(open) {
+      if (!chatBox) return;
+      frame.classList.toggle('live-tv-history', open);
+      if (open) {
+        frame.appendChild(chatBox);
+        chatList.scrollTop = chatList.scrollHeight;
+      } else if (chatBox.parentNode === frame) {
+        chatHome.parent.insertBefore(chatBox, chatHome.next);
+      }
+      labelTvBtn();
+    }
+    tvHistory.addEventListener('click', () => setHistory(!frame.classList.contains('live-tv-history')));
+    overlay.addEventListener('click', () => setHistory(true));
     // Shortcut on the video itself, since most guests look at the player and not below it
     const tvCorner = document.createElement('button');
     tvCorner.type = 'button';
@@ -261,6 +283,10 @@
       tvClose.setAttribute('aria-label', window.currentLang === 'es' ? 'Salir de pantalla completa' : 'Exit full screen');
       const quiet = frame.classList.contains('live-tv-quiet');
       tvCorner.textContent = window.currentLang === 'es' ? '\u26F6 Con mensajes' : '\u26F6 With messages';
+      const history = frame.classList.contains('live-tv-history');
+      tvHistory.textContent = window.currentLang === 'es'
+        ? (history ? 'Volver al video' : 'Ver todos los mensajes')
+        : (history ? 'Back to video' : 'See all messages');
       tvToggle.textContent = window.currentLang === 'es'
         ? (quiet ? 'Mostrar mensajes' : 'Ocultar mensajes')
         : (quiet ? 'Show messages' : 'Hide messages');
@@ -277,6 +303,7 @@
     const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
 
     function exitTv() {
+      setHistory(false);
       frame.classList.remove('live-tv');
       document.body.classList.remove('live-tv-open');
       delete frame.dataset.auto;
