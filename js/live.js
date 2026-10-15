@@ -16,18 +16,6 @@
     ? 'http://localhost:3001/api'
     : 'https://boda-rodrigo-production.up.railway.app/api';
 
-  // Section is hidden by default — activate via ?preview=live (persists in localStorage)
-  const PREVIEW_KEY = 'live_preview';
-  try {
-    if (new URLSearchParams(window.location.search).get('preview') === 'live') {
-      localStorage.setItem(PREVIEW_KEY, '1');
-      history.replaceState(null, '', window.location.pathname + window.location.hash);
-    }
-    if (!localStorage.getItem(PREVIEW_KEY)) return;
-  } catch (e) {
-    return;
-  }
-
   const section = document.getElementById('live');
   const navItem = document.getElementById('nav-live');
   const player  = document.getElementById('live-player');

@@ -2807,6 +2807,20 @@ body.live-tv-open #live { z-index: 10000; }
 }
 .live-stage .live-tv-hint { grid-column: 1; grid-row: 3; }
 
+/* Phone held upright: messages go below the video, between it and the write box, so they never cover the buttons */
+@media (max-width: 600px) and (orientation: portrait) {
+  #live .live-frame.live-tv .live-overlay,
+  #live .live-frame.live-tv .live-overlay.scrolling {
+    top: calc(50% + 28.125vw + 12px);
+    bottom: 76px;
+    left: 12px; right: 12px;
+    width: auto;
+    max-height: none;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+  #live .live-frame.live-tv .live-overlay.scrolling { overflow-y: auto; justify-content: flex-start; }
+}
 @media (max-width: 600px) {
   .live-frame.live-tv .live-overlay { width: 60vw; }
   .live-frame.live-tv .live-tv-form { width: auto; left: 12px; right: 12px; opacity: 0.85; }
