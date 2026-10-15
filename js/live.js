@@ -100,6 +100,14 @@
 
   try { chatName.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
 
+  // Same name always gets the same color, from tones that match the site
+  const NAME_COLORS = ['#C4956A', '#a99ad4', '#D4A853', '#7fb7a4', '#e0a3b5', '#8fb3e0', '#d9b38c', '#b9a3e8', '#e3c06f', '#9fcfbf'];
+  function nameColor(name) {
+    let h = 0;
+    for (const ch of name.toLowerCase()) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+    return NAME_COLORS[h % NAME_COLORS.length];
+  }
+
   function renderChat(messages) {
     const signature = messages.map(m => m.id).join(',');
     if (signature === chatSignature) return;
@@ -111,6 +119,7 @@
       row.className = 'live-chat-msg';
       const name = document.createElement('strong');
       name.textContent = m.name;
+      name.style.color = nameColor(m.name);
       const time = document.createElement('time');
       time.textContent = new Date(m.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       row.append(name, document.createTextNode(m.text), time);
