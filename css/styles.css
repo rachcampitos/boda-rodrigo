@@ -2554,9 +2554,34 @@ h1, h2, h3 {
   color: var(--silver-muted);
 }
 
+.live-stage {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Desktop: chat beside the video, same height, like a YouTube live */
+@media (min-width: 1000px) {
+  #live .section-inner { max-width: 1240px; }
+  .live-stage {
+    max-width: 1240px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .live-stage .live-frame { max-width: none; margin: 0; }
+  .live-stage .live-chat {
+    margin: 0;
+    contain: size;
+    display: flex; flex-direction: column;
+  }
+  .live-stage .live-chat-list { flex: 1; max-height: none; min-height: 0; }
+  .live-stage .live-chat-name { max-width: none; }
+}
+
 .live-chat {
   max-width: 900px;
-  margin: 36px auto 0;
+  margin: 24px auto 0;
   padding: 22px;
   border: 1px solid rgba(196, 149, 106, 0.25);
   border-radius: 4px;
@@ -2568,15 +2593,17 @@ h1, h2, h3 {
   font-size: 1.4rem;
   color: var(--copper-lt);
   text-align: center;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(196, 149, 106, 0.2);
 }
 .live-chat-list {
-  max-height: 320px;
+  max-height: 340px;
   overflow-y: auto;
   overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: 10px;
   padding: 4px 4px 4px 0;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 .live-chat-empty {
   text-align: center;

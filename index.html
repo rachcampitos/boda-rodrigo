@@ -296,29 +296,31 @@
       <h2 class="section-title reveal" data-i18n="live.title">Watch Live</h2>
       <p class="live-subtitle reveal" data-i18n="live.subtitle">For those with us in spirit</p>
 
-      <div class="live-frame reveal">
-        <span class="live-corner live-corner-tl" aria-hidden="true"></span>
-        <span class="live-corner live-corner-tr" aria-hidden="true"></span>
-        <span class="live-corner live-corner-bl" aria-hidden="true"></span>
-        <span class="live-corner live-corner-br" aria-hidden="true"></span>
-        <div class="live-player" id="live-player"></div>
+      <div class="live-stage">
+        <div class="live-frame reveal">
+          <span class="live-corner live-corner-tl" aria-hidden="true"></span>
+          <span class="live-corner live-corner-tr" aria-hidden="true"></span>
+          <span class="live-corner live-corner-bl" aria-hidden="true"></span>
+          <span class="live-corner live-corner-br" aria-hidden="true"></span>
+          <div class="live-player" id="live-player"></div>
+        </div>
+
+        <div class="live-chat" id="live-chat">
+          <h3 class="live-chat-title" data-i18n="live.chat.title">Messages for the couple</h3>
+          <div class="live-chat-list" id="live-chat-list" aria-live="polite">
+            <p class="live-chat-empty" data-i18n="live.chat.empty">Be the first to leave a message</p>
+          </div>
+          <form class="live-chat-form" id="live-chat-form" autocomplete="off">
+            <input type="text" id="live-chat-name" class="live-chat-name" maxlength="40" required data-i18n-placeholder="live.chat.name" placeholder="Your name">
+            <div class="live-chat-row">
+              <input type="text" id="live-chat-text" class="live-chat-text" maxlength="300" required data-i18n-placeholder="live.chat.placeholder" placeholder="Write a message...">
+              <button type="submit" class="live-chat-send" data-i18n="live.chat.send">Send</button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div class="live-parts" id="live-parts"></div>
-
-      <div class="live-chat" id="live-chat">
-        <h3 class="live-chat-title" data-i18n="live.chat.title">Messages for the couple</h3>
-        <div class="live-chat-list" id="live-chat-list" aria-live="polite">
-          <p class="live-chat-empty" data-i18n="live.chat.empty">Be the first to leave a message</p>
-        </div>
-        <form class="live-chat-form" id="live-chat-form" autocomplete="off">
-          <input type="text" id="live-chat-name" class="live-chat-name" maxlength="40" required data-i18n-placeholder="live.chat.name" placeholder="Your name">
-          <div class="live-chat-row">
-            <input type="text" id="live-chat-text" class="live-chat-text" maxlength="300" required data-i18n-placeholder="live.chat.placeholder" placeholder="Write a message...">
-            <button type="submit" class="live-chat-send" data-i18n="live.chat.send">Send</button>
-          </div>
-        </form>
-      </div>
 
       <p class="live-note reveal" data-i18n="live.note">The ceremony begins at 5:00 PM (New York time). If the video hasn't started yet, the stream will appear here shortly. The recording will remain here after the celebration.</p>
     </div>
