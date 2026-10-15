@@ -122,18 +122,33 @@
       chatList.replaceChildren(empty);
       return renderOverlay(messages);
     }
-    const nearBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 60;
-    chatList.replaceChildren(...messages.map(m => {
+    // Only add new messages and drop deleted ones, so a guest reading older messages is not moved
+    const nearBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 30;
+    const keep = new Set(messages.map(m => String(m.id)));
+    const existing = new Map();
+    let removedAbove = 0;
+    [...chatList.children].forEach(n => {
+      if (n.dataset.id && keep.has(n.dataset.id)) {
+        existing.set(n.dataset.id, n);
+      } else {
+        if (n.offsetTop < chatList.scrollTop) removedAbove += n.offsetHeight;
+        n.remove();
+      }
+    });
+    messages.forEach(m => {
+      if (existing.has(String(m.id))) return;
       const row = document.createElement('p');
       row.className = 'live-chat-msg';
+      row.dataset.id = m.id;
       const name = document.createElement('strong');
       name.textContent = m.name;
       name.style.color = nameColor(m.name);
       const time = document.createElement('time');
       time.textContent = new Date(m.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       row.append(name, document.createTextNode(m.text), time);
-      return row;
-    }));
+      chatList.appendChild(row);
+    });
+    if (removedAbove && !nearBottom) chatList.scrollTop -= removedAbove;
     if (nearBottom || !chatList.dataset.loaded) chatList.scrollTop = chatList.scrollHeight;
     chatList.dataset.loaded = '1';
     renderOverlay(messages);

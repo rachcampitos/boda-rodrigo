@@ -501,7 +501,7 @@ app.get('/api/chat', async (req, res) => {
   try {
     const since = req.query.since ? new Date(req.query.since) : null;
     const query = since && !isNaN(since) ? { createdAt: { $gt: since } } : {};
-    const messages = await ChatMessage.find(query).sort({ createdAt: -1 }).limit(100).lean();
+    const messages = await ChatMessage.find(query).sort({ createdAt: -1 }).limit(300).lean();
     res.json(messages.reverse().map(mapChat));
   } catch (err) {
     res.status(500).json({ message: 'Failed' });
