@@ -210,7 +210,7 @@
     tvCorner.addEventListener('click', () => enterTv(true));
     frame.appendChild(tvCorner);
 
-    // Write without leaving full screen; the name field only shows until the guest has one
+    // Write without leaving full screen; name and message side by side, name remembered
     const tvForm = document.createElement('form');
     tvForm.className = 'live-tv-form';
     tvForm.autocomplete = 'off';
@@ -223,8 +223,6 @@
     tvForm.append(tvName, tvText, tvSend);
     frame.appendChild(tvForm);
     try { tvName.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
-    tvName.hidden = !!tvName.value;
-    tvForm.addEventListener('chat-sent', () => { tvName.hidden = true; });
     wireForm(tvForm, tvName, tvText);
 
     const tvHint = document.createElement('p');
