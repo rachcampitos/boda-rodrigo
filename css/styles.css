@@ -2570,7 +2570,9 @@ h1, h2, h3 {
     align-items: stretch;
   }
   .live-stage .live-frame { max-width: none; margin: 0; }
+  .live-stage .live-frame { grid-column: 1; grid-row: 1; }
   .live-stage .live-chat {
+    grid-column: 2; grid-row: 1;
     margin: 0;
     contain: size;
     display: flex; flex-direction: column;
@@ -2592,7 +2594,7 @@ h1, h2, h3 {
   cursor: pointer;
 }
 .live-tv-btn:hover { border-color: var(--copper); color: var(--copper-lt); }
-.live-stage .live-tv-btn { grid-column: 1; }
+.live-stage .live-tv-btn { grid-column: 1; grid-row: 2; justify-self: center; }
 
 .live-overlay, .live-tv-close { display: none; }
 
@@ -2751,7 +2753,7 @@ body.live-tv-open #live { z-index: 10000; }
   margin: 8px auto 0;
   max-width: 520px;
 }
-.live-stage .live-tv-hint { grid-column: 1; }
+.live-stage .live-tv-hint { grid-column: 1; grid-row: 3; }
 
 @media (max-width: 600px) {
   .live-frame.live-tv .live-overlay { width: 60vw; }
