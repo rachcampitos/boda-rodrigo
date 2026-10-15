@@ -1124,6 +1124,11 @@
     @media (max-width: 360px) {
       .photos-grid { grid-template-columns: 1fr; }
     }
+    .chat-admin-list { display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; }
+    .chat-admin-msg { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid rgba(196,149,106,0.2); border-radius: 4px; }
+    .chat-admin-body { flex: 1; min-width: 0; overflow-wrap: anywhere; color: #b8b8c0; font-size: 0.9rem; line-height: 1.5; }
+    .chat-admin-body strong { color: #C4956A; margin-right: 6px; }
+    .chat-admin-body time { display: block; color: #9a9aa5; font-size: 0.72rem; }
   </style>
 </head>
 <body>
@@ -1291,6 +1296,23 @@
         <div>Recordings of the live broadcast. Play them here or download the MP4.</div>
       </div>
       <div class="rec-list" id="rec-list">
+        <p class="photos-empty">Consulting the cosmos&hellip;</p>
+      </div>
+    </div>
+
+    <!-- Live Chat Messages -->
+    <div class="photos-section" id="chat-section">
+      <div class="photos-header">
+        <div class="photos-title-row">
+          <h3 class="photos-title">&#10022; Live Chat Messages</h3>
+          <span class="photos-badge" id="chat-badge">0 messages</span>
+        </div>
+        <button class="photos-refresh" id="chat-refresh-btn">Refresh</button>
+      </div>
+      <div class="photos-stats">
+        <div>Messages guests write under the live video. Use &#10005; to remove one from the page.</div>
+      </div>
+      <div class="chat-admin-list" id="chat-admin-list">
         <p class="photos-empty">Consulting the cosmos&hellip;</p>
       </div>
     </div>
@@ -2059,6 +2081,83 @@
         const observer = new MutationObserver(() => {
           if (dash.classList.contains('visible') && adminKey) {
             loadRecordings();
+            observer.disconnect();
+          }
+        });
+        observer.observe(dash, { attributes: true, attributeFilter: ['class'] });
+      })();
+
+
+      // ── Live Chat Messages ───────────────────────────────
+      (function () {
+        const list = document.getElementById('chat-admin-list');
+        const badge = document.getElementById('chat-badge');
+        const refreshBtn = document.getElementById('chat-refresh-btn');
+
+        function renderMessage(m) {
+          const row = document.createElement('div');
+          row.className = 'chat-admin-msg';
+          const body = document.createElement('div');
+          body.className = 'chat-admin-body';
+          const name = document.createElement('strong');
+          name.textContent = m.name;
+          const time = document.createElement('time');
+          time.textContent = new Date(m.createdAt).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+          });
+          body.append(name, document.createTextNode(m.text), time);
+          const del = document.createElement('button');
+          del.className = 'rec-delete';
+          del.title = 'Delete message';
+          del.innerHTML = '&#10005;';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Delete this message from ${m.name}?`)) return;
+            del.disabled = true;
+            try {
+              const res = await fetch(`${API_BASE}/chat/${m.id}`, {
+                method: 'DELETE',
+                headers: { 'x-admin-key': adminKey },
+              });
+              if (!res.ok && res.status !== 404) throw new Error();
+              row.remove();
+              const count = list.querySelectorAll('.chat-admin-msg').length;
+              badge.textContent = `${count} message${count === 1 ? '' : 's'}`;
+              if (!count) list.innerHTML = '<p class="photos-empty">No messages yet.</p>';
+            } catch {
+              del.disabled = false;
+              alert('Could not delete the message. Please try again.');
+            }
+          });
+          row.append(body, del);
+          return row;
+        }
+
+        async function loadMessages() {
+          if (!adminKey) return;
+          try {
+            const res = await fetch(`${API_BASE}/chat/all`, {
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            const messages = await res.json();
+            badge.textContent = `${messages.length} message${messages.length === 1 ? '' : 's'}`;
+            list.innerHTML = '';
+            if (!messages.length) {
+              list.innerHTML = '<p class="photos-empty">No messages yet.</p>';
+              return;
+            }
+            messages.forEach(m => list.appendChild(renderMessage(m)));
+          } catch {
+            list.innerHTML = '<p class="photos-empty">Could not load messages.</p>';
+          }
+        }
+
+        refreshBtn.addEventListener('click', loadMessages);
+
+        const dash = document.getElementById('dashboard');
+        const observer = new MutationObserver(() => {
+          if (dash.classList.contains('visible') && adminKey) {
+            loadMessages();
             observer.disconnect();
           }
         });

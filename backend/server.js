@@ -481,6 +481,76 @@ app.get('/api/recordings/:uid/download', async (req, res) => {
   }
 });
 
+// ── Live chat ───────────────────────────────────────────
+
+const chatSchema = new mongoose.Schema({
+  name:      { type: String, required: true },
+  text:      { type: String, required: true },
+  createdAt: { type: Date, default: Date.now, index: true },
+});
+
+const ChatMessage = mongoose.model('ChatMessage', chatSchema);
+
+const mapChat = m => ({ id: m._id, name: m.name, text: m.text, createdAt: m.createdAt });
+
+// One message every 3 seconds per visitor, enough for a chat and stops floods
+const chatLastPost = new Map();
+
+// Latest messages, or only the newer ones with ?since= (public)
+app.get('/api/chat', async (req, res) => {
+  try {
+    const since = req.query.since ? new Date(req.query.since) : null;
+    const query = since && !isNaN(since) ? { createdAt: { $gt: since } } : {};
+    const messages = await ChatMessage.find(query).sort({ createdAt: -1 }).limit(100).lean();
+    res.json(messages.reverse().map(mapChat));
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// Post a message (public)
+app.post('/api/chat', async (req, res) => {
+  const name = String((req.body && req.body.name) || '').trim().slice(0, 40);
+  const text = String((req.body && req.body.text) || '').trim().slice(0, 300);
+  if (!name || !text) return res.status(400).json({ message: 'Name and message required' });
+  const ip = req.headers['x-forwarded-for'] ? String(req.headers['x-forwarded-for']).split(',')[0].trim() : req.ip;
+  const now = Date.now();
+  if (now - (chatLastPost.get(ip) || 0) < 3000) return res.status(429).json({ message: 'Too fast' });
+  chatLastPost.set(ip, now);
+  if (chatLastPost.size > 5000) chatLastPost.clear();
+  try {
+    const message = await ChatMessage.create({ name, text });
+    res.status(201).json(mapChat(message));
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// All messages, oldest first (admin)
+app.get('/api/chat/all', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const messages = await ChatMessage.find().sort({ createdAt: 1 }).lean();
+    res.json(messages.map(mapChat));
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
+// Delete a message (admin)
+app.delete('/api/chat/:id', async (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== ADMIN_KEY) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const result = await ChatMessage.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Message deleted', id: req.params.id });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed' });
+  }
+});
+
 // ── Start ───────────────────────────────────────────────
 async function start() {
   try {

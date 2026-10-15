@@ -62,6 +62,12 @@
       'live.title':    'Watch Live',
       'live.subtitle': 'For those with us in spirit',
       'live.note':     'The ceremony begins at 5:00 PM (New York time). If the video hasn\u2019t started yet, the stream will appear here shortly. The recording will remain here after the celebration.',
+      'live.chat.title':       'Messages for the couple',
+      'live.chat.empty':       'Be the first to leave a message',
+      'live.chat.name':        'Your name',
+      'live.chat.placeholder': 'Write a message...',
+      'live.chat.send':        'Send',
+      'live.chat.error':       'Could not send, please try again',
 
       'faqs.title': 'FAQs',
 
@@ -214,6 +220,12 @@
       'live.title':    'En vivo',
       'live.subtitle': 'Para quienes nos acompañan a la distancia',
       'live.note':     'La ceremonia comienza a las 5:00 PM (hora de Nueva York), 4:00 PM en Perú. Si el video aún no empieza, la transmisión aparecerá aquí en unos momentos. La grabación quedará disponible aquí después de la celebración.',
+      'live.chat.title':       'Mensajes para los novios',
+      'live.chat.empty':       'Sea el primero en dejar un mensaje',
+      'live.chat.name':        'Su nombre',
+      'live.chat.placeholder': 'Escriba un mensaje...',
+      'live.chat.send':        'Enviar',
+      'live.chat.error':       'No se pudo enviar, intente de nuevo',
 
       // Sección FAQs
       'faqs.title': 'Preguntas frecuentes',

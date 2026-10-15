@@ -89,4 +89,78 @@
 
   refresh();
   setInterval(refresh, 30000);
+
+  // ── Chat: guests leave messages for the couple while they watch ──
+  const chatList = document.getElementById('live-chat-list');
+  const chatForm = document.getElementById('live-chat-form');
+  const chatName = document.getElementById('live-chat-name');
+  const chatText = document.getElementById('live-chat-text');
+  const NAME_KEY = 'live_chat_name';
+  let chatSignature = '';
+
+  try { chatName.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
+
+  function renderChat(messages) {
+    const signature = messages.map(m => m.id).join(',');
+    if (signature === chatSignature) return;
+    chatSignature = signature;
+    if (!messages.length) return;
+    const nearBottom = chatList.scrollHeight - chatList.scrollTop - chatList.clientHeight < 60;
+    chatList.replaceChildren(...messages.map(m => {
+      const row = document.createElement('p');
+      row.className = 'live-chat-msg';
+      const name = document.createElement('strong');
+      name.textContent = m.name;
+      const time = document.createElement('time');
+      time.textContent = new Date(m.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      row.append(name, document.createTextNode(m.text), time);
+      return row;
+    }));
+    if (nearBottom || !chatList.dataset.loaded) chatList.scrollTop = chatList.scrollHeight;
+    chatList.dataset.loaded = '1';
+  }
+
+  async function loadChat() {
+    try {
+      const res = await fetch(`${API_BASE}/chat`);
+      if (res.ok) renderChat(await res.json());
+    } catch (e) {}
+  }
+
+  if (chatList && chatForm) {
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = chatName.value.trim();
+      const text = chatText.value.trim();
+      if (!name || !text) return;
+      const btn = chatForm.querySelector('button');
+      const oldError = chatForm.querySelector('.live-chat-error');
+      if (oldError) oldError.remove();
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, text }),
+        });
+        if (!res.ok) throw new Error();
+        try { localStorage.setItem(NAME_KEY, name); } catch (err) {}
+        chatText.value = '';
+        chatList.dataset.loaded = '';
+        await loadChat();
+      } catch (err) {
+        const msg = document.createElement('p');
+        msg.className = 'live-chat-error';
+        msg.textContent = window.currentLang === 'es'
+          ? 'No se pudo enviar, intente de nuevo'
+          : 'Could not send, please try again';
+        chatForm.appendChild(msg);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    loadChat();
+    setInterval(loadChat, 5000);
+  }
 })();

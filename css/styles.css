@@ -2554,7 +2554,84 @@ h1, h2, h3 {
   color: var(--silver-muted);
 }
 
+.live-chat {
+  max-width: 900px;
+  margin: 36px auto 0;
+  padding: 22px;
+  border: 1px solid rgba(196, 149, 106, 0.25);
+  border-radius: 4px;
+  background: rgba(139, 123, 184, 0.04);
+}
+.live-chat-title {
+  font-family: var(--ff-heading);
+  font-weight: 400;
+  font-size: 1.4rem;
+  color: var(--copper-lt);
+  text-align: center;
+  margin: 0 0 16px;
+}
+.live-chat-list {
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 4px 4px 4px 0;
+  margin-bottom: 16px;
+}
+.live-chat-empty {
+  text-align: center;
+  font-family: var(--ff-heading); font-style: italic;
+  color: var(--silver-muted);
+  margin: 12px 0;
+}
+.live-chat-msg {
+  color: var(--silver);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.live-chat-msg strong {
+  color: var(--copper);
+  font-weight: 600;
+  margin-right: 6px;
+}
+.live-chat-msg time {
+  color: var(--silver-muted);
+  font-size: 0.72rem;
+  margin-left: 6px;
+}
+.live-chat-form { display: flex; flex-direction: column; gap: 10px; }
+.live-chat-row { display: flex; gap: 10px; }
+.live-chat-name, .live-chat-text {
+  background: rgba(5, 5, 5, 0.6);
+  border: 1px solid rgba(196, 149, 106, 0.3);
+  border-radius: 4px;
+  color: var(--silver);
+  font-family: var(--ff-body);
+  font-size: 16px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.live-chat-name { max-width: 260px; }
+.live-chat-text { flex: 1; }
+.live-chat-name:focus, .live-chat-text:focus { outline: none; border-color: var(--copper); }
+.live-chat-name[hidden] { display: none; }
+.live-chat-send {
+  background: var(--btn-bg);
+  border: 0; border-radius: 4px;
+  color: #fff;
+  font-family: var(--ff-body); font-size: 0.8rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+.live-chat-send:hover { background: var(--btn-hover); }
+.live-chat-send:disabled { opacity: 0.6; cursor: default; }
+.live-chat-error { color: #e08a8a; font-size: 0.8rem; margin: 0; }
+
 @media (max-width: 600px) {
+  .live-chat { padding: 16px 14px; }
+  .live-chat-name { max-width: none; }
   .live-frame { padding: 8px; }
   .live-subtitle { margin-bottom: 32px; }
 }
