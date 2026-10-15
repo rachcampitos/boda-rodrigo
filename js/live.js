@@ -97,6 +97,7 @@
   const chatText = document.getElementById('live-chat-text');
   const NAME_KEY = 'live_chat_name';
   let chatSignature = '';
+  let lastMessages = [];
 
   try { chatName.value = localStorage.getItem(NAME_KEY) || ''; } catch (e) {}
 
@@ -109,6 +110,7 @@
   }
 
   function renderChat(messages) {
+    lastMessages = messages;
     const signature = messages.map(m => m.id).join(',');
     if (signature === chatSignature) return renderOverlay(messages);
     chatSignature = signature;
@@ -250,6 +252,10 @@
           if (p && p.catch) p.catch(() => {});
         } catch (e) {}
       }
+      // Show the latest messages right away so the screen does not look empty
+      const now = Date.now();
+      lastMessages.slice(-3).forEach(m => firstSeen.set(m.id, now));
+      renderOverlay(lastMessages);
       loadChat();
     });
     tvClose.addEventListener('click', exitTv);
