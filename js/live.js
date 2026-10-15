@@ -165,12 +165,37 @@
   let firstLoad = true;
 
   // Messages fade out a minute after they show up on this screen; older ones never appear
+  function overlayRow(m) {
+    const row = document.createElement('p');
+    row.className = 'live-overlay-msg';
+    row.dataset.id = m.id;
+    const name = document.createElement('strong');
+    name.textContent = m.name;
+    name.style.color = nameColor(m.name);
+    row.append(name, document.createTextNode(m.text));
+    return row;
+  }
+
+  // While the guest scrolls the floating messages they show the whole conversation;
+  // a few seconds after they stop, only the latest ones remain
+  let overlayScrolling = false;
+  let overlayIdle = null;
+
   function renderOverlay(messages) {
     const now = Date.now();
     messages.forEach(m => {
       if (!firstSeen.has(m.id)) firstSeen.set(m.id, firstLoad ? 0 : now);
     });
     firstLoad = false;
+    if (overlayScrolling) {
+      const keepAll = new Set(messages.map(m => String(m.id)));
+      [...overlay.children].forEach(n => { if (!keepAll.has(n.dataset.id)) n.remove(); });
+      const shown = new Set([...overlay.children].map(n => n.dataset.id));
+      const atBottom = overlay.scrollHeight - overlay.scrollTop - overlay.clientHeight < 20;
+      messages.forEach(m => { if (!shown.has(String(m.id))) overlay.appendChild(overlayRow(m)); });
+      if (atBottom) overlay.scrollTop = overlay.scrollHeight;
+      return;
+    }
     const fresh = messages
       .filter(m => now - firstSeen.get(m.id) < OVERLAY_SECONDS * 1000)
       .slice(-OVERLAY_MAX);
@@ -187,16 +212,7 @@
       setTimeout(() => n.remove(), 700);
     });
     overlay.replaceChildren(...leaving, ...fresh.map(m => {
-      let row = nodes.get(String(m.id));
-      if (!row) {
-        row = document.createElement('p');
-        row.className = 'live-overlay-msg';
-        row.dataset.id = m.id;
-        const name = document.createElement('strong');
-        name.textContent = m.name;
-        name.style.color = nameColor(m.name);
-        row.append(name, document.createTextNode(m.text));
-      }
+      const row = nodes.get(String(m.id)) || overlayRow(m);
       // Fade out smoothly over the last seconds instead of vanishing at once
       row.classList.toggle('fading', now - firstSeen.get(m.id) > (OVERLAY_SECONDS - 5) * 1000);
       return row;
@@ -239,7 +255,29 @@
       labelTvBtn();
     }
     tvHistory.addEventListener('click', () => setHistory(!frame.classList.contains('live-tv-history')));
-    overlay.addEventListener('click', () => setHistory(true));
+    function startOverlayScroll() {
+      clearTimeout(overlayIdle);
+      if (!overlayScrolling) {
+        overlayScrolling = true;
+        overlay.classList.add('scrolling');
+        overlay.replaceChildren(...lastMessages.map(overlayRow));
+        overlay.scrollTop = overlay.scrollHeight;
+      }
+    }
+    function stopOverlayScrollSoon() {
+      clearTimeout(overlayIdle);
+      overlayIdle = setTimeout(() => {
+        overlayScrolling = false;
+        overlay.classList.remove('scrolling');
+        overlay.replaceChildren();
+        renderOverlay(lastMessages);
+      }, 6000);
+    }
+    overlay.addEventListener('wheel', () => { startOverlayScroll(); stopOverlayScrollSoon(); }, { passive: true });
+    overlay.addEventListener('touchstart', () => { startOverlayScroll(); stopOverlayScrollSoon(); }, { passive: true });
+    overlay.addEventListener('touchmove', stopOverlayScrollSoon, { passive: true });
+    overlay.addEventListener('mouseenter', startOverlayScroll);
+    overlay.addEventListener('mouseleave', stopOverlayScrollSoon);
     // Shortcut on the video itself, since most guests look at the player and not below it
     const tvCorner = document.createElement('button');
     tvCorner.type = 'button';
