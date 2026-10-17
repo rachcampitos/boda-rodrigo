@@ -287,7 +287,7 @@ app.post('/api/photos/approved/zip-token', (req, res) => {
   res.json({ token });
 });
 
-// Download all approved photos as a ZIP (token from zip-token)
+// Download the approved photos as a ZIP (token from zip-token); ?all=1 also includes the ones still pending review
 app.get('/api/photos/approved/zip', async (req, res) => {
   const exp = zipTokens.get(req.query.token);
   zipTokens.delete(req.query.token);
@@ -306,7 +306,8 @@ app.get('/api/photos/approved/zip', async (req, res) => {
 
   try {
     const used = new Set();
-    const cursor = Photo.find({ status: 'approved' })
+    const statuses = req.query.all ? ['pending', 'approved'] : ['approved'];
+    const cursor = Photo.find({ status: { $in: statuses } })
       .select('imageData mimeType guestName createdAt').sort({ createdAt: 1 }).cursor();
     for await (const photo of cursor) {
       let name = photoFileName(photo);
@@ -407,6 +408,7 @@ app.get('/api/recordings', async (req, res) => {
         duration: v.duration,
         live: v.status && v.status.state === 'live-inprogress',
         ready: !!v.readyToStream,
+        wedding: new Date(v.created) >= WEDDING_STREAM_FROM,
         thumbnail: `https://customer-${CF_CUSTOMER_CODE}.cloudflarestream.com/${v.uid}/thumbnails/thumbnail.jpg?height=360`,
         playerUrl: `https://customer-${CF_CUSTOMER_CODE}.cloudflarestream.com/${v.uid}/iframe`,
       })));

@@ -932,6 +932,8 @@
       white-space: nowrap;
     }
     a.rec-download { display: inline-block; }
+    .rec-all-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 16px; font-size: 0.85rem; }
+    .rec-all-links a { text-decoration: none; }
     .rec-download:hover { background: rgba(196,149,106,0.3); }
     .rec-download:disabled { opacity: 0.6; cursor: wait; }
     .rec-actions { display: flex; gap: 8px; align-items: center; }
@@ -1270,7 +1272,7 @@
             <button class="photos-tab active" data-ptab="pending">Pending</button>
             <button class="photos-tab" data-ptab="approved">Approved</button>
           </div>
-          <button class="photos-refresh photos-zip" id="photos-zip-btn" hidden>Download all</button>
+          <button class="photos-refresh photos-zip" id="photos-zip-btn" hidden>Download all photos</button>
           <button class="photos-refresh" id="photos-refresh-btn">Refresh</button>
         </div>
       </div>
@@ -1290,11 +1292,15 @@
           <h3 class="photos-title">&#10022; Live Stream Recordings</h3>
           <span class="photos-badge" id="rec-badge">0 videos</span>
         </div>
-        <button class="photos-refresh" id="rec-refresh-btn">Refresh</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="photos-refresh photos-zip" id="rec-all-btn" hidden>Download all videos</button>
+          <button class="photos-refresh" id="rec-refresh-btn">Refresh</button>
+        </div>
       </div>
       <div class="photos-stats">
         <div>Recordings of the live broadcast. Play them here or download the MP4.</div>
       </div>
+      <div class="rec-all-links" id="rec-all-links" hidden></div>
       <div class="rec-list" id="rec-list">
         <p class="photos-empty">Consulting the cosmos&hellip;</p>
       </div>
@@ -1819,7 +1825,7 @@
               approvedCount = photos.length;
               statApproved.textContent = approvedCount;
             }
-            zipBtn.hidden = !(tab === 'approved' && photos.length);
+            zipBtn.hidden = !(pendingCount + approvedCount);
 
             grid.innerHTML = '';
             if (!photos.length) {
@@ -1876,7 +1882,7 @@
 
         refreshBtn.addEventListener('click', () => loadPhotos(currentTab));
 
-        // Download all approved photos as one ZIP
+        // Download every photo (pending and approved) as one ZIP
         zipBtn.addEventListener('click', async () => {
           if (!adminKey) return;
           zipBtn.disabled = true;
@@ -1888,8 +1894,8 @@
             });
             if (!res.ok) throw new Error();
             const { token } = await res.json();
-            window.location.href = `${API_BASE}/photos/approved/zip?token=${token}`;
-            zipBtn.textContent = 'Download all';
+            window.location.href = `${API_BASE}/photos/approved/zip?token=${token}&all=1`;
+            zipBtn.textContent = 'Download all photos';
           } catch {
             zipBtn.textContent = 'Try again';
           }
@@ -2064,6 +2070,11 @@
             if (!res.ok) throw new Error();
             const recs = await res.json();
             badge.textContent = `${recs.length} video${recs.length === 1 ? '' : 's'}`;
+            // Wedding parts in order, leaving out the few-second clips from signal cuts
+            weddingRecs = recs
+              .filter(r => r.wedding && r.ready && !r.live && r.duration >= 30)
+              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            allBtn.hidden = !weddingRecs.length;
             list.innerHTML = '';
             if (!recs.length) {
               list.innerHTML = '<p class="photos-empty">No recordings yet. They will appear here after the broadcast.</p>';
@@ -2076,6 +2087,70 @@
         }
 
         refreshBtn.addEventListener('click', loadRecordings);
+
+        // Download every wedding recording in order, each one as its own MP4
+        const allBtn = document.getElementById('rec-all-btn');
+        const allLinks = document.getElementById('rec-all-links');
+        let weddingRecs = [];
+
+        function nyTime(dateStr) {
+          return new Date(dateStr).toLocaleTimeString('en-US', {
+            timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit',
+          }).replace(':', '.');
+        }
+
+        async function readyUrl(rec) {
+          for (let i = 0; i < 120; i++) {
+            const res = await fetch(`${API_BASE}/recordings/${rec.id}/download`, {
+              headers: { 'x-admin-key': adminKey },
+            });
+            if (!res.ok) throw new Error();
+            const d = await res.json();
+            if (d.status === 'ready' && d.url) return d.url;
+            if (d.status === 'error') throw new Error();
+            await new Promise(r => setTimeout(r, 5000));
+          }
+          throw new Error();
+        }
+
+        allBtn.addEventListener('click', async () => {
+          if (!adminKey || !weddingRecs.length) return;
+          allBtn.disabled = true;
+          allLinks.hidden = true;
+          allLinks.innerHTML = '';
+          try {
+            const files = [];
+            for (const [i, rec] of weddingRecs.entries()) {
+              allBtn.textContent = `Preparing ${i + 1} of ${weddingRecs.length}...`;
+              const name = `Frankie y Rodrigo - Parte ${i + 1} - ${nyTime(rec.createdAt)}`;
+              files.push({ name, url: `${await readyUrl(rec)}?filename=${encodeURIComponent(name)}` });
+            }
+            // Cloudflare answers with "attachment", so each hidden frame saves a file without leaving the page
+            for (const [i, f] of files.entries()) {
+              allBtn.textContent = `Downloading ${i + 1} of ${files.length}...`;
+              const frame = document.createElement('iframe');
+              frame.hidden = true;
+              frame.src = f.url;
+              document.body.appendChild(frame);
+              setTimeout(() => frame.remove(), 10 * 60 * 1000);
+              await new Promise(r => setTimeout(r, 2500));
+            }
+            // If the browser blocked some of them, the links stay here to save one by one
+            allLinks.innerHTML = '<span>If a video did not download, save it here:</span>';
+            files.forEach(f => {
+              const a = document.createElement('a');
+              a.className = 'rec-download';
+              a.href = f.url;
+              a.textContent = f.name.replace('Frankie y Rodrigo - ', '');
+              allLinks.appendChild(a);
+            });
+            allLinks.hidden = false;
+            allBtn.textContent = 'Download all videos';
+          } catch {
+            allBtn.textContent = 'Try again';
+          }
+          allBtn.disabled = false;
+        });
 
         const dash = document.getElementById('dashboard');
         const observer = new MutationObserver(() => {
